@@ -3,13 +3,6 @@ import { View, ScrollView } from 'react-native';
 import { ThemeProvider, Button, Avatar, Header, Icon } from 'react-native-elements';
 import TextInput from 'react-native-textinput-with-icons';
 import {styles} from '../../services/styles';
-const leftComponent = (props) => (
-    <Icon
-        raised
-        name='menu'
-        type='ionicon'
-        onPress={() => console.log('hello')} />
-)
 
 
 class PeopleCreateEdit extends Component {
@@ -17,7 +10,7 @@ class PeopleCreateEdit extends Component {
            return (
                <ThemeProvider>
                <Header
-                leftComponent={{ icon: 'menu', color: '#fff' }}
+                leftComponent={<Icon name="ios-arrow-back" type="ionicon" color="#FFF" onPress={() => this.props.navigation.navigate('People') }/>}
                 centerComponent={{ text: 'People', style: { color: '#fff' } }}
                 rightComponent={{ icon: 'save', color: '#fff' }}
                 />

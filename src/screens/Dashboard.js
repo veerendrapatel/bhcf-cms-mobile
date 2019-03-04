@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, TextInput, Button, Alert } from 'react-native';
 import _asyncStorage from '../services/Storage';
-import { Dimensions, ScrollView } from 'react-native'
+import { Dimensions, ScrollView } from 'react-native';
+import { Header, Icon, ThemeProvider } from 'react-native-elements';
+import { MenuBurger } from '../components/Header';
 import { styles } from '../services/styles';
 const screenWidth = Dimensions.get('window').width
 import {
@@ -19,11 +21,12 @@ class Dashboard extends React.Component {
         header: ({ goBack, navigate }) => {
         style = { backgroundColor: 'rgb(200, 200, 200)' };
         left = (
-            <TouchableOpacity onPress={() => navigate('DrawerOpen')}>
+            <View onPress={() => navigate('DrawerOpen')}>
             <Text>
                 Open
             </Text>
-            </TouchableOpacity>
+            </View>
+            
         )
 
         return { style, left }
@@ -32,10 +35,15 @@ class Dashboard extends React.Component {
     render() {
         
         return (
-            <View style={styles.container}>
+            <ThemeProvider>
+            <Header
+                leftComponent={<MenuBurger {...this.props}/>}
+                centerComponent={{ text: 'Dashboard', style: { color: '#fff' }  }}
+                />
+                <View style={styles.container}>
+                
                 <ScrollView>
                     <View>
-                        <Text style={styles.titleText}>Dashboard</Text>
                         <View style={{flex: 1, flexDirection: 'row', marginVertical: 5}}>
                             <View style={{
                                     width: Dimensions.get('window').width / 2, 
@@ -126,7 +134,8 @@ class Dashboard extends React.Component {
                         </Text>
                     </View>
                 </ScrollView>
-            </View>
+                </View>
+            </ThemeProvider>
         )
     }
 }

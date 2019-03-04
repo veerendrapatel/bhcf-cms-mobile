@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Text, View, ScrollView, ListView, Image } from 'react-native';
+import { Text, View, ScrollView, ListView, Image, Dimensions } from 'react-native';
 import { getCurrentUser } from '../../services/auth';
 import {styles} from '../../services/styles';
+import { MenuBurger } from '../../components/Header';
 import { Icon, ThemeProvider, Header, ListItem, SearchBar } from 'react-native-elements';
 
 const Row = (props) => (
@@ -43,7 +44,16 @@ class People extends React.Component {
     }
 
     handleScroll(e) {
-        alert(e.nativeEvent.contentOffset.y);
+        var windowHeight = Dimensions.get('window').height,
+                height = e.nativeEvent.contentSize.height,
+                offset = e.nativeEvent.contentOffset.y;
+        if( windowHeight + offset >= height ){
+            this.setState((prevState, props) => ({
+                offset: prevState.offset + prevState.limit
+            }), () => this.fetchPeople());
+            console.log('End Scroll ' + this.state.offset);
+        }
+        
     }
 
     async fetchPeople() {
@@ -82,8 +92,12 @@ class People extends React.Component {
         return (
             <ThemeProvider>
                <Header
-                leftComponent={{ icon: 'menu', color: '#fff' }}
-                centerComponent={{ text: 'People', color: '#fff' }}
+                leftComponent={<MenuBurger {...this.props}/>}
+                rightComponent={<Icon 
+                            color="#FFF"
+                            name='ios-add'
+                            type='ionicon' onPress={() => this.props.navigation.navigate('PeopleCreateEdit')}/>}
+                centerComponent={{ text: 'People', style: { color: '#fff' }  }}
                 />
                 <SearchBar
                     round={true}
@@ -92,19 +106,11 @@ class People extends React.Component {
                     onChangeText={this.updateSearch} 
                     value={keywords}
                 />
-                <View style={{
-                        position: 'absolute',
-                        bottom: 10,
-                        right:10,
-                        zIndex: 999
-                    }}>
-                        <Icon 
-                            raised
-                            name='plus'
-                            type='font-awesome' onPress={() => this.props.navigation.navigate('PeopleCreateEdit')}/>
-                    </View>
                 <ScrollView style={{ width: '100%' }} 
                 onScroll={this.handleScroll} 
+                horizontal={false}
+          pagingEnabled={true} // animates ScrollView to nearest multiple of it's own width
+          showsHorizontalScrollIndicator={true}
                 >
                     {
                         this.state.people &&

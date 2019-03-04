@@ -51,10 +51,7 @@ export const SignedOut = createStackNavigator({
 export const SignedIn = createStackNavigator(
     {
         DrawerNavigator: {
-            screen: DrawerNavigator,
-            navigationOptions: ({ navigation }) => ({
-                title: 'Welcome',  // Title to appear in status bar
-            })
+            screen: DrawerNavigator
         }
         
     }
