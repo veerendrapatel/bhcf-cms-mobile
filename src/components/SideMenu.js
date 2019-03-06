@@ -6,13 +6,32 @@ import { View, Text, ScrollView, Image } from 'react-native';
 import { onSignOut } from '../services/auth';
 import { styles } from '../services/styles';
 import { Icon, Avatar } from 'react-native-elements';
+import { getCurrentUser } from '../services/auth';
 
 class SideMenu extends Component {
+    constructor(props) {
+      super(props);
+      this.state = {
+          currentUser: {},
+          userLoaded: false,
+        }
+
+    }
     navigateToScreen = (route) => () => {
         const navigateAction = NavigationActions.navigate({
-        routeName: route
+          routeName: route
         });
+        
         this.props.navigation.dispatch(navigateAction);
+    }
+
+    componentDidMount() {
+      getCurrentUser().then(res => {
+            this.setState({
+              currentUser: JSON.parse(res),
+              userLoaded: true,
+            });
+      });
     }
     
 
@@ -22,6 +41,7 @@ class SideMenu extends Component {
             <View style={styles.sideMenuContainer}>
                 <ScrollView>
                 <View>
+                  {this.state.userLoaded &&
                   <View  style={{ 
                       display: 'flex', 
                       flexDirection: 'column',
@@ -35,8 +55,9 @@ class SideMenu extends Component {
                       }}
                       size="large"
                     />
-                    <Text>Sergio Casquejo III</Text>
+                    <Text>{ this.state.currentUser.full_name }</Text>
                   </View>
+                  }
                     <View style={styles.navSection}>
                         <View style={styles.navItem}>
                           <Icon

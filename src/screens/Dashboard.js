@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, TextInput, Button, Alert } from 'react-native';
-import _asyncStorage from '../services/Storage';
 import { Dimensions, ScrollView } from 'react-native';
 import { Header, Icon, ThemeProvider } from 'react-native-elements';
 import { MenuBurger } from '../components/Header';

@@ -1,15 +1,11 @@
 import React, { Component } from 'react';
 import { Text, View, Image, Alert } from 'react-native';
-import { Button } from 'react-native-material-ui';
-import TextInput from 'react-native-textinput-with-icons';
+import { ThemeProvider, Button, Avatar, Icon, Input } from 'react-native-elements';
 import { signIn, onSignIn } from '../services/auth';
-import _asyncStorage from '../services/Storage';
+import _asyncStorage from '../services/services';
 import { styles } from '../services/styles';
 
 class Login extends React.Component {
-    // static navigationOptions = {
-    //     header: null ,
-    // };
     
     constructor(props) {
         super(props);
@@ -26,7 +22,7 @@ class Login extends React.Component {
         
     }
 
-    async onPressLogin() {
+    onPressLogin() {
         const { navigate } = this.props.navigation;
         const { username, password } = this.state;
         this.setState({ btnPress: true });
@@ -35,12 +31,18 @@ class Login extends React.Component {
         } else if (password === '') {
             Alert.alert('Please enter password');
         } else {
-            let response = await signIn(username, password);
-            if (response.success) {
-                onSignIn(response.data).then(() =>  navigate('Home'));
-            } else {
-                Alert.alert(response.data);
-            }
+            
+            signIn(username, password, (response => {
+                console.log(response);
+                if (response.success) {
+                    onSignIn(response.data).then(() =>  navigate('Home'));
+                } else if(response.data) {
+                    Alert.alert(response.data);
+                } else {
+                    Alert.alert(response.message);
+                }
+            }));
+            
         }
         let _this = this;
         setTimeout(() => {_this.setState({ btnPress: false }), 1000});
@@ -50,39 +52,51 @@ class Login extends React.Component {
 
     render() {
         return ( 
+            <ThemeProvider>
             <View style={styles.container}>
                 <View style={styles.logoContainer}>
-                    <Image source={require('../../assets/logo.png')} style={{width: 200, height: 200, marginBottom: 30}}/>
-                </View>
-                <View >
-                    <TextInput
-                        label="Username"
-                        leftIcon="person"
-                        leftIconType="oct"
-                        rippleColor="blue" 
-                        autoCapitalize = 'none'
-                        onChangeText={(username) => this.setState({ username: username })}
+                    <Avatar 
+                    rounded 
+                    source={require('../../assets/logo.png')} 
+                    size="xlarge" 
                     />
                 </View>
-                <View >
-                    <TextInput
-                        label="Password" 
-                        secureTextEntry
-                        leftIcon="lock"
-                        leftIconType="oct"
-                        rippleColor="blue" 
-                        onChangeText={(password) => this.setState({ password: password })}
-                    />
-                </View>
-                <View style={styles.buttonContainer}>
-                    <Button 
-                        raised 
-                        primary 
-                        text={ !this.state.btnPress ? 'Login' : 'Loading...' }
-                        onPress={this.onPressLogin} 
+                 <Input
+                    placeholder='Username'
+                    leftIcon={
+                        <Icon
+                        name='ios-contact'
+                        type='ionicon'
+                        size={24}
+                        color='black'
                         />
-                </View>
+                    }
+
+                    autoCapitalize = 'none'
+                    onChangeText={(username) => this.setState({ username: username })}
+                    />
+                     <Input
+                    placeholder='Password'
+                    secureTextEntry
+                    leftIcon={
+                        <Icon
+                        name='ios-lock'
+                        type='ionicon'
+                        size={24}
+                        color='black'
+                        />
+                    }
+
+                    autoCapitalize = 'none'
+                    onChangeText={(password) => this.setState({ password: password })}
+                    />
+                    <Button
+                    title="Login"
+                    loading={ this.state.btnPress ? true : false }
+                    onPress={this.onPressLogin} 
+                    />
             </View>
+            </ThemeProvider>
         );
     }
 }

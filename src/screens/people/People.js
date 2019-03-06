@@ -1,96 +1,128 @@
 import React, { Component } from 'react';
-import { Text, View, ScrollView, ListView, Image, Dimensions } from 'react-native';
+import { Text, View, ScrollView, Dimensions, ListView, ActivityIndicator } from 'react-native';
 import { getCurrentUser } from '../../services/auth';
 import {styles} from '../../services/styles';
 import { MenuBurger } from '../../components/Header';
-import { Icon, ThemeProvider, Header, ListItem, SearchBar } from 'react-native-elements';
+import { Icon, ThemeProvider, Header, ListItem, SearchBar, Button, Avatar } from 'react-native-elements';
+import { AJAX } from '../../services/services';
 
-const Row = (props) => (
-  <View style={{
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderBottomColor: '#f1f1f1',
-        borderBottomWidth: 1
-    }}>
-    <View>
-        <Text>{`${props.birthdate}`}</Text>    
-        <Text>Leadership Level: {`${props.leadership_level.name}`}</Text>
-        <Text>Auxilary Group: {`${props.auxiliary_group.name}`}</Text>
-    </View>
-  </View>
-);
-
-
+const limit = 12;
 class People extends React.Component {
-    static navigationOptions = {
-        Title: 'People'
-    }
-
+    _isMounted = false;
     constructor(props) {
         super(props);
         this.state = {
-            people: null,
+            currentUser: null,
+            dataSource: null,
+            isLoadingMore: false,
+            isLoading: true,
+            _data: null,
             keywords: '',
-            limit: 12,
-            offset: 0
-        }
-
-        this.updateSearch = this.updateSearch.bind(this);
-        this.handleScroll = this.handleScroll.bind(this);
-    }
-    componentDidMount() {
-        this.fetchPeople();
-    }
-
-    handleScroll(e) {
-        var windowHeight = Dimensions.get('window').height,
-                height = e.nativeEvent.contentSize.height,
-                offset = e.nativeEvent.contentOffset.y;
-        if( windowHeight + offset >= height ){
-            this.setState((prevState, props) => ({
-                offset: prevState.offset + prevState.limit
-            }), () => this.fetchPeople());
-            console.log('End Scroll ' + this.state.offset);
-        }
-        
-    }
-
-    async fetchPeople() {
-        getCurrentUser().then(res => {
-            const _res = JSON.parse(res);
-            const URI = 'http://127.0.0.1:8000/api/v1/';
-            const { keywords, limit, offset } = this.state;
-
-            fetch(`${URI}members/${_res.id}/people?offset=${offset}&limit=${limit}&keywords=${keywords}&sort=id&order=desc`, {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                        Authorization: `Bearer ${_res.api_token}`,  
-                }
-            })
-            .then(res => res.json())
-            .then(responseJSON => {
-                console.log(responseJSON);
-                // const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-                // this.setState({ people: ds.cloneWithRows(responseJSON.people) });
-                this.setState({ people: responseJSON.people });
-            });
+            offset: 0,
+            endOfRow: false
             
-        })
+        }
+
+        this.search = this.search.bind(this);
+    }
+
+    fetch = (callback) => {
+        const { offset, keywords } = this.state;
+        const currentUser = this.state.currentUser;
+        console.log(`members/${currentUser.id}/people?offset=${offset}&limit=${limit}&keywords=${keywords}&sort=id&order=desc`);
+
+        AJAX(
+            `members/${currentUser.id}/people?offset=${offset}&limit=${limit}&keywords=${keywords}&sort=id&order=desc`,
+            'GET',
+            null,
+            callback,
+            {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':  `Bearer ${currentUser.api_token}`
+            }
+        );
         
     }
 
-    updateSearch(search) {
-        this.setState({ keywords: search });
-        this.fetchPeople();
+    fetchMore = () => {
+         if (!this.state.endOfRow) {
+            this.fetch(responseJSON => {
+                if (this._isMounted) {
+                    const data = this.state._data.concat(responseJSON.people);
+                    // console.log(responseJSON);
+                    this.setState((prevState, props) => ({
+                        dataSource: this.state.dataSource.cloneWithRows(data),
+                        isLoadingMore: false,
+                        _data: data,
+                        offset: prevState.offset + 1,
+                        endOfRow: responseJSON || responseJSON.people.length == 0,
+                    }));
+                }
+                
+            })
+        } else {
+            this.setState({
+                isLoadingMore: false
+            });
+        }
     }
+
+    
+    componentDidMount = () => {
+        this._isMounted = true;
+        getCurrentUser().then(res => {
+            this.setState({'currentUser': JSON.parse(res) });
+            this.fetch(responseJSON => {
+                if (this._isMounted) {
+                    let ds = new ListView.DataSource({
+                        rowHasChanged: (r1, r2) => r1 !== r2,
+                    });
+                    const data = responseJSON.people;
+                    this.setState((prevState, props) => ({
+                        dataSource: ds.cloneWithRows(data),
+                        isLoading: false,
+                        _data: data,
+                        offset: prevState.offset + 1,
+                        // endOfRow: responseJSON.people.length === 0
+                    }))
+                }
+            });
+        });
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
+    }
+
+
+
+    search = (search) => {
+        // this.setState({ keywords: search, isLoadingMore: true });
+
+        //passing the inserted text in textinput
+        const newData = this.state._data.filter(function(item) {
+            //applying filter for the inserted text in search bar
+            const itemData = item.full_name ? item.full_name.toUpperCase() : ''.toUpperCase();
+            const textData = search.toUpperCase();
+            return itemData.indexOf(textData) > -1;
+        });
+
+        
+        this.setState({
+            //setting the filtered newData on datasource
+            //After setting the data it will automatically re-render the view
+            dataSource: this.state.dataSource.cloneWithRows(newData),
+            keywords: search,
+        });
+    }
+
+
 
     render() {
         const { keywords } = this.state;
         return (
-            <ThemeProvider>
+            <ThemeProvider style={styles.container}>
                <Header
                 leftComponent={<MenuBurger {...this.props}/>}
                 rightComponent={<Icon 
@@ -103,28 +135,55 @@ class People extends React.Component {
                     round={true}
                     platform="ios"
                     placeholder="Type Here..."
-                    onChangeText={this.updateSearch} 
+                    onChangeText={this.search} 
                     value={keywords}
                 />
-                <ScrollView style={{ width: '100%' }} 
-                onScroll={this.handleScroll} 
-                horizontal={false}
-          pagingEnabled={true} // animates ScrollView to nearest multiple of it's own width
-          showsHorizontalScrollIndicator={true}
+               {!this.state.isLoading && this.state.currentUser ? (
+                <ListView
+                    dataSource={this.state.dataSource}
+                    renderRow={item => {
+                        if (item) {
+                            return (
+                                <View style={{
+                                        flex: 1,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        borderBottomColor: '#f1f1f1',
+                                        borderBottomWidth: 1
+                                    }}>
+                                    <Avatar title={item.first_name.charAt(0)} size="large"/>
+                                    <View>
+                                        <Text>{item.birthdate}</Text>    
+                                        <Text>{item.full_name}</Text>
+                                        <Text>Leadership Level: {item.leadership_level.name}</Text>
+                                        <Text>Auxilary Group: {item.auxiliary_group.name}</Text>
+                                    </View>
+                                </View>
+                            )
+                        } else {
+                            return <Text>End</Text>
+                        }
+                    }} 
+                    onEndReached={() => {
+                        this.setState({ isLoadingMore: true }, () => this.fetchMore())
+                    }}
+                    renderFooter={() => {
+                        return (
+                            this.state.isLoadingMore && 
+                            <View style={{ flex: 1, padding: 10 }}>
+                                <ActivityIndicator size="small" />
+                            </View>
+                        )
+                    }}
                 >
-                    {
-                        this.state.people &&
-                        this.state.people.map((l, i) => (
-                        <ListItem
-                            key={i}
-                            leftAvatar={{ source: { uri: 'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg' } }}
-                            title={l.full_name}
-                            subtitle={<Row {...l}></Row>} 
-                            rightIcon={<Icon name="ios-more" type="ionicon"/>}
-                        />
-                        ))
-                    }
-                </ScrollView>
+
+                </ListView>
+               ): (
+                   <View style={styles.container}>
+                       <ActivityIndicator size="large" />
+                   </View>
+               )
+               }
                 
             </ThemeProvider>
         )

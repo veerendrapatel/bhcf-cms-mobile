@@ -1,6 +1,5 @@
 import { AsyncStorage } from 'react-native'
-
-const URI = 'http://127.0.0.1:8000/api/v1/';
+import { AJAX } from './services';
 
 export const CURRENT_USER_KEY = 'current-user';
 
@@ -37,22 +36,14 @@ export const getCurrentUser = () => {
 }
 
 
-export const signIn = async(username, password) => {
-        let response = await fetch(`${URI}login`, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    'username': username,
-                    'password': password
-                })
-            }).then(res => res.json())
-            .then(responseJSON => {
-                return responseJSON
-            });
-        console.log(response.success);
-
-        return response;
+export const signIn = (username, password, callback) => {
+    return AJAX(
+            'login', 
+            'POST', 
+            {
+                'username': username,
+                'password': password   
+            },
+            callback
+        );
     }
