@@ -1,12 +1,20 @@
 import React, {Component} from 'react';
-import { View, ScrollView, Text, Alert } from 'react-native';
-import { ThemeProvider, Button, Avatar, Header, Icon, Input, CheckBox,  FormLabel, FormInput, FormValidationMessage  } from 'react-native-elements';
+import { View, ScrollView, Text, Alert, TouchableOpacity } from 'react-native';
+import { ThemeProvider, Button, Avatar, Header, Icon, Input, CheckBox  } from 'react-native-elements';
 import DatePicker from 'react-native-datepicker'
 import {styles} from '../../services/styles';
 import { AJAX } from '../../services/services';
 import { getCurrentUser } from '../../services/auth';
 
 class PeopleCreateEdit extends Component {
+    static navigationOptions = ({ navigation }) => {
+        return {
+        headerTitle: 'Create',
+        headerRight: navigation.state.params && navigation.state.params.headerRight
+        };
+    };
+
+
     _isMounted = false;
     constructor(props) {
         super(props);
@@ -51,6 +59,9 @@ class PeopleCreateEdit extends Component {
     }
 
     componentDidMount() {
+        this.props.navigation.setParams({
+                headerRight: (<TouchableOpacity style={{ padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center' }} onPress={this.save}><Text>Save</Text></TouchableOpacity>)
+        })
         this._isMounted = true;
          getCurrentUser().then(_currentUser => {
             const currentUser = JSON.parse(_currentUser);
@@ -208,13 +219,9 @@ class PeopleCreateEdit extends Component {
 
     render() {
         const {avatar, full_name} = this.state;
+        const {goBack} = this.props.navigation;
         return (
             <ThemeProvider>
-            <Header
-            leftComponent={<Icon name="ios-arrow-back" type="ionicon" color="#FFF" onPress={() => this.props.navigation.navigate('People') }/>}
-            centerComponent={{ text: 'People', style: { color: '#fff' } }}
-            rightComponent={<View><Icon name="ios-save" type="ionicon" color="#FFF" onPress={ this.save }/><Text>Save</Text></View>}
-            />
             <View style={styles.container}>
                     <ScrollView style={{ width: '100%' }}>
                     <Avatar rounded size="xlarge" source={{ 
@@ -236,7 +243,7 @@ class PeopleCreateEdit extends Component {
                         <Input 
                             placeholder='Last Name'
                             defaultValue={this.state.last_name}
-                            onChangeText={(text) => this.setState({ first_name: text })}
+                            onChangeText={(text) => this.setState({ last_name: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -249,7 +256,7 @@ class PeopleCreateEdit extends Component {
                         <Input 
                             placeholder='Middle Name'
                             defaultValue={this.state.middle_name}
-                            onChangeText={(text) => this.setState({ first_name: text })}
+                            onChangeText={(text) => this.setState({ middle_name: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -262,7 +269,7 @@ class PeopleCreateEdit extends Component {
                         <Input 
                             placeholder='Nick Name'
                             defaultValue={this.state.nick_name}
-                            onChangeText={(text) => this.setState({ first_name: text })}
+                            onChangeText={(text) => this.setState({ nick_name: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -300,7 +307,7 @@ class PeopleCreateEdit extends Component {
                         <Input 
                             placeholder='Birth Date'
                             defaultValue={this.state.birthdate}
-                            onChangeText={(text) => this.setState({ first_name: text })}
+                            onChangeText={(text) => this.setState({ birthdate: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -313,7 +320,7 @@ class PeopleCreateEdit extends Component {
                         <Input 
                             placeholder='City'
                             defaultValue={this.state.city}
-                            onChangeText={(text) => this.setState({ first_name: text })}
+                            onChangeText={(text) => this.setState({ city: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -327,7 +334,7 @@ class PeopleCreateEdit extends Component {
                             multiline={true}
                             placeholder='Address'
                             defaultValue={this.state.address}
-                            onChangeText={(text) => this.setState({ first_name: text })}
+                            onChangeText={(text) => this.setState({ address: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -340,7 +347,7 @@ class PeopleCreateEdit extends Component {
                         <Input 
                             placeholder='Contact No'
                             defaultValue={this.state.contact_no}
-                            onChangeText={(text) => this.setState({ first_name: text })}
+                            onChangeText={(text) => this.setState({ contact_no: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-call'
@@ -353,7 +360,7 @@ class PeopleCreateEdit extends Component {
                         <Input 
                             placeholder='Secondary Contact No'
                             defaultValue={this.state.secondary_contact_no}
-                            onChangeText={(text) => this.setState({ first_name: text })}
+                            onChangeText={(text) => this.setState({ secondary_contact_no: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-phone-portrait'
@@ -366,7 +373,7 @@ class PeopleCreateEdit extends Component {
                         <Input 
                             placeholder='Facebook Name'
                             defaultValue={this.state.facebook_name}
-                            onChangeText={(text) => this.setState({ first_name: text })}
+                            onChangeText={(text) => this.setState({ facebook_name: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -379,7 +386,7 @@ class PeopleCreateEdit extends Component {
                         <Input 
                             placeholder='Remarks' 
                             defaultValue={this.state.remarks}
-                            onChangeText={(text) => this.setState({ first_name: text })}
+                            onChangeText={(text) => this.setState({ remarks: text })}
                             multiline={true}
                             leftIcon={
                                 <Icon

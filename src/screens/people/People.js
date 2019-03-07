@@ -9,6 +9,18 @@ import Moment from 'moment';
 
 const PAGE_SIZE = 12;
 class People extends React.Component {
+    static navigationOptions = ({ navigation }) => {
+        return {
+        headerTitle: 'People',
+        headerRight: (
+            <View style={{flex: 1, flexDirection: 'row', padding: 10 }}>
+                <Icon name="add" onPress={() => navigation.navigate('PeopleCreateEdit')} />
+                <Icon name="menu" iconStyle={{ marginLeft: 10 }} onPress={() => navigation.openDrawer()} />
+            </View>
+        ),
+        };
+    };
+
     _isMounted = false;
     arrayholder = [];
     constructor(props) {
@@ -24,7 +36,11 @@ class People extends React.Component {
             searching: false,
             
         }
-
+        this.props.navigation.addListener('willFocus', () => {
+            console.log('hello world asdfsdf');
+            this.arrayholder = [];
+            this.setState({ offset: 0, people: null, keywords: '', endOfRow: false, search: false }, () => this.initFetch())
+        })
         this.search = this.search.bind(this);
     }
 
@@ -54,7 +70,7 @@ class People extends React.Component {
                 
                     this.setState({
                         people: data,
-                        // isLoading: false,
+                        isLoading: false,
                         isFetching: false,
                         endOfRow: res && res.people.length == 0,
                     });
@@ -82,7 +98,12 @@ class People extends React.Component {
     
     componentDidMount = () => {
         this._isMounted = true;
-        getCurrentUser().then(res => {
+       
+        this.initFetch();
+    }
+
+    initFetch = () => {
+         getCurrentUser().then(res => {
             this.setState({'currentUser': JSON.parse(res) }, () => this.fetchPeople());
         });
     }
@@ -101,7 +122,7 @@ class People extends React.Component {
         // });    
         // this.setState({ keywords: keyword, people: newData, searching: true });
 
-        this.setState({ keywords: keyword, offset: 0, endOfRow: false, isFetching: true, searching: true }, () => {
+        this.setState({ keywords: keyword, offset: 0, endOfRow: false, isFetching: true, searching: true, isLoading: true }, () => {
             if (keyword.length > 2) { 
                 this.arrayholder = [];
                 this.fetchPeople()
@@ -120,24 +141,15 @@ class People extends React.Component {
 
 
     render() {
-        const { keywords, isFetching, currentUser, people } = this.state;
+        const { keywords, isFetching, currentUser, people, isLoading } = this.state;
         return (
             <ThemeProvider style={styles.container}>
-               <Header
-                leftComponent={<MenuBurger {...this.props}/>}
-                rightComponent={
-                    <Icon 
-                            color="#FFF"
-                            name='ios-add'
-                            type='ionicon' 
-                            onPress={() => this.props.navigation.navigate('PeopleCreateEdit')}/>}
-                centerComponent={{ text: 'People', style: { color: '#fff' }  }}
-                />
                 
-               { currentUser ? (
+               { !isLoading && currentUser ? (
                 <FlatList
+                    extraData={this.props}
                     keyExtractor={(item, index) => index.toString()}
-                    onRefresh={this.handleRefresh}
+                    // onRefresh={this.handleRefresh}
                     // refreshing={isFetching}
                     // enableEmptySections={true}
                     data={people}

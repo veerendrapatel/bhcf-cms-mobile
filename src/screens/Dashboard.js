@@ -15,30 +15,21 @@ import {
 
 
 class Dashboard extends React.Component {
-    static navigationOptions = {
-        title: 'Main',
-        header: ({ goBack, navigate }) => {
-        style = { backgroundColor: 'rgb(200, 200, 200)' };
-        left = (
-            <View onPress={() => navigate('DrawerOpen')}>
-            <Text>
-                Open
-            </Text>
+    static navigationOptions = ({ navigation }) => {
+        return {
+        headerTitle: 'Dashboard',
+        headerRight: (
+            <View style={{flex: 1, flexDirection: 'row', padding: 10 }}>
+                <Icon name="menu" type="ios-menu" onPress={() => navigation.openDrawer()} />
             </View>
-            
-        )
-
-        return { style, left }
-        }
+        ),
+        };
     };
+
     render() {
         
         return (
             <ThemeProvider>
-            <Header
-                leftComponent={<MenuBurger {...this.props}/>}
-                centerComponent={{ text: 'Dashboard', style: { color: '#fff' }  }}
-                />
                 <View style={styles.container}>
                 
                 <ScrollView>
