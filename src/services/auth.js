@@ -36,14 +36,13 @@ export const getCurrentUser = () => {
 }
 
 
-export const signIn = (username, password, callback) => {
+export const signIn = (username, password) => {
     return AJAX(
             'login', 
             'POST', 
             {
                 'username': username,
                 'password': password   
-            },
-            callback
+            }
         );
     }

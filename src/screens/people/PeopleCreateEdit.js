@@ -1,39 +1,43 @@
 import React, {Component} from 'react';
-import { View, ScrollView, Text } from 'react-native';
-import { ThemeProvider, Button, Avatar, Header, Icon, Input, CheckBox } from 'react-native-elements';
+import { View, ScrollView, Text, Alert } from 'react-native';
+import { ThemeProvider, Button, Avatar, Header, Icon, Input, CheckBox,  FormLabel, FormInput, FormValidationMessage  } from 'react-native-elements';
 import DatePicker from 'react-native-datepicker'
 import {styles} from '../../services/styles';
 import { AJAX } from '../../services/services';
+import { getCurrentUser } from '../../services/auth';
 
 class PeopleCreateEdit extends Component {
+    _isMounted = false;
     constructor(props) {
         super(props);
         this.state = {
+            currentUser: null,
             id: '',
-            email: '',
-            first_name: '',
-            last_name: '',
-            middle_name: '',
-            nick_name: '',
+            email: 'serg.casquejo1@gmail.com',
+            first_name: 'John',
+            last_name: 'Doe',
+            middle_name: 'Smith',
+            nick_name: 'Smith',
             birthdate: '2016-08-01',
-            address: '',
-            city: '',
-            contact_no: '',
-            secondary_contact_no: '',
-            facebook_name: '',
-            school_status_id: 0,
-            leadership_level_id: 0,
-            auxiliary_group_id: 0,
-            status_id: 0,
-            category_id: 0,
-            remarks: '',
+            address: 'Colo, Camolinas, Poblacion, Cordova, Cebu',
+            city: 'Cebu',
+            contact_no: '09219945112',
+            secondary_contact_no: '505-323-232',
+            facebook_name: 'serg.casquejo',
+            school_status_id: 1,
+            leadership_level_id: 2,
+            auxiliary_group_id: 3,
+            status_id: 1,
+            category_id: 2,
+            gender: 'male',
+            remarks: 'Lorem ipsum dolor sit amit',
             school_statuses: [],
             leadership_levels: [],
             auxiliary_groups: [],
             statuses: [],
             categories: [],
             ministries: [],
-            my_ministries: [],
+            my_ministries: [1, 2],
             ministry_ids: '',
             avatar: null,
             new_avatar: '',
@@ -47,46 +51,163 @@ class PeopleCreateEdit extends Component {
     }
 
     componentDidMount() {
-        // this._isMounted = true;
-        // if (this.props.match.params.id) {
-        //     const memberID = this.props.match.params.id;
-        //     api.get(`members/${memberID}`).then(res => {
-        //         if (this._isMounted) {
-        //             const response = res.data;
-        //             if (response) {
-        //                 const newState = Object.assign(this.state, response.data);
-        //                 newState.loading = false;
-        //                 this.setState(newState);
-        //             }
-        //         }
-        //     });
-        // }
+        this._isMounted = true;
+         getCurrentUser().then(_currentUser => {
+            const currentUser = JSON.parse(_currentUser);
+            this.setState({'currentUser':  currentUser}, () => {
+                AJAX(
+                    `members/dropdown-options`, 
+                    'GET',
+                    null, 
+                    {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization':  `Bearer ${currentUser.api_token}`
+                    }
+                    ).then(res => {
+                    console.log(res);
+                    this.setState({
+                        auxiliary_groups: res.auxiliary_groups,
+                        categories: res.categories,
+                        ministries: res.ministries,
+                        statuses: res.statuses,
+                        school_statuses: res.school_statuses,
+                        leadership_levels: res.leadership_levels
+                    });
 
+                }, err => {
+                    Alert.alert(err.message);
+                });
+
+
+
+                 if (this.props.navigation.state.params != undefined) {
+                    const id = this.props.navigation.state.params.id;
+                    console.log('hello' + id);
+
+                    AJAX(
+                        `members/${id}`, 
+                        'GET',
+                        null, 
+                        {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization':  `Bearer ${currentUser.api_token}`
+                        }
+                        ).then(res => {
+                        this.setState(Object.assign(this.state, res.data));
+
+                    }, err => {
+                        Alert.alert(err.message);
+                    });
+                }
+            });
         
-        
+            
+        });
+   
+       
     
-        this.fetchDropdownOptions();
     }
 
-    async fetchDropdownOptions() {
-        const res = AJAX(`members/dropdown-options`, 'GET');
-        
-        response = res.data;
-        this.setState({
-            auxiliary_groups: response.auxiliary_groups,
-            categories: response.categories,
-            ministries: response.ministries,
-            statuses: response.statuses,
-            school_statuses: response.school_statuses,
-            leadership_levels: response.leadership_levels
-        });
+    componentWillUnmount() {
+        this._isMounted = false;
+         
+    }
+
+    onPressCheckbox(name, value) {
+        let arr = this.state[name];
+        const index = this.state[name].indexOf(value);
+        if (index !== -1) {
+            arr.splice(index, 1);
+        } else {
+            arr.push(value);
+        }
+
+        this.setState({ [name]:  arr});
     }
 
     save() {
 
+        const {
+            id,
+            currentUser,
+            email,
+            first_name,
+            last_name,
+            middle_name,
+            nick_name,
+            birthdate,
+            address,
+            city,
+            gender,
+            contact_no,
+            secondary_contact_no,
+            facebook_name,
+            school_status_id,
+            leadership_level_id,
+            auxiliary_group_id,
+            status,
+            category_id,
+            remarks,
+            my_ministries,
+            ministry_ids,
+            avatar,
+            new_avatar,
+            isFormSubmit,
+            isEdit,
+        } = this.state;
+
+        const method = id > 0 ? 'PUT' : 'POST';
+        const route = id > 0 ? `members/${id}` : `members`;
+
+        console.log(route);
+
+        AJAX(route, method, {
+            email: email,
+            first_name: first_name,
+            last_name: last_name,
+            middle_name: middle_name,
+            nick_name: nick_name,
+            birthdate: birthdate,
+            gender: gender,
+            address: address,
+            city: city,
+            contact_no: contact_no,
+            secondary_contact_no: secondary_contact_no,
+            facebook_name: facebook_name,
+            school_status_id: school_status_id,
+            leadership_level_id: leadership_level_id,
+            auxiliary_group_id: auxiliary_group_id,
+            status: status,
+            category_id: category_id,
+            remarks: remarks,
+            my_ministries: my_ministries,
+            ministry_ids: ministry_ids,
+            new_avatar: new_avatar,
+        }, 
+        {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization':  `Bearer ${currentUser.api_token}`
+        }
+        ).then(res => {
+            console.group(res);
+            if (res.ok) {
+                if (res.data) {
+                    this.setState(Object.assign(this.state, res.data));
+                }
+                Alert.alert('Success', 'Successfully Saved!');
+                
+                // this.props.navigation.navigate('PeopleCreateEdit', {id: res.data.id});
+            }
+        }, err => {
+            Alert.alert('Error', err.message);
+        })
     }
 
     render() {
+        const {avatar, full_name} = this.state;
         return (
             <ThemeProvider>
             <Header
@@ -96,9 +217,13 @@ class PeopleCreateEdit extends Component {
             />
             <View style={styles.container}>
                     <ScrollView style={{ width: '100%' }}>
-                    <Avatar rounded size="xlarge" source={{ uri: 'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg' }} showEditButton />
+                    <Avatar rounded size="xlarge" source={{ 
+                                    source: avatar && avatar.thumbnail ?  {uri: avatar.thumbnail} : require('../../../assets/default.png'), title: full_name }} showEditButton />
+
                         <Input 
                             placeholder='First Name'
+                            defaultValue={this.state.first_name}
+                            onChangeText={(text) => this.setState({ first_name: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person' 
@@ -110,6 +235,8 @@ class PeopleCreateEdit extends Component {
                         />
                         <Input 
                             placeholder='Last Name'
+                            defaultValue={this.state.last_name}
+                            onChangeText={(text) => this.setState({ first_name: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -121,6 +248,8 @@ class PeopleCreateEdit extends Component {
                         />
                         <Input 
                             placeholder='Middle Name'
+                            defaultValue={this.state.middle_name}
+                            onChangeText={(text) => this.setState({ first_name: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -132,6 +261,8 @@ class PeopleCreateEdit extends Component {
                         />
                         <Input 
                             placeholder='Nick Name'
+                            defaultValue={this.state.nick_name}
+                            onChangeText={(text) => this.setState({ first_name: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -144,6 +275,7 @@ class PeopleCreateEdit extends Component {
                         <DatePicker
                             style={{width: 200}}
                             date={this.state.birthdate}
+                            
                             mode="date"
                             placeholder="select date"
                             format="YYYY-MM-DD"
@@ -167,6 +299,8 @@ class PeopleCreateEdit extends Component {
                         />
                         <Input 
                             placeholder='Birth Date'
+                            defaultValue={this.state.birthdate}
+                            onChangeText={(text) => this.setState({ first_name: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -178,6 +312,8 @@ class PeopleCreateEdit extends Component {
                         />
                         <Input 
                             placeholder='City'
+                            defaultValue={this.state.city}
+                            onChangeText={(text) => this.setState({ first_name: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -190,6 +326,8 @@ class PeopleCreateEdit extends Component {
                         <Input 
                             multiline={true}
                             placeholder='Address'
+                            defaultValue={this.state.address}
+                            onChangeText={(text) => this.setState({ first_name: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -201,9 +339,11 @@ class PeopleCreateEdit extends Component {
                         />
                         <Input 
                             placeholder='Contact No'
+                            defaultValue={this.state.contact_no}
+                            onChangeText={(text) => this.setState({ first_name: text })}
                             leftIcon={
                                 <Icon
-                                name='ios-phone'
+                                name='ios-call'
                                 type='ionicon'
                                 size={24}
                                 color='black'
@@ -212,9 +352,11 @@ class PeopleCreateEdit extends Component {
                         />
                         <Input 
                             placeholder='Secondary Contact No'
+                            defaultValue={this.state.secondary_contact_no}
+                            onChangeText={(text) => this.setState({ first_name: text })}
                             leftIcon={
                                 <Icon
-                                name='ios-phone'
+                                name='ios-phone-portrait'
                                 type='ionicon'
                                 size={24}
                                 color='black'
@@ -223,6 +365,8 @@ class PeopleCreateEdit extends Component {
                         />
                         <Input 
                             placeholder='Facebook Name'
+                            defaultValue={this.state.facebook_name}
+                            onChangeText={(text) => this.setState({ first_name: text })}
                             leftIcon={
                                 <Icon
                                 name='ios-person'
@@ -234,6 +378,8 @@ class PeopleCreateEdit extends Component {
                         />
                         <Input 
                             placeholder='Remarks' 
+                            defaultValue={this.state.remarks}
+                            onChangeText={(text) => this.setState({ first_name: text })}
                             multiline={true}
                             leftIcon={
                                 <Icon
@@ -246,30 +392,34 @@ class PeopleCreateEdit extends Component {
                         />
                         <View>
                             <Text>Gender</Text>
+                            <View style={{ flex: 1, flexDirection: 'row' }}>
                             <CheckBox
                                 title='Male'
                                 checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
                                 uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
                                 checked={this.state.gender == 'male'}
-                                onPress={() => this.setState({gender: this.state.gender == 'female' ? 'male' : 'female'})}
+                                onPress={() => this.setState({gender: 'male'})}
                                 />
                             <CheckBox
                                 title='Female'
                                 checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
                                 uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
                                 checked={this.state.gender == 'female'}
-                                onPress={() => this.setState({gender: this.state.gender == 'female' ? 'male' : 'female'})}
+                                onPress={() => this.setState({gender: 'female'})}
                                 />
+                            </View>
                         </View>
                         <View>
                             <Text>Ministry</Text>
                             { this.state.ministries &&
                             this.state.ministries.map((item, i) => {
-                                <CheckBox
-                                    title={item.name}
+                                return (<CheckBox key={item.id}
+                                    title={item.name} 
+                                    checked={ this.state.my_ministries.indexOf(item.id) !== -1 }
+                                    onPress={() => this.onPressCheckbox( 'my_ministries', item.id )}
                                     checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
                                     uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
-                                    />
+                                    />)
                                 })
                             }
                         </View>
@@ -277,11 +427,13 @@ class PeopleCreateEdit extends Component {
                             <Text>Leadership Level</Text>
                             { this.state.leadership_levels &&
                             this.state.leadership_levels.map((item, i) => {
-                                <CheckBox
+                                return (<CheckBox key={item.id}
                                     title={item.name}
                                     checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
                                     uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
-                                    />
+                                    checked={ this.state.leadership_level_id == item.id }
+                                    onPress={() =>  this.setState({'leadership_level_id': item.id}) }
+                                    />)
                                 })
                             }
                         </View>
@@ -289,11 +441,13 @@ class PeopleCreateEdit extends Component {
                             <Text>Auxiliary Group</Text>
                             { this.state.auxiliary_groups &&
                             this.state.auxiliary_groups.map((item, i) => {
-                                <CheckBox
+                                return (<CheckBox key={item.id}
                                     title={item.name}
                                     checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
                                     uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
-                                    />
+                                    checked={ this.state.auxiliary_group_id == item.id }
+                                    onPress={() =>  this.setState({'auxiliary_group_id': item.id}) }
+                                    />)
                                 })
                             }
                         </View>
@@ -301,11 +455,13 @@ class PeopleCreateEdit extends Component {
                             <Text>School Status</Text>
                             { this.state.school_statuses &&
                             this.state.school_statuses.map((item, i) => {
-                                <CheckBox
+                                return (<CheckBox key={item.id}
                                     title={item.name}
                                     checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
                                     uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
-                                    />
+                                    checked={ this.state.school_status_id == item.id }
+                                    onPress={() =>  this.setState({'school_status_id': item.id}) }
+                                    />)
                                 })
                             }
                         </View>
@@ -313,11 +469,13 @@ class PeopleCreateEdit extends Component {
                             <Text>Categories</Text>
                             { this.state.categories &&
                             this.state.categories.map((item, i) => {
-                                <CheckBox
+                                return (<CheckBox key={item.id}
                                     title={item.name}
                                     checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
-                                    uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
-                                    />
+                                    uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>} 
+                                    checked={ this.state.category_id == item.id }
+                                    onPress={() =>  this.setState({'category_id': item.id}) }
+                                    />)
                                 })
                             }
                         </View>

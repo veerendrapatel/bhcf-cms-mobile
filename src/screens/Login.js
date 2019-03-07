@@ -27,21 +27,22 @@ class Login extends React.Component {
         const { username, password } = this.state;
         this.setState({ btnPress: true });
         if (username === '') {
-            Alert.alert('Please enter username');
+            Alert.alert('Warning', 'Please enter username');
         } else if (password === '') {
-            Alert.alert('Please enter password');
+            Alert.alert('Warning', 'Please enter password');
         } else {
-            
-            signIn(username, password, (response => {
-                console.log(response);
-                if (response.success) {
-                    onSignIn(response.data).then(() =>  navigate('Home'));
-                } else if(response.data) {
-                    Alert.alert(response.data);
-                } else {
-                    Alert.alert(response.message);
+        
+            signIn(username, password).then(res => {
+                console.log(res.data);
+                if (res.ok) {
+                    onSignIn(res.data).then(() =>  navigate('Home'));
+                } else if(res.data) {
+                    Alert.alert(res.data);
                 }
-            }));
+            }, err =>{
+                Alert.alert(err.message);
+            });
+            
             
         }
         let _this = this;
