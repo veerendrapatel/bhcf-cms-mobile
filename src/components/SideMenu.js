@@ -51,14 +51,18 @@ class SideMenu extends Component {
                       width: '100%',
                       paddingTop: 100
                        }}>
-                    <Avatar
-                      rounded
-                      source={{
-                        uri:
-                          'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg',
-                      }}
-                      size="large"
-                    />
+                       { currentUser.avatar ?
+                        (
+                          <Avatar
+                            rounded
+                            source={{ uri: currentUser.avatar.thumbnail }}
+                            size="xlarge"
+                          />
+                        ) : 
+                        (
+                          <Avatar size="xlarge" rounded title={ currentUser.full_name.charAt(0).toUpperCase() } />
+                        )
+                       }
                     <Text>{ currentUser.full_name }</Text>
                     
                   </View>
@@ -119,7 +123,7 @@ class SideMenu extends Component {
                           <Icon
                           name='users'
                           type='font-awesome'/>
-                          <Text style={styles.navItemText} onPress={this.navigateToScreen('Home')}>Cell Group</Text>
+                          <Text style={styles.navItemText} onPress={this.navigateToScreen('CellGroup')}>Cell Group</Text>
                         </View>
                         <View style={styles.navItem}>
                           <Icon

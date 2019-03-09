@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import { Text, View, Image, Alert } from 'react-native';
 import { ThemeProvider, Button, Avatar, Icon, Input } from 'react-native-elements';
 import { signIn, onSignIn } from '../services/auth';
-import _asyncStorage from '../services/services';
+import HttpService from '../services/services';
 import { styles } from '../services/styles';
 
 class Login extends React.Component {
-    
+    _isMounted = false;
     constructor(props) {
         super(props);
         this.state = {
@@ -16,7 +16,15 @@ class Login extends React.Component {
         }
         this.onPressLogin = this.onPressLogin.bind(this);
     }
-    
+
+    componentDidMount() {
+        this._isMounted = true;
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
+    }
+     
     onChange(e) {
         this.setState({[e.target.name]: e.target.value });
         
@@ -28,24 +36,34 @@ class Login extends React.Component {
         this.setState({ btnPress: true });
         if (username === '') {
             Alert.alert('Warning', 'Please enter username');
+            this.setState({ btnPress: false });
         } else if (password === '') {
             Alert.alert('Warning', 'Please enter password');
+            this.setState({ btnPress: false });
         } else {
-        
-            signIn(username, password).then(res => {
+            HttpService.post(
+                'login',
+                {
+                    'username': username,
+                    'password': password   
+                }
+            ).then(res => {
                 if (res.ok) {
                     onSignIn(res.data).then(() =>  navigate('Home'));
                 } else if(res.data) {
                     Alert.alert(res.data);
                 }
+                this.setState({ btnPress: false });
             }, err =>{
                 Alert.alert(err.message);
+                this.setState({ btnPress: false });
             });
             
             
         }
-        let _this = this;
-        setTimeout(() => {_this.setState({ btnPress: false }), 1000});
+        
+        // let _this = this;
+        // setTimeout(() => {_this.setState({ btnPress: false }), 1000});
         
         
     }

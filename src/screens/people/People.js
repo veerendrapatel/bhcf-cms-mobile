@@ -3,7 +3,7 @@ import { Text, View, ActivityIndicator, FlatList, Alert } from 'react-native';
 import { getCurrentUser } from '../../services/auth';
 import {styles} from '../../services/styles';
 import { Icon, ThemeProvider, ListItem, SearchBar, Avatar } from 'react-native-elements';
-import { AJAX } from '../../services/services';
+import HttpService from '../../services/services';
 import Moment from 'moment';
 
 const PAGE_SIZE = 12;
@@ -41,27 +41,12 @@ class People extends React.Component {
         this.search = this.search.bind(this);
     }
 
-    fetch = () => {
-        const { offset, keywords, currentUser } = this.state;
-        console.log(`members/${currentUser.id}/people?offset=${offset}&limit=${PAGE_SIZE}&keywords=${keywords}&sort=id&order=desc`);
-
-        return AJAX(
-                `members/${currentUser.id}/people?offset=${offset}&limit=${PAGE_SIZE}&keywords=${keywords}&sort=id&order=desc`,
-                'GET',
-                null,
-                {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization':  `Bearer ${currentUser.api_token}`
-                }
-            );
-        
-    }
 
     fetchPeople = () => {
-        const {endOfRow, people, keywords, searching} = this.state;
+        const {endOfRow, people, keywords, offset, currentUser} = this.state;
         if (!endOfRow) {
-            this.fetch().then(res => {
+            HttpService
+            .get(`members/${currentUser.id}/people?offset=${offset}&limit=${PAGE_SIZE}&keywords=${keywords}&sort=id&order=desc`).then(res => {
                 if (this._isMounted && res.ok) {
                     
                     const data = people && keywords.length === 0 ? this.arrayholder.concat(res.people) : res.people;
@@ -170,7 +155,7 @@ class People extends React.Component {
                                 containerStyle={{ borderBottomWidth: 1, borderBottomColor: '#c1c1c1' }} 
                                 chevronColor="white" 
                                 chevron
-                                onPress={() => this.props.navigation.navigate('PeopleCreateEdit', { id: item.id })}
+                                onPress={() => this.props.navigation.navigate('PeopleDetails', { member: item })}
                                 badge={{ value: 3, textStyle: { color: '#fff' }, containerStyle: { marginTop: -20 } }}
                                 editButton={<Icon name="edit" />}
                             />

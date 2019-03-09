@@ -1,5 +1,4 @@
 import { AsyncStorage } from 'react-native'
-import { AJAX } from './services';
 
 export const CURRENT_USER_KEY = 'current-user';
 
@@ -34,15 +33,3 @@ export const getCurrentUser = () => {
             .catch(err => reject(err))
     })
 }
-
-
-export const signIn = (username, password) => {
-    return AJAX(
-            'login', 
-            'POST', 
-            {
-                'username': username,
-                'password': password   
-            }
-        );
-    }

@@ -3,8 +3,8 @@ import { View, ScrollView, Text, Alert, TouchableOpacity } from 'react-native';
 import { ThemeProvider, Icon, Input, CheckBox  } from 'react-native-elements';
 import DatePicker from 'react-native-datepicker'
 import {styles} from '../../services/styles';
-import { AJAX } from '../../services/services';
-import { getCurrentUser } from '../../services/auth';
+import HttpService from '../../services/services';
+
 import ImageUploader from '../../components/ImageUploader';
 
 class PeopleCreateEdit extends Component {
@@ -22,39 +22,34 @@ class PeopleCreateEdit extends Component {
         this.state = {
             currentUser: null,
             id: '',
-            email: 'serg.casquejo1@gmail.com',
-            first_name: 'John',
-            last_name: 'Doe',
-            middle_name: 'Smith',
-            nick_name: 'Smith',
+            email: '',
+            first_name: '',
+            last_name: '',
+            middle_name: '',
+            nick_name: '',
             birthdate: '2016-08-01',
-            address: 'Colo, Camolinas, Poblacion, Cordova, Cebu',
-            city: 'Cebu',
-            contact_no: '09219945112',
-            secondary_contact_no: '505-323-232',
-            facebook_name: 'serg.casquejo',
-            school_status_id: 1,
-            leadership_level_id: 2,
-            auxiliary_group_id: 3,
-            status_id: 1,
-            category_id: 2,
+            address: '',
+            city: '',
+            contact_no: '',
+            secondary_contact_no: '',
+            facebook_name: '',
+            school_status_id: null,
+            leadership_level_id: null,
+            auxiliary_group_id: null,
+            status_id: null,
+            category_id: 1,
             gender: 'male',
-            remarks: 'Lorem ipsum dolor sit amit',
+            remarks: '',
             school_statuses_options: [],
             leadership_levels_options: [],
             auxiliary_groups_options: [],
             statuses_options: [],
             categories_options: [],
             ministries_options: [],
-            ministries: [1, 2],
+            ministries: [],
             ministry_ids: '',
             avatar: null,
             new_avatar: '',
-            errorMessage: null,
-            isFormSubmit: false,
-            isEdit: false,
-            loading: true,
-            uploading: false
         }
 
         this.save = this.save.bind(this);
@@ -64,107 +59,35 @@ class PeopleCreateEdit extends Component {
 
     componentDidMount = () => {
          if (this.props.navigation.state.params != undefined) {
-                const id = this.props.navigation.state.params.id;
-                this.setState({id:  id || 0})
+                const member = this.props.navigation.state.params.member;
+                let newState = Object.assign(this.state, member);
+                let ministries = [];
+                member.my_ministries.map((item, i) => {
+                    ministries.push(item.id);
+                });
+                newState['ministries'] = ministries;
+                this.setState(newState);
          }
-
         this.props.navigation.setParams({
                 headerRight: (<TouchableOpacity style={{ padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center' }} onPress={this.save}><Text>Save</Text></TouchableOpacity>)
-        })
+        });
+
         this._isMounted = true;
-         getCurrentUser().then(_currentUser => {
-            const currentUser = JSON.parse(_currentUser);
-            this.setState({'currentUser':  currentUser}, () => {
-                AJAX(
-                    `members/dropdown-options`, 
-                    'GET',
-                    null, 
-                    {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json',
-                        'Authorization':  `Bearer ${currentUser.api_token}`
-                    }
-                    ).then(res => {
-                    
-                    this.setState({
-                        auxiliary_groups_options: res.auxiliary_groups,
-                        categories_options: res.categories,
-                        ministries_options: res.ministries,
-                        statuses_options: res.statuses,
-                        school_statuses_options: res.school_statuses,
-                        leadership_levels_options: res.leadership_levels
-                    });
-
-                }, err => {
-                    Alert.alert(err.message);
+        HttpService.get(`members/dropdown-options`).then(res => {
+            if (this._isMounted) {
+                this.setState({
+                    auxiliary_groups_options: res.auxiliary_groups,
+                    categories_options: res.categories,
+                    ministries_options: res.ministries,
+                    statuses_options: res.statuses,
+                    school_statuses_options: res.school_statuses,
+                    leadership_levels_options: res.leadership_levels
                 });
+            }
 
-
-                const {id} = this.state;
-                 if (id != 0) {
-                    AJAX(
-                        `members/${id}`, 
-                        'GET',
-                        null, 
-                        {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json',
-                            'Authorization':  `Bearer ${currentUser.api_token}`
-                        }
-                        ).then(res => {
-                            console.log(res.data);
-                            let newState = Object.assign(this.state, res.data);
-                            let ministries = [];
-                            res.data.my_ministries.map((item, i) => {
-                                ministries.push(item.id);
-                            });
-                            newState['ministries'] = ministries;
-                            this.setState(newState);
-
-                        }, err => {
-                            Alert.alert(err.message);
-                        }
-                    );
-                }
-            });
-        
-            
+        }, err => {
+            Alert.alert(err.message);
         });
-   
-       
-    
-    }
-
-     async  uploadImageAsync(result) {
-       
-        // ImagePicker saves the taken photo to disk and returns a local URI to it
-        let localUri = result.uri;
-        let filename = localUri.split('/').pop();
-
-        // Infer the type of the image
-        let match = /\.(\w+)$/.exec(filename);
-        let type = match ? `image/${match[1]}` : `image`;
-
-        // Upload the image using the fetch and FormData APIs
-        let formData = new FormData();
-        // Assume "photo" is the name of the form field the server expects
-        formData.append('avatar', { localUri, name: filename, type: type });
-       
-        const {id} = this.state;
-        return getCurrentUser().then(async(_currentUser) => {
-            const currentUser = JSON.parse(_currentUser);
-
-            return await fetch(`member/${id}/avatar-mobile`, {
-                method: 'POST',
-                body: formData,
-                header: {
-                Accept: 'application/json',
-                'Authorization':  `Bearer ${currentUser.api_token}`,
-                'content-type': 'multipart/form-data',
-                },
-            });
-        });
-    
     }
 
 
@@ -189,7 +112,6 @@ class PeopleCreateEdit extends Component {
 
         const {
             id,
-            currentUser,
             email,
             first_name,
             last_name,
@@ -210,19 +132,11 @@ class PeopleCreateEdit extends Component {
             remarks,
             ministries,
             ministry_ids,
-            avatar,
             new_avatar,
-            isFormSubmit,
-            isEdit,
         } = this.state;
 
-
-        console.log(ministries);
         
-
-        AJAX(
-            id > 0 ? `members/${id}` : `members`, 
-            id > 0 ? 'PUT' : 'POST', 
+        HttpService.post(`members${id > 0 ? `/${id}`: `` }`, 
             {
                 email: email,
                 first_name: first_name,
@@ -245,21 +159,18 @@ class PeopleCreateEdit extends Component {
                 ministries: ministries,
                 ministry_ids: ministry_ids,
                 new_avatar: new_avatar,
-            }, 
-            {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization':  `Bearer ${currentUser.api_token}`
+                _method:  id > 0 ? 'PUT' : 'POST'
             }
         ).then(res => {
-            
-            if (res.ok) {
-                if (res.data) {
-                    this.setState(Object.assign(this.state, res.data));
+            if (this._isMounted) {
+                if (res.ok) {
+                    if (res.data) {
+                        this.setState(Object.assign(this.state, res.data));
+                    }
+                    Alert.alert('Success', 'Successfully Saved!');
+                } else {
+                    Alert.alert('Error', res.data);
                 }
-                Alert.alert('Success', 'Successfully Saved!');
-                
-                // this.props.navigation.navigate('PeopleCreateEdit', {id: res.data.id});
             }
         }, err => {
             Alert.alert('Error', err.message);
@@ -268,7 +179,6 @@ class PeopleCreateEdit extends Component {
 
     render() {
         const {avatar} = this.state;
-
         return (
             <ThemeProvider>
             <View style={styles.container}>
