@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
 import { View, ScrollView, Text, Alert, TouchableOpacity } from 'react-native';
-import { ThemeProvider, Button, Avatar, Header, Icon, Input, CheckBox  } from 'react-native-elements';
+import { ThemeProvider, Icon, Input, CheckBox  } from 'react-native-elements';
 import DatePicker from 'react-native-datepicker'
 import {styles} from '../../services/styles';
 import { AJAX } from '../../services/services';
 import { getCurrentUser } from '../../services/auth';
+import ImageUploader from '../../components/ImageUploader';
 
 class PeopleCreateEdit extends Component {
     static navigationOptions = ({ navigation }) => {
@@ -39,13 +40,13 @@ class PeopleCreateEdit extends Component {
             category_id: 2,
             gender: 'male',
             remarks: 'Lorem ipsum dolor sit amit',
-            school_statuses: [],
-            leadership_levels: [],
-            auxiliary_groups: [],
-            statuses: [],
-            categories: [],
-            ministries: [],
-            my_ministries: [1, 2],
+            school_statuses_options: [],
+            leadership_levels_options: [],
+            auxiliary_groups_options: [],
+            statuses_options: [],
+            categories_options: [],
+            ministries_options: [],
+            ministries: [1, 2],
             ministry_ids: '',
             avatar: null,
             new_avatar: '',
@@ -53,12 +54,20 @@ class PeopleCreateEdit extends Component {
             isFormSubmit: false,
             isEdit: false,
             loading: true,
+            uploading: false
         }
 
         this.save = this.save.bind(this);
+        
     }
 
-    componentDidMount() {
+
+    componentDidMount = () => {
+         if (this.props.navigation.state.params != undefined) {
+                const id = this.props.navigation.state.params.id;
+                this.setState({id:  id || 0})
+         }
+
         this.props.navigation.setParams({
                 headerRight: (<TouchableOpacity style={{ padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center' }} onPress={this.save}><Text>Save</Text></TouchableOpacity>)
         })
@@ -76,14 +85,14 @@ class PeopleCreateEdit extends Component {
                         'Authorization':  `Bearer ${currentUser.api_token}`
                     }
                     ).then(res => {
-                    console.log(res);
+                    
                     this.setState({
-                        auxiliary_groups: res.auxiliary_groups,
-                        categories: res.categories,
-                        ministries: res.ministries,
-                        statuses: res.statuses,
-                        school_statuses: res.school_statuses,
-                        leadership_levels: res.leadership_levels
+                        auxiliary_groups_options: res.auxiliary_groups,
+                        categories_options: res.categories,
+                        ministries_options: res.ministries,
+                        statuses_options: res.statuses,
+                        school_statuses_options: res.school_statuses,
+                        leadership_levels_options: res.leadership_levels
                     });
 
                 }, err => {
@@ -91,11 +100,8 @@ class PeopleCreateEdit extends Component {
                 });
 
 
-
-                 if (this.props.navigation.state.params != undefined) {
-                    const id = this.props.navigation.state.params.id;
-                    console.log('hello' + id);
-
+                const {id} = this.state;
+                 if (id != 0) {
                     AJAX(
                         `members/${id}`, 
                         'GET',
@@ -106,11 +112,19 @@ class PeopleCreateEdit extends Component {
                             'Authorization':  `Bearer ${currentUser.api_token}`
                         }
                         ).then(res => {
-                        this.setState(Object.assign(this.state, res.data));
+                            console.log(res.data);
+                            let newState = Object.assign(this.state, res.data);
+                            let ministries = [];
+                            res.data.my_ministries.map((item, i) => {
+                                ministries.push(item.id);
+                            });
+                            newState['ministries'] = ministries;
+                            this.setState(newState);
 
-                    }, err => {
-                        Alert.alert(err.message);
-                    });
+                        }, err => {
+                            Alert.alert(err.message);
+                        }
+                    );
                 }
             });
         
@@ -120,6 +134,39 @@ class PeopleCreateEdit extends Component {
        
     
     }
+
+     async  uploadImageAsync(result) {
+       
+        // ImagePicker saves the taken photo to disk and returns a local URI to it
+        let localUri = result.uri;
+        let filename = localUri.split('/').pop();
+
+        // Infer the type of the image
+        let match = /\.(\w+)$/.exec(filename);
+        let type = match ? `image/${match[1]}` : `image`;
+
+        // Upload the image using the fetch and FormData APIs
+        let formData = new FormData();
+        // Assume "photo" is the name of the form field the server expects
+        formData.append('avatar', { localUri, name: filename, type: type });
+       
+        const {id} = this.state;
+        return getCurrentUser().then(async(_currentUser) => {
+            const currentUser = JSON.parse(_currentUser);
+
+            return await fetch(`member/${id}/avatar-mobile`, {
+                method: 'POST',
+                body: formData,
+                header: {
+                Accept: 'application/json',
+                'Authorization':  `Bearer ${currentUser.api_token}`,
+                'content-type': 'multipart/form-data',
+                },
+            });
+        });
+    
+    }
+
 
     componentWillUnmount() {
         this._isMounted = false;
@@ -161,7 +208,7 @@ class PeopleCreateEdit extends Component {
             status,
             category_id,
             remarks,
-            my_ministries,
+            ministries,
             ministry_ids,
             avatar,
             new_avatar,
@@ -169,41 +216,43 @@ class PeopleCreateEdit extends Component {
             isEdit,
         } = this.state;
 
-        const method = id > 0 ? 'PUT' : 'POST';
-        const route = id > 0 ? `members/${id}` : `members`;
 
-        console.log(route);
+        console.log(ministries);
+        
 
-        AJAX(route, method, {
-            email: email,
-            first_name: first_name,
-            last_name: last_name,
-            middle_name: middle_name,
-            nick_name: nick_name,
-            birthdate: birthdate,
-            gender: gender,
-            address: address,
-            city: city,
-            contact_no: contact_no,
-            secondary_contact_no: secondary_contact_no,
-            facebook_name: facebook_name,
-            school_status_id: school_status_id,
-            leadership_level_id: leadership_level_id,
-            auxiliary_group_id: auxiliary_group_id,
-            status: status,
-            category_id: category_id,
-            remarks: remarks,
-            my_ministries: my_ministries,
-            ministry_ids: ministry_ids,
-            new_avatar: new_avatar,
-        }, 
-        {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization':  `Bearer ${currentUser.api_token}`
-        }
+        AJAX(
+            id > 0 ? `members/${id}` : `members`, 
+            id > 0 ? 'PUT' : 'POST', 
+            {
+                email: email,
+                first_name: first_name,
+                last_name: last_name,
+                middle_name: middle_name,
+                nick_name: nick_name,
+                birthdate: birthdate,
+                gender: gender,
+                address: address,
+                city: city,
+                contact_no: contact_no,
+                secondary_contact_no: secondary_contact_no,
+                facebook_name: facebook_name,
+                school_status_id: school_status_id,
+                leadership_level_id: leadership_level_id,
+                auxiliary_group_id: auxiliary_group_id,
+                status: status,
+                category_id: category_id,
+                remarks: remarks,
+                ministries: ministries,
+                ministry_ids: ministry_ids,
+                new_avatar: new_avatar,
+            }, 
+            {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':  `Bearer ${currentUser.api_token}`
+            }
         ).then(res => {
-            console.group(res);
+            
             if (res.ok) {
                 if (res.data) {
                     this.setState(Object.assign(this.state, res.data));
@@ -218,15 +267,17 @@ class PeopleCreateEdit extends Component {
     }
 
     render() {
-        const {avatar, full_name} = this.state;
-        const {goBack} = this.props.navigation;
+        const {avatar} = this.state;
+
         return (
             <ThemeProvider>
             <View style={styles.container}>
                     <ScrollView style={{ width: '100%' }}>
-                    <Avatar rounded size="xlarge" source={{ 
-                                    source: avatar && avatar.thumbnail ?  {uri: avatar.thumbnail} : require('../../../assets/default.png'), title: full_name }} showEditButton />
+                    
 
+                    <ImageUploader source={avatar ? avatar.thumbnail : null} onSelectedImage={(image) => {
+                        this.setState({ new_avatar: image });
+                    }}/>
                         <Input 
                             placeholder='First Name'
                             defaultValue={this.state.first_name}
@@ -239,6 +290,7 @@ class PeopleCreateEdit extends Component {
                                 color='black'
                                 />
                             }
+                            autoCorrect={false}
                         />
                         <Input 
                             placeholder='Last Name'
@@ -252,6 +304,7 @@ class PeopleCreateEdit extends Component {
                                 color='black'
                                 />
                             }
+                            autoCorrect={false}
                         />
                         <Input 
                             placeholder='Middle Name'
@@ -265,6 +318,7 @@ class PeopleCreateEdit extends Component {
                                 color='black'
                                 />
                             }
+                            autoCorrect={false}
                         />
                         <Input 
                             placeholder='Nick Name'
@@ -278,6 +332,7 @@ class PeopleCreateEdit extends Component {
                                 color='black'
                                 />
                             }
+                            autoCorrect={false}
                         />
                         <DatePicker
                             style={{width: 200}}
@@ -286,49 +341,23 @@ class PeopleCreateEdit extends Component {
                             mode="date"
                             placeholder="select date"
                             format="YYYY-MM-DD"
-                            minDate="2016-05-01"
-                            maxDate="2016-06-01"
                             confirmBtnText="Confirm"
                             cancelBtnText="Cancel"
-                            customStyles={{
-                            dateIcon: {
-                                position: 'absolute',
-                                left: 0,
-                                top: 4,
-                                marginLeft: 0
-                            },
-                            dateInput: {
-                                marginLeft: 36
-                            }
-                            // ... You can check the source to find the other keys.
-                            }}
                             onDateChange={(date) => {this.setState({birthdate: date})}}
-                        />
-                        <Input 
-                            placeholder='Birth Date'
-                            defaultValue={this.state.birthdate}
-                            onChangeText={(text) => this.setState({ birthdate: text })}
-                            leftIcon={
-                                <Icon
-                                name='ios-person'
-                                type='ionicon'
-                                size={24}
-                                color='black'
-                                />
-                            }
                         />
                         <Input 
                             placeholder='City'
                             defaultValue={this.state.city}
                             onChangeText={(text) => this.setState({ city: text })}
                             leftIcon={
-                                <Icon
-                                name='ios-person'
-                                type='ionicon'
+                                 <Icon
+                                name='location-city'
+                                type='fontawesome'
                                 size={24}
                                 color='black'
                                 />
                             }
+                            autoCorrect={false}
                         />
                         <Input 
                             multiline={true}
@@ -337,12 +366,13 @@ class PeopleCreateEdit extends Component {
                             onChangeText={(text) => this.setState({ address: text })}
                             leftIcon={
                                 <Icon
-                                name='ios-person'
-                                type='ionicon'
+                                name='add-location'
+                                type='fontawesome'
                                 size={24}
                                 color='black'
                                 />
                             }
+                            autoCorrect={false}
                         />
                         <Input 
                             placeholder='Contact No'
@@ -356,6 +386,7 @@ class PeopleCreateEdit extends Component {
                                 color='black'
                                 />
                             }
+                            autoCorrect={false}
                         />
                         <Input 
                             placeholder='Secondary Contact No'
@@ -369,6 +400,7 @@ class PeopleCreateEdit extends Component {
                                 color='black'
                                 />
                             }
+                            autoCorrect={false}
                         />
                         <Input 
                             placeholder='Facebook Name'
@@ -376,12 +408,14 @@ class PeopleCreateEdit extends Component {
                             onChangeText={(text) => this.setState({ facebook_name: text })}
                             leftIcon={
                                 <Icon
-                                name='ios-person'
+                                name='logo-facebook'
                                 type='ionicon'
                                 size={24}
                                 color='black'
                                 />
                             }
+                            autoCorrect={false}
+                            autoCapitalize="none"
                         />
                         <Input 
                             placeholder='Remarks' 
@@ -390,12 +424,13 @@ class PeopleCreateEdit extends Component {
                             multiline={true}
                             leftIcon={
                                 <Icon
-                                name='ios-person'
+                                name='ios-paper'
                                 type='ionicon'
                                 size={24}
                                 color='black'
                                 />
                             }
+                            autoCorrect={false}
                         />
                         <View>
                             <Text>Gender</Text>
@@ -418,12 +453,12 @@ class PeopleCreateEdit extends Component {
                         </View>
                         <View>
                             <Text>Ministry</Text>
-                            { this.state.ministries &&
-                            this.state.ministries.map((item, i) => {
+                            { this.state.ministries_options &&
+                            this.state.ministries_options.map((item, i) => {
                                 return (<CheckBox key={item.id}
                                     title={item.name} 
-                                    checked={ this.state.my_ministries.indexOf(item.id) !== -1 }
-                                    onPress={() => this.onPressCheckbox( 'my_ministries', item.id )}
+                                    checked={ this.state.ministries.indexOf(item.id) !== -1 }
+                                    onPress={() => this.onPressCheckbox( 'ministries', item.id )}
                                     checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
                                     uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
                                     />)
@@ -432,8 +467,8 @@ class PeopleCreateEdit extends Component {
                         </View>
                         <View>
                             <Text>Leadership Level</Text>
-                            { this.state.leadership_levels &&
-                            this.state.leadership_levels.map((item, i) => {
+                            { this.state.leadership_levels_options &&
+                            this.state.leadership_levels_options.map((item, i) => {
                                 return (<CheckBox key={item.id}
                                     title={item.name}
                                     checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
@@ -446,8 +481,8 @@ class PeopleCreateEdit extends Component {
                         </View>
                         <View>
                             <Text>Auxiliary Group</Text>
-                            { this.state.auxiliary_groups &&
-                            this.state.auxiliary_groups.map((item, i) => {
+                            { this.state.auxiliary_groups_options &&
+                            this.state.auxiliary_groups_options.map((item, i) => {
                                 return (<CheckBox key={item.id}
                                     title={item.name}
                                     checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
@@ -460,8 +495,8 @@ class PeopleCreateEdit extends Component {
                         </View>
                         <View>
                             <Text>School Status</Text>
-                            { this.state.school_statuses &&
-                            this.state.school_statuses.map((item, i) => {
+                            { this.state.school_statuses_options &&
+                            this.state.school_statuses_options.map((item, i) => {
                                 return (<CheckBox key={item.id}
                                     title={item.name}
                                     checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
@@ -474,8 +509,8 @@ class PeopleCreateEdit extends Component {
                         </View>
                         <View>
                             <Text>Categories</Text>
-                            { this.state.categories &&
-                            this.state.categories.map((item, i) => {
+                            { this.state.categories_options &&
+                            this.state.categories_options.map((item, i) => {
                                 return (<CheckBox key={item.id}
                                     title={item.name}
                                     checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}

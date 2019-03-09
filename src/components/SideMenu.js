@@ -12,7 +12,7 @@ class SideMenu extends Component {
     constructor(props) {
       super(props);
       this.state = {
-          currentUser: {},
+          currentUser: null,
           userLoaded: false,
         }
 
@@ -37,16 +37,20 @@ class SideMenu extends Component {
 
 
     render() {
+      const { currentUser, userLoaded } = this.state;
         return (
             <View style={styles.sideMenuContainer}>
                 <ScrollView>
                 <View>
-                  {this.state.userLoaded &&
+                  {userLoaded &&
                   <View  style={{ 
                       display: 'flex', 
                       flexDirection: 'column',
                       alignItems: 'center',
-                      justifyContent: 'center', width: '100%' }}>
+                      justifyContent: 'center', 
+                      width: '100%',
+                      paddingTop: 100
+                       }}>
                     <Avatar
                       rounded
                       source={{
@@ -55,7 +59,8 @@ class SideMenu extends Component {
                       }}
                       size="large"
                     />
-                    <Text>{ this.state.currentUser.full_name }</Text>
+                    <Text>{ currentUser.full_name }</Text>
+                    
                   </View>
                   }
                     <View style={styles.navSection}>
@@ -136,7 +141,7 @@ class SideMenu extends Component {
                       </View>
                       <View  style={styles.navItem}>
                         <Icon name='sign-out' type='font-awesome'/>
-                          <Text style={styles.navItemText} onPress={ () => {
+                          <Text style={styles.navItemText}  onPress={ () => {
                               const { navigate } = this.props.navigation;
                               onSignOut().then(() => navigate('Login'));
                           } }>Signout</Text>

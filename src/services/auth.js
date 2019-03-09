@@ -5,7 +5,7 @@ export const CURRENT_USER_KEY = 'current-user';
 
 export const onSignIn = (value) => AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(value))
 
-export const onSignOut = () => AsyncStorage.removeItem(CURRENT_USER_KEY);
+export const onSignOut = () =>  AsyncStorage.removeItem(CURRENT_USER_KEY);
 
 export const isSignedIn = () => {
     return new Promise((resolve, reject) => {

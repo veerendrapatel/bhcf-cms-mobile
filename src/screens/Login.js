@@ -33,7 +33,6 @@ class Login extends React.Component {
         } else {
         
             signIn(username, password).then(res => {
-                console.log(res.data);
                 if (res.ok) {
                     onSignIn(res.data).then(() =>  navigate('Home'));
                 } else if(res.data) {

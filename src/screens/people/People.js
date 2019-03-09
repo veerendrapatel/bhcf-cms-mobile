@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import { Text, View, ScrollView, Dimensions, ListView, ActivityIndicator, FlatList } from 'react-native';
+import { Text, View, ActivityIndicator, FlatList, Alert } from 'react-native';
 import { getCurrentUser } from '../../services/auth';
 import {styles} from '../../services/styles';
-import { MenuBurger } from '../../components/Header';
-import { Icon, ThemeProvider, Header, ListItem, SearchBar, Button, Avatar, Badge } from 'react-native-elements';
+import { Icon, ThemeProvider, ListItem, SearchBar, Avatar } from 'react-native-elements';
 import { AJAX } from '../../services/services';
 import Moment from 'moment';
 
@@ -14,7 +13,6 @@ class People extends React.Component {
         headerTitle: 'People',
         headerRight: (
             <View style={{flex: 1, flexDirection: 'row', padding: 10 }}>
-                <Icon name="add" onPress={() => navigation.navigate('PeopleCreateEdit')} />
                 <Icon name="menu" iconStyle={{ marginLeft: 10 }} onPress={() => navigation.openDrawer()} />
             </View>
         ),
@@ -37,7 +35,6 @@ class People extends React.Component {
             
         }
         this.props.navigation.addListener('willFocus', () => {
-            console.log('hello world asdfsdf');
             this.arrayholder = [];
             this.setState({ offset: 0, people: null, keywords: '', endOfRow: false, search: false }, () => this.initFetch())
         })
@@ -66,6 +63,7 @@ class People extends React.Component {
         if (!endOfRow) {
             this.fetch().then(res => {
                 if (this._isMounted && res.ok) {
+                    
                     const data = people && keywords.length === 0 ? this.arrayholder.concat(res.people) : res.people;
                 
                     this.setState({
@@ -81,7 +79,7 @@ class People extends React.Component {
                 }
                 
             }, err =>{
-                Alert.alert(err.message);
+                Alert.alert('Error', err.message);
             })
         }
     }
@@ -115,14 +113,7 @@ class People extends React.Component {
 
 
     search = (keyword) => {
-        // const newData = this.arrayholder.filter(item => {      
-        //     const itemData = `${item.full_name.toUpperCase()}`;
-        //     const textData = keyword.toUpperCase();
-        //     return itemData.indexOf(textData) > -1;    
-        // });    
-        // this.setState({ keywords: keyword, people: newData, searching: true });
-
-        this.setState({ keywords: keyword, offset: 0, endOfRow: false, isFetching: true, searching: true, isLoading: true }, () => {
+        this.setState({ keywords: keyword, offset: 0, endOfRow: false, isFetching: true, searching: true, isLoading: false }, () => {
             if (keyword.length > 2) { 
                 this.arrayholder = [];
                 this.fetchPeople()
@@ -149,9 +140,6 @@ class People extends React.Component {
                 <FlatList
                     extraData={this.props}
                     keyExtractor={(item, index) => index.toString()}
-                    // onRefresh={this.handleRefresh}
-                    // refreshing={isFetching}
-                    // enableEmptySections={true}
                     data={people}
                     onEndReachedThreshold={0.5}
                     renderItem={row => {
@@ -177,12 +165,14 @@ class People extends React.Component {
                                     <Text>{item.leadership_level.name}</Text>
                                 </View>}
                                 leftAvatar={{ 
-                                    source: item.avatar && item.avatar.thumbnail ?  {uri: item.avatar.thumbnail} : require('../../../assets/default.png'), title: item.full_name } } 
+                                    source: item.avatar && item.avatar.small ?  {uri: item.avatar.small} : null, title: item.full_name.charAt(0) } } 
                                 titleStyle={{ fontWeight: 'bold' }}
                                 containerStyle={{ borderBottomWidth: 1, borderBottomColor: '#c1c1c1' }} 
                                 chevronColor="white" 
                                 chevron
                                 onPress={() => this.props.navigation.navigate('PeopleCreateEdit', { id: item.id })}
+                                badge={{ value: 3, textStyle: { color: '#fff' }, containerStyle: { marginTop: -20 } }}
+                                editButton={<Icon name="edit" />}
                             />
                         )
                        
@@ -217,7 +207,15 @@ class People extends React.Component {
                    </View>
                )
                }
-                
+               <View  style={{ position: 'absolute', bottom: 35, right: 35, }}>
+                <Avatar 
+                    size="medium"
+                    rounded 
+                    icon={{ name: 'add', color: '#FFF' }} 
+                    overlayContainerStyle={{backgroundColor: '#08ce0e'}}
+                    onPress={() => this.props.navigation.navigate('PeopleCreateEdit')}
+                    />
+                </View>
             </ThemeProvider>
         )
     }

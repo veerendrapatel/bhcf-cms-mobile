@@ -13,11 +13,6 @@ import SideMenu from '../components/SideMenu';
 import React, {Component} from 'react';
 
 
-const drawerButton = navigation => (
-    <Button title="Menu" clear icon={<Icon name="menu" type="ios-menu" />}  onPress={() => navigation.navigate('DrawerToggle')} />
-)
-
-
 const DashboardStack = createStackNavigator({
         Home: Dashboard,
         People: People,
@@ -27,9 +22,7 @@ const DashboardStack = createStackNavigator({
 });
 
 
-export const SignedOut = createStackNavigator({ SignedIn: Login});
-
-
+export const SignedOut = createStackNavigator({ Login: Login});
 const SignedIn = createDrawerNavigator({
   Dashboard: DashboardStack
 }, {
