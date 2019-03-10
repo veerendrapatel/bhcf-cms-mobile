@@ -1,12 +1,20 @@
 import React, { Component } from 'react';
 
-import { StyleSheet, View, ScrollView, Text, Dimensions, Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, Text, Dimensions, Alert, TouchableOpacity } from 'react-native';
+import { ListItem, CheckBox, Icon } from 'react-native-elements';
 import HttpService  from '../services/services';
 import DatePicker from 'react-native-datepicker'
 import { getCurrentUser } from '../services/auth';
 var Device_Width = Dimensions.get('window').width ;
 
 export default class CellGroup extends Component {
+    static navigationOptions = ({ navigation }) => {
+        return {
+          headerTitle: 'Cell Group Attendance',
+          headerRight: navigation.state.params && navigation.state.params.headerRight
+        };
+    };
+
     constructor(props) {
         super(props);
         this.state = {
@@ -16,26 +24,36 @@ export default class CellGroup extends Component {
     }
 
     componentDidMount() {
+      this.props.navigation.setParams({
+              headerRight: (<TouchableOpacity style={{ padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center' }} onPress={this.save}><Text>Save</Text></TouchableOpacity>)
+      });
+      
       getCurrentUser().then(res => {
           let attendances = this.state.attendances;
+          const a = this.state.attendances;
           const currentUser = JSON.parse(res);
           HttpService.get(`members/${currentUser.id}/attendance/cellgroup`)
           .then(res => {
             if (res.ok) {
-              let obj = {};
-              obj[res.data[0].week] = res.data;
-              attendances = attendances.push(obj);
-
-              console.log(obj);
-              this.setState({attendances: attendances});
+              a[res.data[0].week] = res.data;
+              this.setState({attendances: a});
             }
           }, err => Alert.alert('Error', err.message));
       });
         
     }
 
+    save() {
+
+    }
+
+    updateAttendance(attendance, i) {
+      attendance[i]['attended'] = attendance[i]['attended'] == 0 ? 1 : 0;
+      console.log();
+    }
+
     render() {
-        const {date} = this.state;
+        const {date, attendances} = this.state;
         return (
 
             <View style={styles.MainContainer}>
@@ -54,15 +72,36 @@ export default class CellGroup extends Component {
                     horizontal = { true } 
                     showsHorizontalScrollIndicator = {false}
                     pagingEnabled = { true } >
-
-                        <View style = { styles.FirstBlockStyle }>
-                        
-                            <Text style={styles.TextStyle}> This is View 1 </Text>
-
-                            {/* Put All Your Components Here Which you Want to Show Inside This View. */}
-
-                        </View>
-
+                        {
+                          attendances &&
+                          Object.keys(attendances).map((key, i) => {
+                            return (<View key={key} index={i} style={ styles.FirstBlockStyle }>
+                            <ScrollView style={{ width: '100%' }}>
+                                {
+                                  
+                                  attendances[key].map((data, x) => {
+                                    return (
+                                      <ListItem 
+                                        key={data.id}
+                                        roundAvatar
+                                        title={`${data.first_name} ${data.last_name}`} 
+                                        leftAvatar={{ 
+                                            source: data.avatar && data.avatar.small ?  {uri: data.avatar.small} : null, title: data.first_name.charAt(0) } } 
+                                        titleStyle={{ fontWeight: 'bold' }}
+                                        containerStyle={{ borderBottomWidth: 1, borderBottomColor: '#c1c1c1' }} 
+                                        rightIcon={<Icon color={ data.attended ? '#3cea8d': '#FF5722'} size={50} name={ data.attended ? `ios-checkmark-circle` : `ios-close-circle`} type="ionicon" />}
+                                        onPress={() => {
+                                          attendances[key][x]['attended'] = data.attended == 0 ? 1 : 0;
+                                          this.setState({ attendances: attendances });
+                                        }}
+                                    />
+                                    )
+                                  })
+                                }
+                                </ScrollView>
+                            </View>)
+                          })
+                        }
             
                         <View style = { styles.SecondBlockStyle }>
                         
