@@ -5,12 +5,22 @@ import { ListItem, CheckBox, Icon } from 'react-native-elements';
 import HttpService  from '../services/services';
 import DatePicker from 'react-native-datepicker'
 import { getCurrentUser } from '../services/auth';
+import Moment from 'moment';
 var Device_Width = Dimensions.get('window').width ;
 
 export default class CellGroup extends Component {
     static navigationOptions = ({ navigation }) => {
+      const today = Moment();
+      const from_date = today.startOf('week').format('MMM D YYYY');
+      const to_date = today.endOf('week').format('MMM D YYYY');
+      console.log({
+        from_date: from_date.toString(),
+        today: Moment().toString(),
+        to_date: to_date.toString(),
+      });
+
         return {
-          headerTitle: 'Cell Group Attendance',
+          headerTitle: `${from_date} - ${to_date}`,
           headerRight: navigation.state.params && navigation.state.params.headerRight
         };
     };
@@ -57,17 +67,6 @@ export default class CellGroup extends Component {
         return (
 
             <View style={styles.MainContainer}>
-                    <DatePicker
-                                    style={{width: 200}}
-                                    date={this.state.date}
-                                    
-                                    mode="date"
-                                    placeholder="select date"
-                                    format="YYYY-MM-DD"
-                                    confirmBtnText="Confirm"
-                                    cancelBtnText="Cancel"
-                                    onDateChange={(date) => {this.setState({date: date})}}
-                                />
                 <ScrollView 
                     horizontal = { true } 
                     showsHorizontalScrollIndicator = {false}
@@ -75,16 +74,18 @@ export default class CellGroup extends Component {
                         {
                           attendances &&
                           Object.keys(attendances).map((key, i) => {
-                            return (<View key={key} index={i} style={ styles.FirstBlockStyle }>
+                            return (<View key={key} index={i}>
+                            <Text style={{flex: 1, alignItems: 'center'}}>{ key }</Text>
+                            <View style={ styles.FirstBlockStyle }>
                             <ScrollView style={{ width: '100%' }}>
                                 {
-                                  
                                   attendances[key].map((data, x) => {
                                     return (
                                       <ListItem 
                                         key={data.id}
                                         roundAvatar
                                         title={`${data.first_name} ${data.last_name}`} 
+                                        subtitle={<Text style={{ marginLeft: 5, color: 'rgba(34,34,34,0.5)' }}>{Moment(data.attendance_date).format('MMM Do YYYY')}</Text> }
                                         leftAvatar={{ 
                                             source: data.avatar && data.avatar.small ?  {uri: data.avatar.small} : null, title: data.first_name.charAt(0) } } 
                                         titleStyle={{ fontWeight: 'bold' }}
@@ -99,6 +100,7 @@ export default class CellGroup extends Component {
                                   })
                                 }
                                 </ScrollView>
+                                </View>
                             </View>)
                           })
                         }
