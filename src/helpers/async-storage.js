@@ -1,6 +1,7 @@
 import { AsyncStorage } from 'react-native'
 
-export const CURRENT_USER_KEY = 'current-user';
+
+const CURRENT_USER_KEY = 'user';
 
 export const onSignIn = (value) => AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(value))
 
@@ -24,6 +25,7 @@ export const getCurrentUser = () => {
     return new Promise((resolve, reject) => {
         AsyncStorage.getItem(CURRENT_USER_KEY)
             .then(res => {
+                
                 if (res !== null) {
                     resolve(res);
                 } else {

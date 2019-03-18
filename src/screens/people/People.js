@@ -1,204 +1,266 @@
 import React, { Component } from 'react';
-import { Text, View, ActivityIndicator, FlatList, Alert } from 'react-native';
-import { getCurrentUser } from '../../services/auth';
-import {styles} from '../../services/styles';
-import { Icon, ThemeProvider, ListItem, SearchBar, Avatar } from 'react-native-elements';
-import HttpService from '../../services/services';
+import { Text, View, ActivityIndicator, FlatList, TouchableHighlight, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { Icon, ThemeProvider, Badge, SearchBar, Avatar } from 'react-native-elements';
+import { SwipeListView } from 'react-native-swipe-list-view';
+import { peopleActions } from '../../store/actions';
 import Moment from 'moment';
+import { connect } from 'react-redux';
+import {styles} from '../../styles/styles';
 
-const PAGE_SIZE = 12;
-class People extends React.Component {
+class People extends Component {
+  
+    _data = [];
     static navigationOptions = ({ navigation }) => {
         return {
-        headerTitle: 'People',
-        headerRight: (
-            <View style={{flex: 1, flexDirection: 'row', padding: 10 }}>
-                <Icon name="menu" iconStyle={{ marginLeft: 10 }} onPress={() => navigation.openDrawer()} />
-            </View>
-        ),
+            headerTitle: 'People',
+            headerRight: (
+                <View style={{flex: 1, flexDirection: 'row', padding: 10 }}>
+                    <Icon name="menu" iconStyle={{ marginLeft: 10 }} onPress={() => navigation.openDrawer()} />
+                </View>
+            ),
         };
     };
 
-    _isMounted = false;
-    arrayholder = [];
     constructor(props) {
         super(props);
+
         this.state = {
-            currentUser: null,
-            people: null,
-            isFetching: false,
-            isLoading: true,
-            keywords: '',
-            offset: 0,
-            endOfRow: false,
-            searching: false,
-            
+            keyword: null,
+            people: [],
+            loading: true,
+            page: 1,
+            searching: false
         }
-        this.props.navigation.addListener('willFocus', () => {
-            this.arrayholder = [];
-            this.setState({ offset: 0, people: null, keywords: '', endOfRow: false, search: false }, () => this.initFetch())
-        })
+
         this.search = this.search.bind(this);
     }
 
+    paginate = (items, page, per_page) => {
+ 
+        var page = page || 1,
+        per_page = per_page || 10,
+        offset = (page - 1) * per_page,
+        
+        paginatedItems = items.slice(offset).slice(0, per_page),
+        total_pages = Math.ceil(items.length / per_page);
+        return {
+            page: page,
+            per_page: per_page,
+            pre_page: page - 1 ? page - 1 : null,
+            next_page: (total_pages > page) ? page + 1 : null,
+            total: items.length,
+            total_pages: total_pages,
+            data: paginatedItems
+        };
+    }
+    
+    componentDidMount = () => {
+        const { dispatch, user } = this.props;
+        dispatch(peopleActions.getAll( user.id ));  
+    }
 
-    fetchPeople = () => {
-        const {endOfRow, people, keywords, offset, currentUser} = this.state;
-        if (!endOfRow) {
-            HttpService
-            .get(`members/${currentUser.id}/people?offset=${offset}&limit=${PAGE_SIZE}&keywords=${keywords}&sort=id&order=desc`).then(res => {
-                if (this._isMounted && res.ok) {
-                    
-                    const data = people && keywords.length === 0 ? this.arrayholder.concat(res.people) : res.people;
-                
-                    this.setState({
-                        people: data,
-                        isLoading: false,
-                        isFetching: false,
-                        endOfRow: res && res.people.length == 0,
-                    });
-                    if (keywords.length === 0) {
-                        this.arrayholder = data;
-                    }
-                
-                }
-                
-            }, err =>{
-                Alert.alert('Error', err.message);
-            })
+    componentWillReceiveProps(nextProps){
+        if(nextProps.people !== this.props.people){
+            this._data = nextProps.people.items;
+            this.loadMore();
         }
     }
 
-    handleLoadMore = () => {
-        // if (!this.state.searching) {
-            this.setState({
-                offset: this.state.keywords.length === 0 ? this.state.offset + 1 : 0,
-                isFetching: false,
-            }, () => this.fetchPeople());
-        // }
+    loadMore() {
+        if (!this.state.searching && this._data.length > this.state.page ) {
+            const people = this.paginate(this._data, this.state.page, 12).data;
+            if (people.length) {
+                this.setState({ people: this.state.people.concat(people) });
+            }
+            this.setState({ loading: false });
+        }
     }
-
-    
-    componentDidMount = () => {
-        this._isMounted = true;
-       
-        this.initFetch();
-    }
-
-    initFetch = () => {
-         getCurrentUser().then(res => {
-            this.setState({'currentUser': JSON.parse(res) }, () => this.fetchPeople());
-        });
-    }
-
-    componentWillUnmount() {
-        this._isMounted = false;
-    }
-
-
 
     search = (keyword) => {
-        this.setState({ keywords: keyword, offset: 0, endOfRow: false, isFetching: true, searching: true, isLoading: false }, () => {
-            if (keyword.length > 2) { 
-                this.arrayholder = [];
-                this.fetchPeople()
-            }
-        }); 
+        const data = this._data.filter(person => person.full_name.indexOf(keyword) !== -1);
+        this.setState({ people: data, page: 1, searching: true });
+
     }
-
-    handleRefresh = () => {
-        this.setState({
-            isFetching: true,
-        }, () => {
-            this.fetchMore();
-        });
-    }
-
-
 
     render() {
-        const { keywords, isFetching, currentUser, people, isLoading } = this.state;
+        const { keyword, people, loading } = this.state;
+        const { navigation } = this.props;
         return (
             <ThemeProvider style={styles.container}>
-                
-               { !isLoading && currentUser ? (
-                <FlatList
-                    extraData={this.props}
-                    keyExtractor={(item, index) => index.toString()}
-                    data={people}
-                    onEndReachedThreshold={0.5}
-                    renderItem={row => {
-                        if (!row) {
-                            return '';
-                        }
-                        const item = row.item;
-                        return (
-                            <ListItem 
-                                key={item.id}
-                                roundAvatar
-                                title={item.full_name} 
-                                subtitle={
-                                <View>
-                                    <View style={{
-                                        flex: 1, 
-                                        flexDirection:'row', 
-                                        alignItems: 'center'
-                                        }}>
-                                        <Icon name="birthday-cake" type="font-awesome" iconStyle={{color: item.is_birthday_today ? '#f15bf1'  :'rgba(34,34,34,0.5)'}} size={10}/>
-                                            <Text style={{ marginLeft: 5, color: 'rgba(34,34,34,0.5)' }}>{Moment(item.birthdate).format('MMM Do YYYY')}</Text>
-                                    </View>
-                                    <Text>{item.leadership_level.name}</Text>
-                                </View>}
-                                leftAvatar={{ 
-                                    source: item.avatar && item.avatar.small ?  {uri: item.avatar.small} : null, title: item.full_name.charAt(0) } } 
-                                titleStyle={{ fontWeight: 'bold' }}
-                                containerStyle={{ borderBottomWidth: 1, borderBottomColor: '#c1c1c1' }} 
-                                chevronColor="white" 
-                                chevron
-                                onPress={() => this.props.navigation.navigate('PeopleDetails', { member: item })}
-                                badge={{ value: 3, textStyle: { color: '#fff' }, containerStyle: { marginTop: -20 } }}
-                                editButton={<Icon name="edit" />}
-                            />
-                        )
-                       
-                    }} 
-                    onEndReached={() => {
-                        this.setState({ isFetching: true }, () => this.handleLoadMore())
-                    }}
-                    ListFooterComponent={() => {
-                        return (
-                            isFetching &&
-                            <View style={{ flex: 1, padding: 10 }}>
-                                <ActivityIndicator size="large" />
-                            </View>
-                        )
-                    }}
-                    
-                    ListHeaderComponent={<SearchBar
-                    round={true}
-                    lightTheme
-                    platform="ios"
-                    placeholder="Type Here..."
-                    onChangeText={text => this.search(text)} 
-                    value={keywords}
-                    autoCorrect={false}
-                />}
-                >
+               { !loading ? 
+                    (
+                        <SwipeListView
+                            useFlatList
+                            onEndReachedThreshold={0.5}
+                            leftOpenValue={75}
+                            rightOpenValue={-75}
+                            keyExtractor={(person, index) => index.toString()}
+                            data={people}
+                            renderItem={
+                                (row, rowMap) => {
+                                    const person =  row.item;
+                                    return (
+                                        <TouchableHighlight
+                                            onPress={() => {
+                                            this.props.navigation.navigate('PeopleDetails', { person: person });
+                                            }}
+                                            style={_styles.rowFront}
+                                            underlayColor={'#FFF'}>
+                                            <View style={
+                                                {  
+                                                    flex: 1, 
+                                                    flexDirection: 'row',
+                                                    padding:10
+                                                }
+                                            }>
+                                                <View>
+                                                    { 
+                                                        person.avatar ?
+                                                        (
+                                                            <Avatar 
+                                                                rounded
+                                                                size="large"
+                                                                source={{ uri: person.avatar.small}}
+                                                                title={person.full_name.charAt(0)} 
+                                                            />
+                                                        ) : (
+                                                            <Avatar 
+                                                                rounded
+                                                                size="large"
+                                                                title={person.full_name.charAt(0)} 
+                                                            />
+                                                        )
+                                                    }
+                                                </View>
+                                                <View style={
+                                                    {
+                                                        marginLeft: 10,
+                                                    }
+                                                }>
+                                                    <Text 
+                                                        style={
+                                                            {
+                                                                fontWeight: 'bold',
+                                                            }
+                                                        }
+                                                    >{ person.full_name } ({person.nick_name})</Text>
+                                                    <View style={
+                                                        { 
+                                                            flex: 1, 
+                                                            flexDirection: 'row', 
+                                                            alignItems: 'center',
+                                                        }
+                                                    }>
+                                                        <Icon 
+                                                            name="birthday-cake" 
+                                                            type="font-awesome" 
+                                                            iconStyle={{color: person.is_birthday_today ? '#f15bf1'  :'rgba(34,34,34,0.5)'}} size={10}
+                                                        />
+                                                        <Text 
+                                                            style={{ marginLeft: 5, color: 'rgba(34,34,34,0.5)' }}>
+                                                            {Moment(person.birthdate).format('MMM Do YYYY')}
+                                                        </Text>
+                                                    </View>
+                                                    <View style={
+                                                        { 
+                                                            flex: 1, 
+                                                            flexDirection: 'row', 
+                                                            alignItems: 'center'
+                                                        }
+                                                    }>
+                                                        {
+                                                            person.leadership_level &&
+                                                            <Text>{ person.leadership_level.name } with </Text>
+                                                        }
+                                                        <Badge status="success" textStyle={{ fontSize: 8 }} value="1,000"/>
+                                                    </View>
+                                                    {
+                                                        person.status &&
+                                                        <View style={
+                                                            { 
+                                                                flex: 1, 
+                                                                flexDirection: 'row', 
+                                                                alignItems: 'center',
+                                                                marginTop: 2,
+                                                            }
+                                                        }>
+                                                            <Text style={{ color: '#222' }}>Status: </Text>
+                                                            <Text style={{ color: '#222' }}>{ person.status.name }</Text>
+                                                        </View>
+                                                    }
+                                                </View>
+                                            </View>
+                                        </TouchableHighlight>
+                                    )
+                            
+                                }
+                            }
 
-                </FlatList>
-               ): (
-                   <View style={styles.container}>
-                       <ActivityIndicator size="large" />
-                   </View>
-               )
-               }
-               <View  style={{ position: 'absolute', bottom: 35, right: 35, }}>
-                <Avatar 
-                    size="medium"
-                    rounded 
-                    icon={{ name: 'add', color: '#FFF' }} 
-                    overlayContainerStyle={{backgroundColor: '#08ce0e'}}
-                    onPress={() => this.props.navigation.navigate('PeopleCreateEdit')}
+                            renderHiddenItem={
+                                (data, rowmap) => (
+                                     <View style={_styles.rowBack}>
+                                        <Text onPress={() => {
+                                            
+                                            navigation.navigate('PeopleCreateEdit', { person: data.item })}}>Edit</Text>
+                                        <TouchableOpacity style={[_styles.backRightBtn, _styles.backRightBtnRight]}>
+                                            <Icon 
+                                                size={40}
+                                                name="ios-call"
+                                                type="ionicon"
+                                                color="#FFF"
+                                            />
+                                        </TouchableOpacity>
+                                    </View>
+                                )
+                            } 
+                            
+                            ListHeaderComponent={
+                                <SearchBar
+                                    round={true}
+                                    lightTheme
+                                    platform="ios"
+                                    placeholder="Type Here..."
+                                    onChangeText={text => this.search(text)} 
+                                    value={keyword}
+                                    autoCorrect={false} 
+                                    onClear={
+                                        () => {
+                                            this.setState({ page: 1, searching: false }, () => this.loadMore())
+                                        }
+                                    }
+
+                                    onCancel={
+                                        () => {
+                                            this.setState({ page: 1, searching: false }, () => this.loadMore())
+                                        }
+                                    }
+                                />
+                            }
+
+                            onEndReached={
+                                () => {
+                                    this.setState((prevState, props) => (
+                                        { 
+                                            page: prevState.page + 1 
+                                        }), () => this.loadMore() );
+                                }
+                            }
+
+                            
+                        />
+                    ): (
+                        <View style={styles.container}>
+                            <ActivityIndicator size="large" />
+                        </View>
+                    )
+                }
+                <View style={{ position: 'absolute', bottom: 35, right: 35, }}>
+                    <Avatar 
+                        size="medium"
+                        rounded 
+                        icon={{ name: 'add', color: '#FFF' }} 
+                        overlayContainerStyle={{backgroundColor: '#08ce0e'}}
+                        onPress={() => this.props.navigation.navigate('PeopleCreateEdit')}
                     />
                 </View>
             </ThemeProvider>
@@ -206,5 +268,67 @@ class People extends React.Component {
     }
 }
 
+const mapStateToProps = (state) => {
+    const {people, auth} = state;
+    return {
+        people,
+        user: auth.user
+    }
+}
 
-export default People;
+const _styles = StyleSheet.create({
+	backTextWhite: {
+		color: '#FFF'
+	},
+	rowFront: {
+		backgroundColor: '#FFF',
+		borderBottomColor: '#c1c1c1',
+		borderBottomWidth: 1,
+	},
+	rowBack: {
+		alignItems: 'center',
+		backgroundColor: '#DDD',
+		flex: 1,
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		paddingLeft: 15,
+	},
+	backRightBtn: {
+		alignItems: 'center',
+		bottom: 0,
+		justifyContent: 'center',
+		position: 'absolute',
+		top: 0,
+		width: 75
+	},
+	backRightBtnLeft: {
+		backgroundColor: 'blue',
+		right: 75
+	},
+	backRightBtnRight: {
+		backgroundColor: '#08ce0e',
+		right: 0
+	},
+	controls: {
+		alignItems: 'center',
+		marginBottom: 30
+	},
+	switchContainer: {
+		flexDirection: 'row',
+		justifyContent: 'center',
+		marginBottom: 5
+	},
+	switch: {
+		alignItems: 'center',
+		borderWidth: 1,
+		borderColor: 'black',
+		paddingVertical: 10,
+		width: Dimensions.get('window').width / 4,
+	},
+	trash: {
+		height: 25,
+		width: 25,
+	}
+});
+
+export default connect(mapStateToProps)(People);

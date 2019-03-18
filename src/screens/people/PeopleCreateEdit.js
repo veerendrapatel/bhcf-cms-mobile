@@ -1,442 +1,523 @@
 import React, {Component} from 'react';
-import { View, ScrollView, Text, Alert, TouchableOpacity } from 'react-native';
+import { connect } from 'react-redux';
+import { View, ScrollView, Text, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { ThemeProvider, Icon, Input, CheckBox  } from 'react-native-elements';
 import DatePicker from 'react-native-datepicker'
-import {styles} from '../../services/styles';
-import HttpService from '../../services/services';
-
 import ImageUploader from '../../components/ImageUploader';
+import { peopleActions } from '../../store/actions';
+import { styles } from '../../styles/styles';
+
 
 class PeopleCreateEdit extends Component {
     static navigationOptions = ({ navigation }) => {
         return {
-        headerTitle: 'Create',
-        headerRight: navigation.state.params && navigation.state.params.headerRight
+            headerTitle: navigation.state.params && navigation.state.params.headerTitle ? navigation.state.params.headerTitle : 'Create',
+            headerRight: navigation.state.params && navigation.state.params.headerRight ? navigation.state.params.headerRight : null
         };
     };
 
-
-    _isMounted = false;
-    constructor(props) {
-        super(props);
-        this.state = {
-            currentUser: null,
-            id: '',
-            email: '',
-            first_name: '',
-            last_name: '',
-            middle_name: '',
-            nick_name: '',
+    state = {
+        submitted: false,
+        person: {
+            id: 0,
+            email: 'serg.casquejo1@gmail.com',
+            first_name: 'John',
+            last_name: 'Doe',
+            middle_name: 'Smith',
+            nick_name: 'John',
             birthdate: '2016-08-01',
-            address: '',
-            city: '',
-            contact_no: '',
-            secondary_contact_no: '',
-            facebook_name: '',
+            address: 'Lorem ipsum dolor',
+            city: 'dolor',
+            contact_no: '09121244343',
+            secondary_contact_no: '342-341-1223',
+            facebook_name: 'serg.casquejo',
             school_status_id: null,
             leadership_level_id: null,
             auxiliary_group_id: null,
-            status_id: null,
+            status: null,
             category_id: 1,
             gender: 'male',
             remarks: '',
-            school_statuses_options: [],
-            leadership_levels_options: [],
-            auxiliary_groups_options: [],
-            statuses_options: [],
-            categories_options: [],
-            ministries_options: [],
-            ministries: [],
-            ministry_ids: '',
             avatar: null,
             new_avatar: '',
+            ministries: null,
         }
-
-        this.save = this.save.bind(this);
-        
     }
 
+    // componentWillReceiveProps(nextProps) {
+    //     console.log(nextProps.person);
+
+        // if(nextProps.person !== this.props.person){
+        //     console.log('hello', nextProps.person);
+        //     const person = Object.assign(this.state.person, nextProps.person);
+        //     this.setState({ person: person });
+        // }
+    // }
+
+    
 
     componentDidMount = () => {
-         if (this.props.navigation.state.params != undefined) {
-                const member = this.props.navigation.state.params.member;
-                let newState = Object.assign(this.state, member);
-                let ministries = [];
-                member.my_ministries.map((item, i) => {
-                    ministries.push(item.id);
-                });
-                newState['ministries'] = ministries;
-                this.setState(newState);
-         }
-        this.props.navigation.setParams({
-                headerRight: (<TouchableOpacity style={{ padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center' }} onPress={this.save}><Text>Save</Text></TouchableOpacity>)
-        });
+        const { dispatch } = this.props;
+        const { person } = this.state;
 
-        this._isMounted = true;
-        HttpService.get(`members/dropdown-options`).then(res => {
-            if (this._isMounted) {
-                this.setState({
-                    auxiliary_groups_options: res.auxiliary_groups,
-                    categories_options: res.categories,
-                    ministries_options: res.ministries,
-                    statuses_options: res.statuses,
-                    school_statuses_options: res.school_statuses,
-                    leadership_levels_options: res.leadership_levels
-                });
+        if (this.props.navigation.state.params && this.props.navigation.state.params.person) {
+            const p = this.props.navigation.state.params.person;
+            this.setState({ person:  p});
+            this.props.navigation.setParams({
+                headerTitle: `${p.first_name} ${p.last_name}`,
+            });
+        }
+        this.props.navigation.setParams(
+            {
+                headerRight: (
+                    <TouchableOpacity 
+                        style={{ padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center' }} 
+                        onPress={this.save.bind(this)}>
+                        <Text>Save</Text>
+                    </TouchableOpacity>
+                )
             }
+        );
 
-        }, err => {
-            Alert.alert(err.message);
-        });
+        dispatch( peopleActions.getOptions() );
     }
 
 
-    componentWillUnmount() {
-        this._isMounted = false;
-         
-    }
-
-    onPressCheckbox(name, value) {
-        let arr = this.state[name];
-        const index = this.state[name].indexOf(value);
+    onToggleMinistry = (ministryID) => {
+        const { ministries } = this.state.person;
+        let arr = ministries ? ministries : [];
+        const index = arr.indexOf(ministryID);
         if (index !== -1) {
             arr.splice(index, 1);
         } else {
-            arr.push(value);
+            arr.push(ministryID);
         }
-
-        this.setState({ [name]:  arr});
+        this.onChange('ministries', arr);
     }
 
-    save() {
-
-        const {
-            id,
-            email,
-            first_name,
-            last_name,
-            middle_name,
-            nick_name,
-            birthdate,
-            address,
-            city,
-            gender,
-            contact_no,
-            secondary_contact_no,
-            facebook_name,
-            school_status_id,
-            leadership_level_id,
-            auxiliary_group_id,
-            status,
-            category_id,
-            remarks,
-            ministries,
-            ministry_ids,
-            new_avatar,
-        } = this.state;
-
+    save = () => {
+        const { dispatch } = this.props;
+        const { person } = this.state;
+        this.setState({ submitted: true });
         
-        HttpService.post(`members${id > 0 ? `/${id}`: `` }`, 
-            {
-                email: email,
-                first_name: first_name,
-                last_name: last_name,
-                middle_name: middle_name,
-                nick_name: nick_name,
-                birthdate: birthdate,
-                gender: gender,
-                address: address,
-                city: city,
-                contact_no: contact_no,
-                secondary_contact_no: secondary_contact_no,
-                facebook_name: facebook_name,
-                school_status_id: school_status_id,
-                leadership_level_id: leadership_level_id,
-                auxiliary_group_id: auxiliary_group_id,
-                status: status,
-                category_id: category_id,
-                remarks: remarks,
-                ministries: ministries,
-                ministry_ids: ministry_ids,
-                new_avatar: new_avatar,
-                _method:  id > 0 ? 'PUT' : 'POST'
-            }
-        ).then(res => {
-            if (this._isMounted) {
-                if (res.ok) {
-                    if (res.data) {
-                        this.setState(Object.assign(this.state, res.data));
-                    }
-                    Alert.alert('Success', 'Successfully Saved!');
-                } else {
-                    Alert.alert('Error', res.data);
+        if (person.id) {
+            person._method = 'PUT';
+            dispatch(peopleActions.updatePerson(person.id, person));
+        } else {
+            person._method = 'POST';
+            dispatch(peopleActions.createPerson(person));
+        }
+    }
+
+    onChange = (name, value) => {
+        this.setState(
+            prevState => ({ 
+                person: {
+                    ...prevState.person,
+                    [name]: value
                 }
-            }
-        }, err => {
-            Alert.alert('Error', err.message);
-        })
+            })
+        );
     }
 
     render() {
-        const {avatar} = this.state;
+        const {person} = this.state;
+        const { options } = this.props;
+        
         return (
             <ThemeProvider>
-            <View style={styles.container}>
-                    <ScrollView style={{ width: '100%' }}>
-                    
-
-                    <ImageUploader source={avatar ? avatar.thumbnail : null} onSelectedImage={(image) => {
-                        this.setState({ new_avatar: image });
-                    }}/>
-                        <Input 
-                            placeholder='First Name'
-                            defaultValue={this.state.first_name}
-                            onChangeText={(text) => this.setState({ first_name: text })}
-                            leftIcon={
-                                <Icon
-                                name='ios-person' 
-                                type='ionicon'
-                                size={24}
-                                color='black'
-                                />
-                            }
-                            autoCorrect={false}
-                        />
-                        <Input 
-                            placeholder='Last Name'
-                            defaultValue={this.state.last_name}
-                            onChangeText={(text) => this.setState({ last_name: text })}
-                            leftIcon={
-                                <Icon
-                                name='ios-person'
-                                type='ionicon'
-                                size={24}
-                                color='black'
-                                />
-                            }
-                            autoCorrect={false}
-                        />
-                        <Input 
-                            placeholder='Middle Name'
-                            defaultValue={this.state.middle_name}
-                            onChangeText={(text) => this.setState({ middle_name: text })}
-                            leftIcon={
-                                <Icon
-                                name='ios-person'
-                                type='ionicon'
-                                size={24}
-                                color='black'
-                                />
-                            }
-                            autoCorrect={false}
-                        />
-                        <Input 
-                            placeholder='Nick Name'
-                            defaultValue={this.state.nick_name}
-                            onChangeText={(text) => this.setState({ nick_name: text })}
-                            leftIcon={
-                                <Icon
-                                name='ios-person'
-                                type='ionicon'
-                                size={24}
-                                color='black'
-                                />
-                            }
-                            autoCorrect={false}
-                        />
-                        <DatePicker
-                            style={{width: 200}}
-                            date={this.state.birthdate}
+                <View style={styles.container}>
+                { person ? 
+                    (
+                        <ScrollView style={{ width: '100%' }}>
+                            <ImageUploader 
+                                source={person.avatar ? person.avatar.thumbnail : null} 
+                                onSelectedImage={image => this.onChange('new_avatar', image)}
+                            />
+                            <Input 
+                                placeholder='First Name'
+                                defaultValue={person.first_name}
+                                onChangeText={text => this.onChange('first_name', text )}
+                                autoCorrect={false}
+                                leftIcon={
+                                    <Icon
+                                        name='ios-person' 
+                                        type='ionicon'
+                                        size={24}
+                                        color='black'
+                                    />
+                                }
+                            />
+                            <Input 
+                                placeholder='Last Name'
+                                defaultValue={person.last_name}
+                                onChangeText={text => this.onChange('last_name', text )}
+                                autoCorrect={false}
+                                leftIcon={
+                                    <Icon
+                                        name='ios-person'
+                                        type='ionicon'
+                                        size={24}
+                                        color='black'
+                                    />
+                                }
+                            />
+                            <Input 
+                                placeholder='Middle Name'
+                                defaultValue={person.middle_name}
+                                onChangeText={text => this.onChange('middle_name', text )}
+                                leftIcon={
+                                    <Icon
+                                        name='ios-person'
+                                        type='ionicon'
+                                        size={24}
+                                        color='black'
+                                    />
+                                }
+                                autoCorrect={false}
+                            />
+                            <Input 
+                                placeholder='Nick Name'
+                                defaultValue={person.nick_name}
+                                onChangeText={text => this.onChange('nick_name', text )}
+                                leftIcon={
+                                    <Icon
+                                        name='ios-person'
+                                        type='ionicon'
+                                        size={24}
+                                        color='black'
+                                    />
+                                }
+                                autoCorrect={false}
+                            />
+                            <DatePicker
+                                style={{width: 200}}
+                                date={person.birthdate}
+                                mode="date"
+                                placeholder="select date"
+                                format="YYYY-MM-DD"
+                                confirmBtnText="Confirm"
+                                cancelBtnText="Cancel"
+                                onDateChange={(date) => {this.setState({birthdate: date})}}
+                            />
+                            <Input 
+                                placeholder='City'
+                                defaultValue={person.city}
+                                onChangeText={text => this.onChange('city', text )}
+                                autoCorrect={false}
+                                leftIcon={
+                                    <Icon
+                                        name='location-city'
+                                        type='fontawesome'
+                                        size={24}
+                                        color='black'
+                                    />
+                                }
+                            />
+                            <Input 
+                                multiline={true}
+                                placeholder='Address'
+                                defaultValue={person.address}
+                                onChangeText={text => this.onChange('address', text )}
+                                autoCorrect={false}
+                                leftIcon={
+                                    <Icon
+                                        name='add-location'
+                                        type='fontawesome'
+                                        size={24}
+                                        color='black'
+                                    />
+                                }
+                            />
+                            <Input 
+                                placeholder='Contact No'
+                                defaultValue={person.contact_no}
+                                onChangeText={text => this.onChange('contact_no', text )}
+                                autoCorrect={false}
+                                leftIcon={
+                                    <Icon
+                                        name='ios-call'
+                                        type='ionicon'
+                                        size={24}
+                                        color='black'
+                                    />
+                                }
+                                
+                            />
+                            <Input 
+                                placeholder='Secondary Contact No'
+                                defaultValue={person.secondary_contact_no}
+                                onChangeText={text => this.onChange('secondary_contact_no', text )}
+                                autoCorrect={false}
+                                leftIcon={
+                                    <Icon
+                                        name='ios-phone-portrait'
+                                        type='ionicon'
+                                        size={24}
+                                        color='black'
+                                    />
+                                }
+                                
+                            />
+                            <Input 
+                                placeholder='Facebook Name'
+                                defaultValue={person.facebook_name}
+                                onChangeText={text => this.onChange('facebook_name', text )}
+                                autoCorrect={false}
+                                autoCapitalize="none"
+                                leftIcon={
+                                    <Icon
+                                        name='logo-facebook'
+                                        type='ionicon'
+                                        size={24}
+                                        color='black'
+                                    />
+                                }
                             
-                            mode="date"
-                            placeholder="select date"
-                            format="YYYY-MM-DD"
-                            confirmBtnText="Confirm"
-                            cancelBtnText="Cancel"
-                            onDateChange={(date) => {this.setState({birthdate: date})}}
-                        />
-                        <Input 
-                            placeholder='City'
-                            defaultValue={this.state.city}
-                            onChangeText={(text) => this.setState({ city: text })}
-                            leftIcon={
-                                 <Icon
-                                name='location-city'
-                                type='fontawesome'
-                                size={24}
-                                color='black'
-                                />
-                            }
-                            autoCorrect={false}
-                        />
-                        <Input 
-                            multiline={true}
-                            placeholder='Address'
-                            defaultValue={this.state.address}
-                            onChangeText={(text) => this.setState({ address: text })}
-                            leftIcon={
-                                <Icon
-                                name='add-location'
-                                type='fontawesome'
-                                size={24}
-                                color='black'
-                                />
-                            }
-                            autoCorrect={false}
-                        />
-                        <Input 
-                            placeholder='Contact No'
-                            defaultValue={this.state.contact_no}
-                            onChangeText={(text) => this.setState({ contact_no: text })}
-                            leftIcon={
-                                <Icon
-                                name='ios-call'
-                                type='ionicon'
-                                size={24}
-                                color='black'
-                                />
-                            }
-                            autoCorrect={false}
-                        />
-                        <Input 
-                            placeholder='Secondary Contact No'
-                            defaultValue={this.state.secondary_contact_no}
-                            onChangeText={(text) => this.setState({ secondary_contact_no: text })}
-                            leftIcon={
-                                <Icon
-                                name='ios-phone-portrait'
-                                type='ionicon'
-                                size={24}
-                                color='black'
-                                />
-                            }
-                            autoCorrect={false}
-                        />
-                        <Input 
-                            placeholder='Facebook Name'
-                            defaultValue={this.state.facebook_name}
-                            onChangeText={(text) => this.setState({ facebook_name: text })}
-                            leftIcon={
-                                <Icon
-                                name='logo-facebook'
-                                type='ionicon'
-                                size={24}
-                                color='black'
-                                />
-                            }
-                            autoCorrect={false}
-                            autoCapitalize="none"
-                        />
-                        <Input 
-                            placeholder='Remarks' 
-                            defaultValue={this.state.remarks}
-                            onChangeText={(text) => this.setState({ remarks: text })}
-                            multiline={true}
-                            leftIcon={
-                                <Icon
-                                name='ios-paper'
-                                type='ionicon'
-                                size={24}
-                                color='black'
-                                />
-                            }
-                            autoCorrect={false}
-                        />
-                        <View>
-                            <Text>Gender</Text>
-                            <View style={{ flex: 1, flexDirection: 'row' }}>
-                            <CheckBox
-                                title='Male'
-                                checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
-                                uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
-                                checked={this.state.gender == 'male'}
-                                onPress={() => this.setState({gender: 'male'})}
-                                />
-                            <CheckBox
-                                title='Female'
-                                checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
-                                uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
-                                checked={this.state.gender == 'female'}
-                                onPress={() => this.setState({gender: 'female'})}
-                                />
+                            />
+                            <Input 
+                                placeholder='Remarks' 
+                                defaultValue={person.remarks}
+                                onChangeText={text => this.onChange('remarks', text )}
+                                multiline={true}
+                                autoCorrect={false}
+                                leftIcon={
+                                    <Icon
+                                        name='ios-paper'
+                                        type='ionicon'
+                                        size={24}
+                                        color='black'
+                                    />
+                                }
+                                
+                            />
+                            <View>
+                                <Text>Gender</Text>
+                                <View style={{ flex: 1, flexDirection: 'row' }}>
+                                <CheckBox
+                                    title='Male'
+                                    checkedIcon={
+                                        <Icon 
+                                            name="ios-checkmark-circle" 
+                                            type="ionicon"    
+                                        />
+                                    }
+                                    uncheckedIcon={
+                                        <Icon 
+                                            name="ios-checkmark-circle-outline" 
+                                            type="ionicon"    
+                                        />
+                                    }
+                                    checked={person.gender == 'male'}
+                                    onPress={() => this.onChange('gender', 'male')}
+                                    />
+                                <CheckBox
+                                    title='Female'
+                                    checkedIcon={
+                                        <Icon 
+                                            name="ios-checkmark-circle" 
+                                            type="ionicon"
+                                        />
+                                    }
+                                    uncheckedIcon={
+                                        <Icon 
+                                            name="ios-checkmark-circle-outline" 
+                                            type="ionicon"
+                                        />
+                                    }
+                                    checked={person.gender == 'female'}
+                                    onPress={() => this.onChage('gender', 'female')}
+                                    />
+                                </View>
                             </View>
+                            <View>
+                                <Text>Ministry</Text>
+                                { 
+                                    options &&
+                                    options.ministries && options.ministries.map((item, i) => {
+                                        return (
+                                                <CheckBox key={item.id}
+                                                    title={item.name} 
+                                                    checked={ person.ministries && person.ministries.indexOf(item.id) !== -1 }
+                                                    onPress={() => this.onToggleMinistry( item.id )}
+                                                    checkedIcon={
+                                                        <Icon 
+                                                            name="ios-checkmark-circle" 
+                                                            type="ionicon"
+                                                        />
+                                                    }
+                                                    uncheckedIcon={
+                                                        <Icon 
+                                                            name="ios-checkmark-circle-outline" 
+                                                            type="ionicon"
+                                                        />
+                                                    }
+                                                />
+                                            )
+                                        }   
+                                    )
+                                }
+                            </View>
+                            <View>
+                                <Text>Leadership Level</Text>
+                                { 
+                                    options &&
+                                    options.leadership_levels && options.leadership_levels.map((item, i) => {
+                                        return (
+                                                <CheckBox key={item.id}
+                                                    title={item.name}
+                                                    checkedIcon={
+                                                        <Icon 
+                                                            name="ios-checkmark-circle" 
+                                                            type="ionicon"
+                                                        />
+                                                    }
+                                                    uncheckedIcon={
+                                                        <Icon 
+                                                            name="ios-checkmark-circle-outline" 
+                                                            type="ionicon"/>
+                                                    }
+                                                    checked={ person.leadership_level_id == item.id }
+                                                    onPress={() =>  this.onChange('leadership_level_id', item.id) }
+                                                />
+                                            )
+                                        }
+                                    )
+                                }
+                            </View>
+                            <View>
+                                <Text>Auxiliary Group</Text>
+                                { 
+                                    options &&
+                                    options.auxiliary_groups && options.auxiliary_groups.map((item, i) => {
+                                        return (
+                                                <CheckBox key={item.id}
+                                                    title={item.name}
+                                                    checkedIcon={
+                                                        <Icon 
+                                                            name="ios-checkmark-circle" 
+                                                            type="ionicon"
+                                                        />
+                                                    }
+                                                    uncheckedIcon={
+                                                        <Icon 
+                                                            name="ios-checkmark-circle-outline" 
+                                                            type="ionicon"
+                                                        />
+                                                    }
+                                                    checked={ person.auxiliary_group_id == item.id }
+                                                    onPress={() =>  this.onChange('auxiliary_group_id', item.id) }
+                                                />
+                                            )
+                                        }
+                                    )
+                                }
+                            </View>
+                            <View>
+                                <Text>Status</Text>
+                                { 
+                                    options &&
+                                    options.statuses && options.statuses.map((item, i) => {
+                                        return (
+                                                <CheckBox key={item.id}
+                                                    title={item.name}
+                                                    checkedIcon={
+                                                        <Icon 
+                                                            name="ios-checkmark-circle" 
+                                                            type="ionicon"
+                                                        />
+                                                    }
+                                                    uncheckedIcon={
+                                                        <Icon 
+                                                            name="ios-checkmark-circle-outline" 
+                                                            type="ionicon"
+                                                        />
+                                                    }
+                                                    checked={ person.status == item.id }
+                                                    onPress={() =>  this.onChange('status', item.id) }
+                                                />
+                                            )
+                                        }
+                                    )
+                                }
+                            </View>
+                            <View>
+                                <Text>School Status</Text>
+                                { 
+                                    options &&
+                                    options.school_statuses && options.school_statuses.map((item, i) => {
+                                        return (
+                                                <CheckBox key={item.id}
+                                                    title={item.name}
+                                                    checkedIcon={
+                                                        <Icon 
+                                                            name="ios-checkmark-circle" 
+                                                            type="ionicon"
+                                                        />
+                                                    }
+                                                    uncheckedIcon={
+                                                        <Icon 
+                                                            name="ios-checkmark-circle-outline" 
+                                                            type="ionicon"
+                                                        />
+                                                    }
+                                                    checked={ person.school_status_id == item.id }
+                                                    onPress={() =>  this.onChange('school_status_id', item.id) }
+                                                />
+                                            )
+                                        }
+                                    )
+                                }
+                            </View>
+                            <View>
+                                <Text>Categories</Text>
+                                { 
+                                    options &&
+                                    options.categories && options.categories.map((item, i) => {
+                                        return (
+                                                <CheckBox key={item.id}
+                                                    title={item.name}
+                                                    checkedIcon={
+                                                        <Icon 
+                                                            name="ios-checkmark-circle" 
+                                                            type="ionicon"
+                                                        />
+                                                    }
+                                                    uncheckedIcon={
+                                                        <Icon 
+                                                            name="ios-checkmark-circle-outline" 
+                                                            type="ionicon"
+                                                        />
+                                                    } 
+                                                    checked={ person.category_id == item.id }
+                                                    onPress={() =>  this.onChange('category_id', item.id) }
+                                                />
+                                            )
+                                        }
+                                    )
+                                }
+                            </View>
+                        </ScrollView>
+                    ) :(
+                         <View style={styles.container}>
+                            <ActivityIndicator size="large" />
                         </View>
-                        <View>
-                            <Text>Ministry</Text>
-                            { this.state.ministries_options &&
-                            this.state.ministries_options.map((item, i) => {
-                                return (<CheckBox key={item.id}
-                                    title={item.name} 
-                                    checked={ this.state.ministries.indexOf(item.id) !== -1 }
-                                    onPress={() => this.onPressCheckbox( 'ministries', item.id )}
-                                    checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
-                                    uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
-                                    />)
-                                })
-                            }
-                        </View>
-                        <View>
-                            <Text>Leadership Level</Text>
-                            { this.state.leadership_levels_options &&
-                            this.state.leadership_levels_options.map((item, i) => {
-                                return (<CheckBox key={item.id}
-                                    title={item.name}
-                                    checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
-                                    uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
-                                    checked={ this.state.leadership_level_id == item.id }
-                                    onPress={() =>  this.setState({'leadership_level_id': item.id}) }
-                                    />)
-                                })
-                            }
-                        </View>
-                        <View>
-                            <Text>Auxiliary Group</Text>
-                            { this.state.auxiliary_groups_options &&
-                            this.state.auxiliary_groups_options.map((item, i) => {
-                                return (<CheckBox key={item.id}
-                                    title={item.name}
-                                    checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
-                                    uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
-                                    checked={ this.state.auxiliary_group_id == item.id }
-                                    onPress={() =>  this.setState({'auxiliary_group_id': item.id}) }
-                                    />)
-                                })
-                            }
-                        </View>
-                        <View>
-                            <Text>School Status</Text>
-                            { this.state.school_statuses_options &&
-                            this.state.school_statuses_options.map((item, i) => {
-                                return (<CheckBox key={item.id}
-                                    title={item.name}
-                                    checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
-                                    uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>}
-                                    checked={ this.state.school_status_id == item.id }
-                                    onPress={() =>  this.setState({'school_status_id': item.id}) }
-                                    />)
-                                })
-                            }
-                        </View>
-                        <View>
-                            <Text>Categories</Text>
-                            { this.state.categories_options &&
-                            this.state.categories_options.map((item, i) => {
-                                return (<CheckBox key={item.id}
-                                    title={item.name}
-                                    checkedIcon={<Icon name="ios-checkmark-circle" type="ionicon"/>}
-                                    uncheckedIcon={<Icon name="ios-checkmark-circle-outline" type="ionicon"/>} 
-                                    checked={ this.state.category_id == item.id }
-                                    onPress={() =>  this.setState({'category_id': item.id}) }
-                                    />)
-                                })
-                            }
-                        </View>
-                    </ScrollView>
-            </View>
-
+                    ) 
+                    }
+                </View>
             </ThemeProvider>
         )
     }
 }
 
-export default PeopleCreateEdit
+
+const mapStateToProps = (state) => {
+    const { options, person } =  state.people;
+    
+    return {
+        options,
+        person
+    }
+}
+
+export default connect(mapStateToProps)(PeopleCreateEdit)

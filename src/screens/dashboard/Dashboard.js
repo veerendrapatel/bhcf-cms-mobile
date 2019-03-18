@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, TextInput, Button, Alert } from 'react-native';
 import { Dimensions, ScrollView } from 'react-native';
-import { Header, Icon, ThemeProvider } from 'react-native-elements';
-import { MenuBurger } from '../components/Header';
-import { styles } from '../services/styles';
+import {  Icon, ThemeProvider } from 'react-native-elements';
+import {connect} from 'react-redux';
+import { styles } from '../../styles/styles';
+import authActions from '../../store/actions/auth.actions';
 const screenWidth = Dimensions.get('window').width
 import {
   LineChart,
@@ -11,8 +12,7 @@ import {
   PieChart,
   ProgressChart,
   ContributionGraph
-} from 'react-native-chart-kit'
-
+} from 'react-native-chart-kit';
 
 class Dashboard extends React.Component {
     static navigationOptions = ({ navigation }) => {
@@ -26,8 +26,9 @@ class Dashboard extends React.Component {
         };
     };
 
+    
+
     render() {
-        
         return (
             <ThemeProvider>
                 <View style={styles.container}>
@@ -36,7 +37,7 @@ class Dashboard extends React.Component {
                     <View>
                         <View style={{flex: 1, flexDirection: 'row', marginVertical: 5}}>
                             <View style={{
-                                    width: Dimensions.get('window').width / 2, 
+                                    width: screenWidth / 2, 
                                     height: 100, 
                                     backgroundColor: '#3cea8d',
                                     flex: 1,  
@@ -49,7 +50,7 @@ class Dashboard extends React.Component {
                                 <Text style={{ color: '#FFF' }}>Total Guest/VIP</Text>
                             </View>
                             <View style={{
-                                width: Dimensions.get('window').width / 2, 
+                                width: screenWidth / 2, 
                                 height: 100, 
                                 backgroundColor: '#7095d2', 
                                 flex: 1,  
@@ -65,7 +66,7 @@ class Dashboard extends React.Component {
                         </View>
                         <View style={{flex: 1, flexDirection: 'row', marginVertical: 5}}>
                             <View style={{
-                                    width: Dimensions.get('window').width / 2, 
+                                    width: screenWidth / 2, 
                                     height: 100, 
                                     backgroundColor: '#c29cc2',
                                     flex: 1,  
@@ -78,7 +79,7 @@ class Dashboard extends React.Component {
                                 <Text style={{ color: '#FFF' }}>Total Regular</Text>
                             </View>
                             <View style={{
-                                width: Dimensions.get('window').width / 2, 
+                                width: screenWidth / 2, 
                                 height: 100, 
                                 backgroundColor: '#FF5722', 
                                 flex: 1,  
@@ -105,7 +106,7 @@ class Dashboard extends React.Component {
                                     ]
                                 }]
                             }}
-                            width={Dimensions.get('window').width - 30} // from react-native
+                            width={screenWidth - 30} // from react-native
                             height={220}
                             chartConfig={{
                                 backgroundColor: '#e26a00',
@@ -130,5 +131,10 @@ class Dashboard extends React.Component {
     }
 }
 
+const mapStateToProps = (state) => {
+    return {
 
-export default Dashboard;
+    }
+}
+
+export default connect(mapStateToProps)(Dashboard);

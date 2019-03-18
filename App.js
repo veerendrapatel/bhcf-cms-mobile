@@ -1,9 +1,37 @@
 import React, {Component} from 'react';
-// import { StyleSheet, Text, View } from 'react-native';
-import { SignedIn, SignedOut, createRootNavigator } from './src/services/routes';
-import { isSignedIn } from './src/services/auth';
+import { Provider } from 'react-redux';
+import { persistStore } from 'redux-persist';
+import { PersistGate } from 'redux-persist/es/integration/react';
+import { store, persistor } from './src/store';
+import { Loader } from './src/components/Loader';
+import { createRootNavigator } from './src/helpers/routes';
+import { getCurrentUser } from './src/helpers/async-storage';
+import { signOut, signIn } from './src/store/actions/auth.actions';
+import { Text, View, Image, Alert } from 'react-native';
+import FlashMessage, { showMessage, hideMessage } from "react-native-flash-message";
+import { alertActions } from './src/store/actions/alert.actions';
 
-export default class App extends React.Component {
+
+
+store.subscribe(() => {
+  const {alert} = store.getState();
+  // console.log(.alert);
+  if (alert.message) {
+    showMessage({
+      message: alert.message,
+      type: alert.type,
+    });
+    store.dispatch(alertActions.clear());
+  }
+
+  
+});
+
+
+persistStore(store);
+
+
+class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -11,21 +39,54 @@ export default class App extends React.Component {
       checkedSignIn: false
     }
   }
-  
-  componentDidMount() {
-    isSignedIn()
-      .then(res => this.setState({signedIn: res, checkedSignIn: true }))
-      .catch(error => alert("An error occured"));
+
+
+  componentWillMount() {
+    const { dispatch } = store;
+    getCurrentUser().then(
+      res => {
+        const currentUser = JSON.parse(res);
+        
+        if (currentUser) {
+          
+          dispatch({ type: 'SET_CURRENT_USER', user: currentUser, isLoggedIn: true });
+        }
+        
+        this.setState({
+          signedIn: currentUser ? true : false,
+          checkedSignIn: true,
+        });
+      
+      }, 
+      err => {
+        this.setState({
+            signedIn: false,
+            checkedSignIn: false,
+          });
+      }
+    )
   }
 
   render() {
     const { checkedSignIn, signedIn } = this.state;
+    
     // If we haven't checked AsyncStorage yet, don't render anything (better ways to do this)
     if (!checkedSignIn) {
       return null;
     }
 
+    const {alert}  = this.props;
+    
+            
     const Layout = createRootNavigator(signedIn);
-    return <Layout />
+
+    return <Provider store={store}>
+            <PersistGate loading={<Loader />} persistor={persistor}>
+              <Layout />
+               <FlashMessage position="top" duration={2000}/>
+            </PersistGate>
+        </Provider>
   }
 }
+
+export default App

@@ -2,21 +2,15 @@
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import {NavigationActions} from 'react-navigation';
-import { View, Text, ScrollView, Image } from 'react-native';
-import { onSignOut } from '../services/auth';
-import { styles } from '../services/styles';
+import { View, Text, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { styles } from '../styles/styles';
 import { Icon, Avatar } from 'react-native-elements';
-import { getCurrentUser } from '../services/auth';
+import { connect } from 'react-redux';
+import { signOut } from '../store/actions/auth.actions';
+
 
 class SideMenu extends Component {
-    constructor(props) {
-      super(props);
-      this.state = {
-          currentUser: null,
-          userLoaded: false,
-        }
 
-    }
     navigateToScreen = (route) => () => {
         const navigateAction = NavigationActions.navigate({
           routeName: route
@@ -25,48 +19,51 @@ class SideMenu extends Component {
         this.props.navigation.dispatch(navigateAction);
     }
 
-    componentDidMount() {
-      getCurrentUser().then(res => {
-            this.setState({
-              currentUser: JSON.parse(res),
-              userLoaded: true,
-            });
-      });
-    }
-    
-
+    componentDidUpdate() {  
+        if(this.props.user === null) {
+            this.props.navigation.navigate('Login');
+        }
+    };
 
     render() {
-      const { currentUser, userLoaded } = this.state;
-        return (
-            <View style={styles.sideMenuContainer}>
-                <ScrollView>
+      
+      const { user } = this.props;
+      if (!user) {
+        return <Text>Loading...</Text>;
+      }
+      return (
+          <View style={styles.sideMenuContainer}>
+              <ScrollView>
+              { user ?
+              (
                 <View>
-                  {userLoaded &&
-                  <View  style={{ 
+                
+                  <View  style={
+                    { 
                       display: 'flex', 
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center', 
                       width: '100%',
                       paddingTop: 100
-                       }}>
-                       { currentUser.avatar ?
+                    }
+                  }>
+                        { user.member && user.member.avatar ?
                         (
                           <Avatar
                             rounded
-                            source={{ uri: currentUser.avatar.thumbnail }}
+                            source={{ uri: user.member.avatar.thumbnail }}
                             size="xlarge"
                           />
                         ) : 
                         (
-                          <Avatar size="xlarge" rounded title={ currentUser.full_name.charAt(0).toUpperCase() } />
+                          <Avatar size="xlarge" rounded title={ user.member ? user.member.first_name.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase() } />
                         )
-                       }
-                    <Text>{ currentUser.full_name }</Text>
+                        }
+                    <Text>{ user.member ? user.member.first_name : user.username }</Text>
                     
                   </View>
-                  }
+                  
                     <View style={styles.navSection}>
                         <View style={styles.navItem}>
                           <Icon
@@ -147,15 +144,21 @@ class SideMenu extends Component {
                         <Icon name='sign-out' type='font-awesome'/>
                           <Text style={styles.navItemText}  onPress={ () => {
                               const { navigate } = this.props.navigation;
-                              onSignOut().then(() => navigate('Login'));
+                              this.props.dispatch(signOut());
                           } }>Signout</Text>
                       </View>
                     </View>
                 </View>
-                
-                </ScrollView>
-            </View>
-        )
+              ) : (
+                <View style={styles.container}>
+                    <ActivityIndicator size="large" />
+                </View>
+              )
+            }
+              
+          </ScrollView>
+        </View>
+      )
     }
 }
 
@@ -164,4 +167,13 @@ SideMenu.propTypes = {
   navigation: PropTypes.object
 };
 
-export default SideMenu;
+const mapStateToProps = (state) => {
+  const { user } = state.auth;
+  
+
+  return {
+    user
+  }
+}
+
+export default connect(mapStateToProps)(SideMenu);

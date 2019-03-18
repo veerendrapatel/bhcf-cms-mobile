@@ -55,9 +55,6 @@ class ImageUploader extends Component {
                
             }
         } catch (e) {
-            console.log({ uploadResponse });
-            console.log({ uploadResult });
-            console.log({ e });
             alert('Upload failed, sorry :(');
         } finally {
             this.setState({
@@ -86,7 +83,6 @@ class ImageUploader extends Component {
    
 
     _takePhoto = async () => {
-        console.log('test');
         const { status: cameraPerm } = await Permissions.askAsync(Permissions.CAMERA);
 
         const { status: cameraRollPerm } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
