@@ -34,6 +34,7 @@ class PeopleCreateEdit extends Component {
             address: '',
             city: '',
             contact_no: '',
+            leader_id : 0,
             secondary_contact_no: '',
             facebook_name: '',
             school_status_id: null,
@@ -80,6 +81,13 @@ class PeopleCreateEdit extends Component {
         );
 
         dispatch( peopleActions.getOptions() );
+
+        if (this.props.navigation.state.params && this.props.navigation.state.params.leaderID) {
+            
+            const newPersonState = Object.assign(this.state.person, { leader_id:  this.props.navigation.state.params.leaderID});
+            // console.log(newPersonState);
+            this.setState({ person: newPersonState });
+        }
     }
 
 
@@ -107,6 +115,7 @@ class PeopleCreateEdit extends Component {
             nick_name: person.nick_name,
             birthdate: person.birthdate,
             address: person.address,
+            leader_id: person.leader_id,
             city: person.city,
             contact_no: person.contact_no,
             secondary_contact_no: person.secondary_contact_no,

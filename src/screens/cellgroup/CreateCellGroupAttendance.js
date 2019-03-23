@@ -43,7 +43,7 @@ class CreateCellGroupAttendance extends Component {
       const { dispatch, user } = this.props;
       const { year, week } = this.state;
       const leaderID = this.props.navigation.state.params && this.props.navigation.state.params.personID ? this.props.navigation.state.params.personID : user.member.id;
-      console.log(leaderID);
+      // console.log(leaderID);
       dispatch( cellGroupActions.createCellGroupAttendance( leaderID,  year, week ) );
      
     }

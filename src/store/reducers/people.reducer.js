@@ -74,9 +74,10 @@ const peopleReducer = (state = initState, action) => {
                 options: action.options
             }
         case peopleConstants.FIND_BY_ID: 
+            const person = state.items.filter(item => item.id === action.payload.id);
             return {
                 ...state,
-                person: state.items.filter(item => item.id === action.id)
+                person: person ? person[0] : null
             }
         default:
             return state;

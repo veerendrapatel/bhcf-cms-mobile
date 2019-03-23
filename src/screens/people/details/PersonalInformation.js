@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
 import { connect } from 'react-redux';
 import { dimensions, colors, padding, fonts, container } from '../../../styles/base';
 import { Icon, Avatar, Divider, Badge, Button } from 'react-native-elements';
+import { peopleActions } from '../../../store/actions';
 
 class PersonalInformation extends Component {
     static navigationOptions = ({ navigation }) => {
@@ -22,9 +23,20 @@ class PersonalInformation extends Component {
     }
 
     componentDidMount() {
+        const { dispatch } = this.props;
         if (this.props.navigation.state.params != undefined) {
             const person = this.props.navigation.state.params.person;
-            this.setState({ person: person });
+
+            const didBlurSubscription = this.props.navigation.addListener(
+                'willFocus',
+                payload => {
+                    //Todo
+                    dispatch(peopleActions.findPeopleById( person.id ));
+                }
+            );
+            
+            
+            // this.setState({ person: person });
             this.props.navigation.setParams({
                     headerTitle: person.full_name,
                     headerRight: (
@@ -39,7 +51,7 @@ class PersonalInformation extends Component {
     }
 
     render() {
-        const { person } = this.state;
+        const { person } = this.props;
         return (
             <View style={styles.container}>
                 {
@@ -79,6 +91,16 @@ class PersonalInformation extends Component {
                                                 type="ionicon"
                                                 color={ colors.primary }
                                                 containerStyle={styles.txtIconRightBordered}
+                                                onPress ={() => {
+                                                    const args = {
+                                                        number: person.contact_no,
+                                                        prompt: false,
+                                                    };
+                                                    
+                                                    call(args).catch(err => {
+                                                        dispatch(alertActions.error(err.message));
+                                                    });
+                                                }}
                                             />
                                             <Icon 
                                                 size={30}
@@ -86,6 +108,9 @@ class PersonalInformation extends Component {
                                                 type="ionicon"
                                                 color={ colors.orange }
                                                 containerStyle={styles.txtIcon}
+                                                onPress={() => {
+                                                    Linking.openURL(`sms:?addresses=${person.contact_no}&body=`);
+                                                }}
                                             />
                                         </View>
                                     </View>
@@ -104,6 +129,16 @@ class PersonalInformation extends Component {
                                                 type="ionicon"
                                                 color={ colors.primary }
                                                 containerStyle={styles.txtIconRightBordered}
+                                                onPress ={() => {
+                                                    const args = {
+                                                        number:person.contact_no,
+                                                        prompt: false,
+                                                    };
+                                                    
+                                                    call(args).catch(err => {
+                                                        dispatch(alertActions.error(err.message));
+                                                    });
+                                                }}
                                             />
                                             <Icon 
                                                 size={30}
@@ -111,6 +146,9 @@ class PersonalInformation extends Component {
                                                 type="ionicon"
                                                 color={ colors.orange }
                                                 containerStyle={styles.txtIcon}
+                                                onPress={() => {
+                                                    Linking.openURL(`sms:?addresses=${person.contact_no}&body=`);
+                                                }}
                                             />
                                         </View>
                                     </View>
@@ -289,10 +327,12 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = ( state ) => {
-    return {
-        
-    }
 
+    const {person} = state.people;
+    // console.log(person);
+    return {
+        person
+    }
     
 }
 

@@ -66,17 +66,36 @@ class SideMenu extends Component {
                           title={user.member ? user.member.first_name : user.username}
                           collapsed={false}
                           headerStyle={styles.headerStyle}
-                          headerIconSize={30}
-                          headerIconColor="black"
+                          headerIconSize={26}
+                          headerIconColor={colors.grey}
                           headerTextStyle={styles.headerTextStyle}
                       >
                           <View style={styles.collapsViewStyle}>
-                              <Text 
-                                style={styles.collapsTextStyle}
-                                onPress={this.navigateToScreen('Person', { person: user.member })}
-                              >Profile</Text>
-                              <Text style={styles.collapsTextStyle}>Account Information</Text>
-                              <Text style={styles.collapsTextStyle}>Settings</Text>
+                            <View  style={styles.navItem}>
+                              <Icon                                   
+                                iconStyle={styles.iconStyle} 
+                                name='users'
+                                type='font-awesome'  
+                              />
+                              <Text style={styles.navItemText} onPress={this.navigateToScreen('Person', { person: user.member })}>Profile</Text>
+                            </View>
+                            <View  style={styles.navItem}>
+                              <Icon                                   
+                                iconStyle={styles.iconStyle} 
+                                name='users'
+                                type='font-awesome'  
+                              />
+                              <Text style={styles.navItemText} onPress={this.navigateToScreen('Person', { person: user.member })}>Account Information</Text>
+                            </View>
+                            <View  style={styles.navItem}>
+                              <Icon                                   
+                                iconStyle={styles.iconStyle} 
+                                name='users'
+                                type='font-awesome'  
+                              />
+                              <Text style={styles.navItemText} onPress={this.navigateToScreen('Person', { person: user.member })}>Settings</Text>
+                            </View>
+                              
                           </View>
                       </CollapsibleView>
                     </View>
@@ -85,40 +104,53 @@ class SideMenu extends Component {
                   
                     <View style={styles.navSection}>
                         <View style={styles.navItem}>
-                          <Icon
-                          name='home'
-                          type='font-awesome'/>
+                          <Icon                                   
+                            iconStyle={styles.iconStyle} 
+                            name='home'
+                            type='font-awesome'  
+                          />
                           <Text style={styles.navItemText} onPress={this.navigateToScreen('Home')}>Dashboard</Text>
                         </View>
                         <View  style={styles.navItem}>
-                          <Icon
-                          name='users'
-                          type='font-awesome'/>
+                          <Icon                                   
+                            iconStyle={styles.iconStyle} 
+                            name='users'
+                            type='font-awesome'  
+                          />
                           <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>People</Text>
                         </View>
                         <View  style={styles.navItem}>
-                          <Icon
-                          name='calendar'
-                          type='font-awesome'/>
+                          <Icon                                   
+                            iconStyle={styles.iconStyle} 
+                            name='calendar'
+                            type='font-awesome'  
+                          />
                           <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>Registrations</Text>
                         </View>
                         <View  style={styles.navItem}>
-                          <Icon
-                          name='calendar'
-                          type='font-awesome'/>
+                          <Icon                                   
+                            iconStyle={styles.iconStyle} 
+                            name='calendar'
+                            type='font-awesome'  
+                          />
                           <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>Events</Text>
                         </View>
                         <View  style={styles.navItem}>
-                          <Icon
-                          name='calendar'
-                          type='font-awesome'/>
+                          <Icon 
+                            iconStyle={styles.iconStyle} 
+                            name='calendar'
+                            type='font-awesome'  
+                          />
                           <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>Services</Text>
                         </View>
                         
                         <View  style={styles.navItem}>
-                          <Icon
-                          name='calendar'
-                          type='font-awesome'/>
+                          <Icon                                   
+                            iconStyle={styles.iconStyle} 
+                            name='calendar'
+                            type='font-awesome'
+                            
+                          />
                           <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>Booking</Text>
                         </View>
                     </View>
@@ -128,33 +160,41 @@ class SideMenu extends Component {
                             title='Reports'
                             collapsed={false}
                             headerStyle={styles.headerStyle}
-                            headerIconSize={30}
-                            headerIconColor="black"
+                            headerIconSize={26}
+                            headerIconColor={colors.grey}
                             headerTextStyle={styles.headerTextStyle}
                         >
                             <View style={styles.collapsViewStyle}>
                                 <View  style={styles.navItem}>
-                                  <Icon
-                                  name='users'
-                                  type='font-awesome'/>
+                                  <Icon                                   
+                                    iconStyle={styles.iconStyle} 
+                                    name='users'
+                                    type='font-awesome'  
+                                  />
                                   <Text style={styles.navItemText} onPress={this.navigateToScreen('CellGroupAttendances')}>Cell Group</Text>
                                 </View>
                                 <View style={styles.navItem}>
-                                  <Icon
-                                  name='user'
-                                  type='font-awesome'/>
+                                  <Icon                                   
+                                    iconStyle={styles.iconStyle} 
+                                    name='user'
+                                    type='font-awesome'  
+                                  />
                                   <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>SUYNL</Text>
                                 </View>
                                 <View  style={styles.navItem}>
-                                  <Icon
-                                  name='calendar'
-                                  type='font-awesome'/>
+                                  <Icon                                   
+                                    iconStyle={styles.iconStyle} 
+                                    name='calendar'
+                                    type='font-awesome'  
+                                  />
                                   <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>SOL</Text>
                                 </View>
                                 <View  style={styles.navItem}>
-                                  <Icon
-                                  name='calendar'
-                                  type='font-awesome'/>
+                                  <Icon                                   
+                                    iconStyle={styles.iconStyle} 
+                                    name='calendar'
+                                    type='font-awesome'  
+                                  />
                                   <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>Finance</Text>
                                 </View>
                             </View>
@@ -163,11 +203,19 @@ class SideMenu extends Component {
                     </View>
                     <View style={styles.navSection}>
                       <View  style={styles.navItem}>
-                        <Icon name='cogs' type='font-awesome'/>
+                        <Icon 
+                          iconStyle={styles.iconStyle}  
+                          name='cogs' 
+                          type='font-awesome'  
+                        />
                         <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>Settings</Text>
                       </View>
                       <View  style={styles.navItem}>
-                        <Icon name='sign-out' type='font-awesome'/>
+                        <Icon                                   
+                          iconStyle={styles.iconStyle}  
+                          name='sign-out' 
+                          type='font-awesome'
+                        />
                           <Text 
                             style={styles.navItemText}  
                             onPress={ () => 
@@ -203,6 +251,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: '#fcfcfa'
     },
+    iconStyle: {
+      fontSize: 18,
+      color:colors.grey
+    },
     sideMenuContainer: {
         flex: 1,
         flexDirection: 'column',
@@ -229,7 +281,10 @@ const styles = StyleSheet.create({
         display: 'flex', 
         flexDirection: 'row', 
         alignItems: 'center',
-        marginLeft:5
+        marginLeft:padding.sm,
+        padding: 5,
+        fontSize: 16,
+        fontWeight: "500"
     },
     txtInputWrapper: {
         borderWidth: 0.5,
@@ -259,10 +314,6 @@ const styles = StyleSheet.create({
         backgroundColor: colors.tertiary
         
     },
-    inputLabel: {
-        fontWeight: 'bold',
-        paddingBottom: 10
-    },
     headerStyle: {
         padding: padding.sm,
         paddingLeft: 0,
@@ -273,7 +324,7 @@ const styles = StyleSheet.create({
     },
     headerTextStyle: {
         fontSize: 16,
-        fontWeight: 'bold'
+        fontWeight: "500"
     },
     collapsViewStyle: {
       padding: padding.sm,
@@ -297,7 +348,6 @@ SideMenu.propTypes = {
 
 const mapStateToProps = (state) => {
   const { user } = state.auth;
-  
 
   return {
     user

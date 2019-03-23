@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import { Text, View, ActivityIndicator, FlatList, TouchableHighlight, TouchableOpacity, StyleSheet } from 'react-native';
 import { Icon, ThemeProvider, Badge, SearchBar, Avatar } from 'react-native-elements';
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { peopleActions } from '../../store/actions';
+import { peopleActions, alertActions } from '../../store/actions';
 import Moment from 'moment';
 import { connect } from 'react-redux';
 import { dimensions, colors, padding, fonts } from '../../styles/base';
-
+import call from 'react-native-phone-call';
 
 
 class People extends Component {
@@ -31,7 +31,8 @@ class People extends Component {
             people: [],
             loading: true,
             page: 1,
-            searching: false
+            searching: false,
+            leaderID: 0
         }
 
         this.search = this.search.bind(this);
@@ -64,10 +65,10 @@ class People extends Component {
         const didBlurSubscription = this.props.navigation.addListener(
             'willFocus',
             payload => {
-                this.setState({ loading: true }, () => this.fetchPeople(leaderID));
+                this.setState({ loading: true, 'leaderID': leaderID }, () => this.fetchPeople(leaderID));
             }
         );
-
+        this.setState({ leaderID: leaderID })
         // Remove the listener when you are done
         // didBlurSubscription.remove();
         this.fetchPeople(leaderID);
@@ -109,7 +110,7 @@ class People extends Component {
          
 
         const { keyword, people, loading } = this.state;
-        const { navigation } = this.props;
+        const { navigation, dispatch } = this.props;
         return (
             <ThemeProvider style={styles.container}>
                { !loading ? 
@@ -226,17 +227,35 @@ class People extends Component {
                                      <View style={styles.rowBack}>
                                         <Icon 
                                             onPress={() => navigation.navigate('PeopleCreateEdit', { person: data.item })}
-                                            size={40}
+                                            size={30}
                                             name="ios-create"
                                             type="ionicon"
                                             color={ colors.tertiary }
                                         />
-                                        <TouchableOpacity style={[styles.backRightBtn, styles.backRightBtnRight]}>
+                                        <TouchableOpacity style={[
+                                            styles.backRightBtn, 
+                                            styles.backRightBtnRight,
+                                            {
+                                                display: 'flex',
+                                                flexDirection: 'row',
+                                                alignItems: 'center'
+                                            }
+                                            ]}>
                                             <Icon 
-                                                size={40}
+                                                size={30}
                                                 name="ios-call"
                                                 type="ionicon"
                                                 color={ colors.tertiary }
+                                                onPress ={() => {
+                                                    const args = {
+                                                        number: data.item.contact_no,
+                                                        prompt: false,
+                                                    };
+                                                    
+                                                    call(args).catch(err => {
+                                                        dispatch(alertActions.error(err.message));
+                                                    });
+                                                }}
                                             />
                                         </TouchableOpacity>
                                     </View>
@@ -289,7 +308,7 @@ class People extends Component {
                         rounded 
                         icon={{ name: 'add', color: colors.tertiary }} 
                         overlayContainerStyle={{backgroundColor: colors.primary}}
-                        onPress={() => this.props.navigation.navigate('PeopleCreateEdit')}
+                        onPress={() => this.props.navigation.navigate('PeopleCreateEdit', { leaderID: this.state.leaderID })}
                     />
                 </View>
             </ThemeProvider>
@@ -318,7 +337,8 @@ const styles = StyleSheet.create({
     row: {
         flex: 1, 
         flexDirection: 'row', 
-        marginVertical: 5
+        marginVertical: 5,
+        padding: 5,
     },
 	backTextWhite: {
 		color: '#FFF'
