@@ -107,9 +107,9 @@ class ImageUploader extends Component {
             <View>
             {selectedImage ?
                 (
-                    <Avatar rounded size="xlarge" source={{ uri:  selectedImage  }} onPress={() => this.setState({ isVisible: true })}/>
+                    <Avatar rounded size="large" source={{ uri:  selectedImage  }} onPress={() => this.setState({ isVisible: true })}/>
                 ) : (
-                    <Avatar rounded size="xlarge" icon={{name: 'user', type: 'font-awesome'}} onPress={() => this.setState({ isVisible: true })}/>
+                    <Avatar rounded size="large" icon={{name: 'user', type: 'font-awesome'}} onPress={() => this.setState({ isVisible: true })}/>
                 
                 )
                 

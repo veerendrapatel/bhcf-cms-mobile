@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import { Text, View, Image, Alert } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { ThemeProvider, Button, Avatar, Icon, Input } from 'react-native-elements';
 import { signOut, signIn } from '../../store/actions/auth.actions';
-import { styles } from '../../styles/styles';
+import { dimensions, colors, padding, fonts } from '../../styles/base';
 import { connect } from 'react-redux';
 import { alertActions } from '../../store/actions';
 
@@ -23,7 +23,6 @@ class Login extends Component {
     componentDidUpdate() {
         const { isLoggedIn, alert } = this.props;
         if(isLoggedIn === true) {
-            console.log('asfasdf', this.props.isLoggedIn);
             this.props.navigation.navigate('Home');
         }
    
@@ -44,8 +43,6 @@ class Login extends Component {
 
     render() {
         const { loggingIn, isLoggedIn, navigation } = this.props;
-        // const { submitted, username } = this.state;
-
         return ( 
             <ThemeProvider>
             <View style={styles.container}>
@@ -59,16 +56,20 @@ class Login extends Component {
                     placeholder='Username'
                     leftIcon={
                         <Icon
+                            
                             name='ios-contact'
                             type='ionicon'
                             size={24}
                             color='black'
+                            iconStyle={styles.txtIcon}
                         />
                     }
 
                     autoCapitalize = 'none'
                     onChangeText={(text) => this.setState({ username: text })}
-                    // shake={ (submitted && !username) ? true : false }
+                    inputContainerStyle={styles.txtInputWrapper}
+                    inputStyle={styles.txtInput}
+                    shake={true}
                 />
                 <Input
                     placeholder='Password'
@@ -79,17 +80,23 @@ class Login extends Component {
                         type='ionicon'
                         size={24}
                         color='black'
+                        iconStyle={styles.txtIcon}
                         />
                     }
                     autoCapitalize = 'none'
                     onChangeText={(text) => this.setState({ password: text })}
-                    // shake={ (submitted && !password) ? true : false }
+                    inputContainerStyle={styles.txtInputWrapper}
+                    inputStyle={styles.txtInput}
+                    
                 />
-                <Button
-                    title="Login"
-                    loading={ loggingIn  }
-                    onPress={this.onPressLogin} 
-                />
+                <View style={styles.btnContainer}>
+                    <Button
+                        title="Login"
+                        loading={ loggingIn  }
+                        onPress={this.onPressLogin} 
+                        buttonStyle={styles.btn}
+                    />
+                </View>
             </View>
             </ThemeProvider>
         );
@@ -108,5 +115,40 @@ const mapStateToProps = (state) => {
         isLoggedIn
     }
 }
+
+const styles = StyleSheet.create({
+    container: {
+        padding: padding.sm,
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fcfcfa'
+    },
+    txtInputWrapper: {
+        padding: 3,
+        borderRadius: 30,
+        borderWidth: 0.5,
+        borderColor: colors.primary,
+        marginTop: 5,
+        
+    },
+    txtInput: {
+        fontSize: fonts.md,
+    },
+    txtIcon: {
+        marginRight: padding.sm
+    },
+    btnContainer: {
+        display: 'flex',
+        width: '100%',
+        padding: padding.sm
+    },
+    btn: {
+        backgroundColor: colors.primary,
+        borderRadius: 30,
+        padding: padding.sm
+    }
+});
 
 export default connect(mapStateToProps)(Login);

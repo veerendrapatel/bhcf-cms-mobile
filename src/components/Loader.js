@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import {styles} from '../styles/styles';
+import { container } from '../styles/base'
 export const Loader = () => (
-    <View style={styles.container}>
+    <View style={container}>
         <ActivityIndicator size="large" />
     </View>
 )

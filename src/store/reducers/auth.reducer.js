@@ -10,7 +10,6 @@ const authReducer = (state = initState, action) => {
     
     switch(action.type) {
         // case REHYDRATE:
-        //     console.log('hello', state, action);
         //     return {
         //         ...state,
         //         isLoggedIn: action.payload.isLoggedIn,
@@ -23,7 +22,6 @@ const authReducer = (state = initState, action) => {
                 user: action.user
             };
         case authConstants.SET_CURRENT_USER:
-            // console.log('my-action', action);
             return {
                 ...state,
                 loggingIn:false,
@@ -40,12 +38,12 @@ const authReducer = (state = initState, action) => {
         
         case authConstants.LOGIN_FAILURE:
             return {};
-        case authConstants.LOGOUT_SUCCESS:
-            return {
-                loggingIn:false,
-                isLoggedIn: false,
-                user: null
-            }
+        // case authConstants.LOGOUT_SUCCESS:
+        //     return {
+        //         loggingIn:false,
+        //         isLoggedIn: false,
+        //         user: null
+        //     }
         default:
             return state;
     }

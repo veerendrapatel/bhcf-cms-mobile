@@ -14,11 +14,17 @@ const getAll = (currentUserId) => {
         peopleService.getAll( currentUserId )
             .then(
                 res => {
-                    dispatch(success(res.people));
+                    if (res.ok) {
+                        dispatch(success(res.people));
+                    } else {
+                        dispatch(failure( res.data ));
+                        dispatch(alertActions.error( res.data ));
+                    }
                 },
                 err => {
-                    dispatch(failure(err));
-                    dispatch(alertActions.error( err.message ));
+                    const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
+                    dispatch(failure( error ));
+                    dispatch(alertActions.error( error ));
                 }
             )
     }
@@ -36,7 +42,9 @@ const getOptions = () => {
                     }
                 },
                 err => {
-                    dispatch(alertActions.error( err.message ));
+                    const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
+                    dispatch(failure( error ));
+                    dispatch(alertActions.error( error ));
                 }
             )
         
@@ -62,8 +70,9 @@ const createPerson = (person) => {
                 }
             },
             err => {
-                dispatch(failure(err.message));
-                dispatch(alertActions.error( err.message ));
+                const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
+                dispatch(failure( error ));
+                dispatch(alertActions.error( error ));
             }
         )
         
@@ -74,14 +83,11 @@ const updatePerson = (id, person) => {
     const request = () => { return { type: peopleConstants.UPDATE_REQUEST } }
     const success = (person) => { return { type: peopleConstants.UPDATE_SUCCESS, person } }
     const failure = (error) => { return { type: peopleConstants.UPDATE_FAILURE, error } }
-
     return (dispatch, getState) => {
         dispatch(request());
         peopleService.updatePerson(id, person).then(
             res => {
                 if (res.ok) {
-                    // make async call to database
-                    console.log(res);
                     dispatch(success(res.data));
                     dispatch(alertActions.success( 'Successfully Saved!' ));
                 } else {
@@ -90,9 +96,9 @@ const updatePerson = (id, person) => {
                 }
             },
             err => {
-                console.log(err);
-                dispatch(failure(err.message));
-                dispatch(alertActions.error( err.message ));
+                const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
+                dispatch(failure( error ));
+                dispatch(alertActions.error( error ));
             }
         )
         

@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
-import { Text, View, ActivityIndicator, FlatList, TouchableHighlight, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { Text, View, ActivityIndicator, FlatList, TouchableHighlight, TouchableOpacity, StyleSheet } from 'react-native';
 import { Icon, ThemeProvider, Badge, SearchBar, Avatar } from 'react-native-elements';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { peopleActions } from '../../store/actions';
 import Moment from 'moment';
 import { connect } from 'react-redux';
-import {styles} from '../../styles/styles';
+import { dimensions, colors, padding, fonts } from '../../styles/base';
+
+
 
 class People extends Component {
   
@@ -33,6 +35,7 @@ class People extends Component {
         }
 
         this.search = this.search.bind(this);
+       
     }
 
     paginate = (items, page, per_page) => {
@@ -53,21 +56,41 @@ class People extends Component {
             data: paginatedItems
         };
     }
-    
+
+
     componentDidMount = () => {
         const { dispatch, user } = this.props;
-        dispatch(peopleActions.getAll( user.id ));  
+        const leaderID = this.props.personID ? this.props.personID : user.member.id;
+        const didBlurSubscription = this.props.navigation.addListener(
+            'willFocus',
+            payload => {
+                this.setState({ loading: true }, () => this.fetchPeople(leaderID));
+            }
+        );
+
+        // Remove the listener when you are done
+        // didBlurSubscription.remove();
+        this.fetchPeople(leaderID);
+        
+        
+    }
+
+    fetchPeople = (leaderID) => {
+        const { dispatch } = this.props;
+        dispatch(peopleActions.getAll( leaderID ));  
     }
 
     componentWillReceiveProps(nextProps){
-        if(nextProps.people !== this.props.people){
+        if(nextProps.people.items !== this.props.people.items){
             this._data = nextProps.people.items;
-            this.loadMore();
+            this.setState({ people: [], page: 1, search: false, loading: nextProps.people.loading }, () => this.loadMore());
         }
     }
 
+    
+
     loadMore() {
-        if (!this.state.searching && this._data.length > this.state.page ) {
+        if (!this.state.searching && this._data.length >= this.state.page ) {
             const people = this.paginate(this._data, this.state.page, 12).data;
             if (people.length) {
                 this.setState({ people: this.state.people.concat(people) });
@@ -83,6 +106,8 @@ class People extends Component {
     }
 
     render() {
+         
+
         const { keyword, people, loading } = this.state;
         const { navigation } = this.props;
         return (
@@ -102,17 +127,17 @@ class People extends Component {
                                     return (
                                         <TouchableHighlight
                                             onPress={() => {
-                                            this.props.navigation.navigate('PeopleDetails', { person: person });
+                                                this.props.navigation.navigate(
+                                                    {
+                                                        key: person.id, 
+                                                        routeName: 'Person',
+                                                        params: { person: person }
+                                                    }
+                                                );
                                             }}
-                                            style={_styles.rowFront}
-                                            underlayColor={'#FFF'}>
-                                            <View style={
-                                                {  
-                                                    flex: 1, 
-                                                    flexDirection: 'row',
-                                                    padding:10
-                                                }
-                                            }>
+                                            style={styles.rowFront}
+                                            underlayColor={colors.tertiary}>
+                                            <View style={styles.row}>
                                                 <View>
                                                     { 
                                                         person.avatar ?
@@ -198,16 +223,20 @@ class People extends Component {
 
                             renderHiddenItem={
                                 (data, rowmap) => (
-                                     <View style={_styles.rowBack}>
-                                        <Text onPress={() => {
-                                            
-                                            navigation.navigate('PeopleCreateEdit', { person: data.item })}}>Edit</Text>
-                                        <TouchableOpacity style={[_styles.backRightBtn, _styles.backRightBtnRight]}>
+                                     <View style={styles.rowBack}>
+                                        <Icon 
+                                            onPress={() => navigation.navigate('PeopleCreateEdit', { person: data.item })}
+                                            size={40}
+                                            name="ios-create"
+                                            type="ionicon"
+                                            color={ colors.tertiary }
+                                        />
+                                        <TouchableOpacity style={[styles.backRightBtn, styles.backRightBtnRight]}>
                                             <Icon 
                                                 size={40}
                                                 name="ios-call"
                                                 type="ionicon"
-                                                color="#FFF"
+                                                color={ colors.tertiary }
                                             />
                                         </TouchableOpacity>
                                     </View>
@@ -254,12 +283,12 @@ class People extends Component {
                         </View>
                     )
                 }
-                <View style={{ position: 'absolute', bottom: 35, right: 35, }}>
+                <View style={styles.btnNew}>
                     <Avatar 
                         size="medium"
                         rounded 
-                        icon={{ name: 'add', color: '#FFF' }} 
-                        overlayContainerStyle={{backgroundColor: '#08ce0e'}}
+                        icon={{ name: 'add', color: colors.tertiary }} 
+                        overlayContainerStyle={{backgroundColor: colors.primary}}
                         onPress={() => this.props.navigation.navigate('PeopleCreateEdit')}
                     />
                 </View>
@@ -270,13 +299,27 @@ class People extends Component {
 
 const mapStateToProps = (state) => {
     const {people, auth} = state;
+    
     return {
         people,
         user: auth.user
     }
 }
 
-const _styles = StyleSheet.create({
+const styles = StyleSheet.create({
+    container: {
+        padding: padding.sm,
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fcfcfa'
+    },
+    row: {
+        flex: 1, 
+        flexDirection: 'row', 
+        marginVertical: 5
+    },
 	backTextWhite: {
 		color: '#FFF'
 	},
@@ -287,7 +330,7 @@ const _styles = StyleSheet.create({
 	},
 	rowBack: {
 		alignItems: 'center',
-		backgroundColor: '#DDD',
+		backgroundColor: '#FF5722',
 		flex: 1,
 		flexDirection: 'row',
 		justifyContent: 'space-between',
@@ -306,7 +349,7 @@ const _styles = StyleSheet.create({
 		right: 75
 	},
 	backRightBtnRight: {
-		backgroundColor: '#08ce0e',
+		backgroundColor: colors.primary,
 		right: 0
 	},
 	controls: {
@@ -323,12 +366,17 @@ const _styles = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: 'black',
 		paddingVertical: 10,
-		width: Dimensions.get('window').width / 4,
+		width: dimensions.fullWidth / 4,
 	},
 	trash: {
 		height: 25,
 		width: 25,
-	}
+	},
+    btnNew: { 
+        position: 'absolute', 
+        bottom: 35, 
+        right: 35 
+    }
 });
 
 export default connect(mapStateToProps)(People);

@@ -3,8 +3,8 @@ import { StyleSheet, Text, View, TextInput, Button, Alert } from 'react-native';
 import { Dimensions, ScrollView } from 'react-native';
 import {  Icon, ThemeProvider } from 'react-native-elements';
 import {connect} from 'react-redux';
-import { styles } from '../../styles/styles';
-import authActions from '../../store/actions/auth.actions';
+import { dimensions, colors, padding, fonts } from '../../styles/base';
+
 const screenWidth = Dimensions.get('window').width
 import {
   LineChart,
@@ -35,61 +35,25 @@ class Dashboard extends React.Component {
                 
                 <ScrollView>
                     <View>
-                        <View style={{flex: 1, flexDirection: 'row', marginVertical: 5}}>
-                            <View style={{
-                                    width: screenWidth / 2, 
-                                    height: 100, 
-                                    backgroundColor: '#3cea8d',
-                                    flex: 1,  
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    marginRight: 5
-                                    }}>
-                                <Text style={{ fontSize: 18, fontWeight: "bold", marginVertical: 10, color: '#FFF' }}>1,320</Text>
-                                <Text style={{ color: '#FFF' }}>Total Guest/VIP</Text>
+                        <View style={styles.row}>
+                            <View style={styles.box1}>
+                                <Text style={styles.boxLabel}>1,320</Text>
+                                <Text style={styles.boxSubLabel}>Total Guest/VIP</Text>
                             </View>
-                            <View style={{
-                                width: screenWidth / 2, 
-                                height: 100, 
-                                backgroundColor: '#7095d2', 
-                                flex: 1,  
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginLeft: 5,
-                            }}>
+                            <View style={styles.box2}>
                                 
-                                <Text style={{ fontSize: 18, fontWeight: "bold", marginVertical: 10, color: '#FFF' }}>1,320</Text>
-                                <Text style={{ color: '#FFF' }}>Total People</Text>
+                                <Text style={styles.boxLabel}>1,320</Text>
+                                <Text style={styles.boxSubLabel}>Total People</Text>
                             </View>
                         </View>
-                        <View style={{flex: 1, flexDirection: 'row', marginVertical: 5}}>
-                            <View style={{
-                                    width: screenWidth / 2, 
-                                    height: 100, 
-                                    backgroundColor: '#c29cc2',
-                                    flex: 1,  
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    marginRight: 5
-                                    }}>
-                                <Text style={{ fontSize: 18, fontWeight: "bold", marginVertical: 10, color: '#FFF' }}>1,320</Text>
-                                <Text style={{ color: '#FFF' }}>Total Regular</Text>
+                        <View style={styles.row}>
+                            <View style={styles.box3}>
+                                <Text style={styles.boxLabel}>1,320</Text>
+                                <Text style={styles.boxSubLabel}>Total Regular</Text>
                             </View>
-                            <View style={{
-                                width: screenWidth / 2, 
-                                height: 100, 
-                                backgroundColor: '#FF5722', 
-                                flex: 1,  
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginLeft: 5,
-                            }}>
-                                <Text style={{ fontSize: 18, fontWeight: "bold", marginVertical: 10, color: '#FFF' }}>2,908</Text>
-                                <Text style={{ color: '#FFF' }}>Total Cell</Text>
+                            <View style={styles.box4}>
+                                <Text style={styles.boxLabel}>2,908</Text>
+                                <Text style={styles.boxSubLabel}>Total Cell</Text>
                             </View>
                         </View>
                         <LineChart
@@ -108,13 +72,7 @@ class Dashboard extends React.Component {
                             }}
                             width={screenWidth - 30} // from react-native
                             height={220}
-                            chartConfig={{
-                                backgroundColor: '#e26a00',
-                                backgroundGradientFrom: '#fb8c00',
-                                backgroundGradientTo: '#ffa726',
-                                decimalPlaces: 2, // optional, defaults to 2dp
-                                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`
-                            }}
+                            chartConfig={chartConfig}
                             bezier
                             style={{
                                 marginVertical: 8
@@ -136,5 +94,65 @@ const mapStateToProps = (state) => {
 
     }
 }
+
+const box = {
+    width: dimensions.fullWidth / 2, 
+    height: 100, 
+    flex: 1,  
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 5
+}
+
+const chartConfig = {
+    backgroundColor: '#e26a00',
+    backgroundGradientFrom: '#fb8c00',
+    backgroundGradientTo: '#ffa726',
+    decimalPlaces: 2, // optional, defaults to 2dp
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`
+}
+
+const styles = StyleSheet.create({
+    container: {
+        padding: padding.sm,
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fcfcfa'
+    },
+    row: {
+        flex: 1, 
+        flexDirection: 'row', 
+        marginVertical: 5
+    },
+    box1: {
+        ...box,
+        backgroundColor: '#3cea8d',
+    },
+    box2: {
+        ...box,
+        backgroundColor: '#7095d2', 
+    },
+    box3: {
+        ...box,
+        backgroundColor: '#c29cc2',
+    },
+    box4: {
+        ...box,
+        backgroundColor: '#FF5722', 
+    },
+    boxLabel: { 
+        fontSize: fonts.lg, 
+        fontWeight: "bold", 
+        marginVertical: 10, 
+        color: colors.tertiary 
+    },
+    boxSubLabel: {
+        color: colors.tertiary 
+    }
+});
+
 
 export default connect(mapStateToProps)(Dashboard);

@@ -1,15 +1,21 @@
 import { get, post } from '../helpers/http-services';
 
-const getCellGroupAttendance = ( memberID ) => {
-    return get(`members/${memberID}/attendance/cellgroup`)
+const createCellGroupAttendance = ( memberID, year, week ) => {
+    console.log(`members/${memberID}/attendance/cellgroup/${year}/${week}`);
+    return get(`members/${memberID}/attendance/cellgroup/${year}/${week}`);
 
 }
 
-const createCellGroupAttendance = ( memberID, attendance ) => {
-    return post(`members/${memberID}/attendance/cellgroup`, attendance);
+const saveCellGroupAttendance = ( memberID, year, week, attendance ) => {
+    return post(`members/${memberID}/attendance/cellgroup/${year}/${week}`, attendance);
+}
+
+const getLeaderAttendancesByYear = ( memberID, year ) => {
+    return get(`members/${memberID}/attendance/cellgroup/${year}`);
 }
 
 export default cellGroupService = {
-    getCellGroupAttendance,
+    getLeaderAttendancesByYear,
+    saveCellGroupAttendance,
     createCellGroupAttendance
 }

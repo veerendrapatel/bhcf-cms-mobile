@@ -1,12 +1,12 @@
-import { get, post } from '../helpers/http-services';
+import { postNoToken } from '../helpers/http-services';
 
 const logout = () => {
-    return post(`logout`);
+    return postNoToken(`logout`);
 
 }
 
 const login = (username, password) => {
-    return post(`login`, { username, password });
+    return postNoToken(`login`, { username, password });
 }
 
 export const authService  = {

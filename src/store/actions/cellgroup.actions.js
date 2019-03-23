@@ -2,18 +2,27 @@ import cellGroupService from '../../services/cellgroup.service';
 import { alertActions } from '../actions/alert.actions';
 import {cellGroupConstants} from '../constants/cellgroup.constants';
 
-const getCellGroupAttendance = ( memberID ) => {
+const createCellGroupAttendance = ( memberID, year, week ) => {
     const request = () => { return { type: cellGroupConstants.GET_CELLGROUP_ATTENDANCE_REQUEST } }
-    const success = ( attendance ) => { return { type: cellGroupConstants.GET_CELLGROUP_ATTENDANCE_SUCCESS, attendance } }
+    const success = ( payload ) => { return { type: cellGroupConstants.GET_CELLGROUP_ATTENDANCE_SUCCESS, payload } }
     const failure = ( error ) => { return { type: cellGroupConstants.GET_CELLGROUP_ATTENDANCE_FAILURE, error } }
+    
     return (dispatch, getState) => {
         dispatch(request());
-        cellGroupService.getCellGroupAttendance(memberID)
+        cellGroupService.createCellGroupAttendance(memberID, year, week)
             .then(
                 res => {
                     if (res.ok) {
-                        dispatch(success( res.data ));
-                        dispatch(alertActions.success( res.data ));
+                        // console.log(res.data);
+                        let payload = null;
+                        if (res.data.length) {
+                            payload = {
+                                year: year,
+                                week: week,
+                                data:  res.data
+                            }
+                        }
+                        dispatch(success( payload ));
                     } else {
                         dispatch(failure( res.data ));
                         dispatch(alertActions.error( res.data ));
@@ -21,41 +30,79 @@ const getCellGroupAttendance = ( memberID ) => {
                         
                 },
                 err => {
-                    dispatch(failure( err.message ));
-                    dispatch(alertActions.error( err.message ));
+                    const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
+                    dispatch(failure( error ));
+                    dispatch(alertActions.error( error ));
                 }
             )
     }
 }
 
 
-const createCellGroupAttendance = ( memberID, attendance ) => {
+const saveCellGroupAttendance = ( memberID, year, week, attendance, index ) => {
     const request = () => { return { type: cellGroupConstants.CREATE_CELLGROUP_ATTENDANCE_REQUEST } }
-    const success = ( attendance ) => { return { type: cellGroupConstants.CREATE_CELLGROUP_ATTENDANCE_SUCCESS, attendance } }
+    const success = ( payload ) => { return { type: cellGroupConstants.CREATE_CELLGROUP_ATTENDANCE_SUCCESS, payload } }
     const failure = ( error ) => { return { type: cellGroupConstants.CREATE_CELLGROUP_ATTENDANCE_FAILURE, error } }
 
     return (dispatch, getState) => {
         dispatch(request());
-        cellGroupService.createCellGroupAttendance( memberID, attendance )
+        cellGroupService.saveCellGroupAttendance( memberID, year, week, attendance )
             .then(
                 res => {
+                    
                     if (res.ok) {
-                        dispatch(success( res.data ));
-                        dispatch(alertActions.success( res.data ));
+                        const payload =  {
+                            year: year,
+                            week: week,
+                            index: index, 
+                            attendance: res.data
+                        };
+                        dispatch(success( payload ));
+                        dispatch(alertActions.success( 'Successfully saved.' ));
                     } else {
                         dispatch(failure( res.data ));
                         dispatch(alertActions.error( res.data ));
                     }
                 },
                 err => {
-                    dispatch(failure( err.message ));
-                    dispatch(alertActions.error( err.message ));
+                    const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
+                    dispatch(failure( error ));
+                    dispatch(alertActions.error( error ));
+                }
+            )
+    }
+}
+
+const getLeaderAttendancesByYear = ( memberID, year ) =>  {
+    const request = () => { return { type: cellGroupConstants.GET_LEADER_ATTENDANCE_BY_YEAR_REQUEST } }
+    const success = ( payload ) => { return { type: cellGroupConstants.GET_LEADER_ATTENDANCE_BY_YEAR_SUCCESS, payload } }
+    const failure = ( error ) => { return { type: cellGroupConstants.GET_LEADER_ATTENDANCE_BY_YEAR_FAILURE, error } }
+
+    return (dispatch, getState) => {
+        dispatch(request());
+        cellGroupService.getLeaderAttendancesByYear( memberID, year )
+            .then(
+                res => {
+                    
+                    if (res.ok) {
+                        const item = { year: year, data: res.data };
+                        dispatch(success( item ));
+                    } else {
+                        dispatch(failure( res.data ));
+                        dispatch(alertActions.error( res.data ));
+                    }
+                },
+                err => {
+                    const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
+                    dispatch(failure( error ));
+                    dispatch(alertActions.error( error ));
                 }
             )
     }
 }
 
 export const cellGroupActions = {
-    getCellGroupAttendance,
+    getLeaderAttendancesByYear,
+    saveCellGroupAttendance,
     createCellGroupAttendance
 }

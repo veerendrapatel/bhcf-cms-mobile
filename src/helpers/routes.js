@@ -3,9 +3,10 @@ import { createStackNavigator, createDrawerNavigator, createSwitchNavigator, cre
 import  Login  from '../screens/auth/Login';
 import  Dashboard from '../screens/dashboard/Dashboard';
 import  People  from '../screens/people/People';
-import PeopleDetails from '../screens/people/PeopleDetails';
+import Person from '../screens/people/Person';
 import PeopleCreateEdit from '../screens/people/PeopleCreateEdit';
-import CellGroup from '../screens/cellgroup/CellGroup';
+import CreateCellGroupAttendance from '../screens/cellgroup/CreateCellGroupAttendance';
+import CellGroupAttendances from '../screens/cellgroup/CellGroupAttendances';
 import SideMenu from '../components/SideMenu';
 
 
@@ -14,9 +15,10 @@ import SideMenu from '../components/SideMenu';
 const DashboardStack = createStackNavigator({
         Home: Dashboard,
         People: People,
-        PeopleDetails: PeopleDetails,
+        Person: Person,
         PeopleCreateEdit: PeopleCreateEdit,
-        CellGroup: CellGroup,
+        CreateCellGroupAttendance: CreateCellGroupAttendance,
+        CellGroupAttendances: CellGroupAttendances,
     }, {
     initialRouteName: 'Home',
 });

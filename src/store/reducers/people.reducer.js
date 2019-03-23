@@ -14,7 +14,6 @@ const peopleReducer = (state = initState, action) => {
                 loading: true
             }
         case peopleConstants.GETALL_SUCCESS:
-        console.log(action.people);
             return {
                 ...state,
                 loading: false,
@@ -62,6 +61,7 @@ const peopleReducer = (state = initState, action) => {
                 return item
                 })
             }
+
         case peopleConstants.UPDATE_FAILURE:
             return {
                 ...state,

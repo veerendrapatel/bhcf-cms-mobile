@@ -2,7 +2,7 @@ import { authService } from '../../services/index';
 import { authConstants } from '../constants';
 import { alertActions } from './alert.actions';
 import { onSignIn, onSignOut } from '../../helpers/async-storage';
-// import {NavigationActions} from 'react-navigation';
+
 export const signIn = (username, password) => {
     const request = (user) => { return { type: authConstants.LOGIN_REQUEST, user } }
     const success = (user) => { return { type: authConstants.LOGIN_SUCCESS, user, isLoggedIn: true } }
@@ -17,18 +17,16 @@ export const signIn = (username, password) => {
                     if (res.ok) {
                         onSignIn(res.data);
                         dispatch(success(res.data));
-                        // dispatch(NavigationActions.navigate({routeName: 'Home'}));
                         
                     } else {
-                        console.log(res.data);
                         dispatch(failure(res.data));
                         dispatch(alertActions.error(res.data));
                     }
                 },
                 err => {
-                    console.log(err);
-                    dispatch(failure(err));
-                    dispatch(alertActions.error(err.message));
+                    const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
+                    dispatch(failure( error ));
+                    dispatch(alertActions.error( error ));
                 }
             )
     }
@@ -46,13 +44,13 @@ export const signOut = () => {
         
         authService.logout().then(
             res => {
-                console.log(res);
                 onSignOut();
                 dispatch(success());
             },
             err => {
-                console.log(err.message);
-                dispatch(failure(err.message));
+                const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
+                    dispatch(failure( error ));
+                    dispatch(alertActions.error( error ));
             }
         )
     }

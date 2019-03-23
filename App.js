@@ -83,7 +83,7 @@ class App extends Component {
     return <Provider store={store}>
             <PersistGate loading={<Loader />} persistor={persistor}>
               <Layout />
-               <FlashMessage position="top" duration={2000}/>
+               <FlashMessage position="bottom"/>
             </PersistGate>
         </Provider>
   }
