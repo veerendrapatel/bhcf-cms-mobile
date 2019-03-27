@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import { dimensions, colors, padding, fonts, container } from '../../../styles/base';
-import CellGroupAttendance from '../../cellgroup/CellGroupAttendances';
+import CellGroupAttendance from '../../cellgroup/CellReports';
 class CellReport extends Component {
     constructor(props) {
         super(props);

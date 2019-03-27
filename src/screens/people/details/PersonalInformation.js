@@ -42,7 +42,7 @@ class PersonalInformation extends Component {
                     headerRight: (
                     <TouchableOpacity 
                         style={{ padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center' }} 
-                        onPress={() => this.props.navigation.navigate('PeopleCreateEdit', { person: person })}>
+                        onPress={() => this.props.navigation.navigate('PersonForm', { person: person })}>
                         <Text>Edit</Text>
                     </TouchableOpacity>
                     )
@@ -61,7 +61,7 @@ class PersonalInformation extends Component {
                                 <Button
                                     title="Edit"
                                     type="clear" 
-                                    onPress={() => this.props.navigation.navigate('PeopleCreateEdit', { person: person })}
+                                    onPress={() => this.props.navigation.navigate('PersonForm', { person: person })}
                                 />
                             </View>
                             <View style={styles.avatarContainer}>
@@ -329,7 +329,6 @@ const styles = StyleSheet.create({
 const mapStateToProps = ( state ) => {
 
     const {person} = state.people;
-    // console.log(person);
     return {
         person
     }

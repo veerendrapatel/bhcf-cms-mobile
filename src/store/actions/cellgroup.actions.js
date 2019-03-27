@@ -2,27 +2,23 @@ import cellGroupService from '../../services/cellgroup.service';
 import { alertActions } from '../actions/alert.actions';
 import {cellGroupConstants} from '../constants/cellgroup.constants';
 
-const createCellGroupAttendance = ( memberID, year, week ) => {
+const AttendanceForm = ( memberID, year, week ) => {
     const request = () => { return { type: cellGroupConstants.GET_CELLGROUP_ATTENDANCE_REQUEST } }
     const success = ( payload ) => { return { type: cellGroupConstants.GET_CELLGROUP_ATTENDANCE_SUCCESS, payload } }
     const failure = ( error ) => { return { type: cellGroupConstants.GET_CELLGROUP_ATTENDANCE_FAILURE, error } }
     
     return (dispatch, getState) => {
         dispatch(request());
-        cellGroupService.createCellGroupAttendance(memberID, year, week)
+        cellGroupService.AttendanceForm(memberID, year, week)
             .then(
                 res => {
                     if (res.ok) {
-                        // console.log(res.data);
-                        let payload = null;
-                        if (res.data.length) {
-                            payload = {
-                                year: year,
-                                week: week,
-                                data:  res.data
-                            }
-                        }
-                        dispatch(success( payload ));
+                        let payload = {
+                            year: year,
+                            week: week,
+                            data:  res.data
+                        };
+                         dispatch(success( payload ));
                     } else {
                         dispatch(failure( res.data ));
                         dispatch(alertActions.error( res.data ));
@@ -51,6 +47,8 @@ const saveCellGroupAttendance = ( memberID, year, week, attendance, index ) => {
                 res => {
                     
                     if (res.ok) {
+                        console.log(attendance);
+                        console.log(res.data);
                         const payload =  {
                             year: year,
                             week: week,
@@ -65,6 +63,7 @@ const saveCellGroupAttendance = ( memberID, year, week, attendance, index ) => {
                     }
                 },
                 err => {
+                    console.log(err);
                     const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
                     dispatch(failure( error ));
                     dispatch(alertActions.error( error ));
@@ -104,5 +103,5 @@ const getLeaderAttendancesByYear = ( memberID, year ) =>  {
 export const cellGroupActions = {
     getLeaderAttendancesByYear,
     saveCellGroupAttendance,
-    createCellGroupAttendance
+    AttendanceForm
 }

@@ -1,7 +1,11 @@
 import { get, post } from '../helpers/http-services';
 
-const getAll = (currentUserId) => {
-    return get(`members/${currentUserId}/people`);
+const getAll = () => {
+    return get(`members`);
+}
+
+const getNetwork = (currentUserId) => {
+    return get(`members/${currentUserId}/network`);
 }
 
 const createPerson = (person) => {
@@ -18,6 +22,7 @@ const getOptions = () => {
 
 export default peopleService = {
     getAll,
+    getNetwork,
     updatePerson,
     createPerson,
     getOptions

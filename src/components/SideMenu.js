@@ -171,7 +171,15 @@ class SideMenu extends Component {
                                     name='users'
                                     type='font-awesome'  
                                   />
-                                  <Text style={styles.navItemText} onPress={this.navigateToScreen('CellGroupAttendances')}>Cell Group</Text>
+                                  <Text style={styles.navItemText} onPress={this.navigateToScreen('CellReports')}>Cell Group</Text>
+                                </View>
+                                <View  style={styles.navItem}>
+                                  <Icon                                   
+                                    iconStyle={styles.iconStyle} 
+                                    name='users'
+                                    type='font-awesome'  
+                                  />
+                                  <Text style={styles.navItemText} onPress={this.navigateToScreen('LifeClass')}>Life Class</Text>
                                 </View>
                                 <View style={styles.navItem}>
                                   <Icon                                   

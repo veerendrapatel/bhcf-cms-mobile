@@ -8,7 +8,7 @@ import { peopleActions } from '../../store/actions';
 import { dimensions, colors, padding, fonts } from '../../styles/base';
 import CollapsibleView from '../../components/CollapseableView';
 
-class PeopleCreateEdit extends Component {
+class PersonForm extends Component {
     static navigationOptions = ({ navigation }) => {
         return {
             headerTitle: navigation.state.params && navigation.state.params.headerTitle ? navigation.state.params.headerTitle : 'Create',
@@ -85,7 +85,6 @@ class PeopleCreateEdit extends Component {
         if (this.props.navigation.state.params && this.props.navigation.state.params.leaderID) {
             
             const newPersonState = Object.assign(this.state.person, { leader_id:  this.props.navigation.state.params.leaderID});
-            // console.log(newPersonState);
             this.setState({ person: newPersonState });
         }
     }
@@ -652,4 +651,4 @@ const mapStateToProps = (state) => {
 }
 
 
-export default connect(mapStateToProps)(PeopleCreateEdit)
+export default connect(mapStateToProps)(PersonForm)

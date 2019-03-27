@@ -74,10 +74,6 @@ const cellGroupReducer = (state = initialState, action ) => {
                         ...state.items[payload.year],
                         [payload.week]: {
                             ...state.items[payload.year][payload.week],
-                        //    attendances: {
-                        //        ...state.items[payload.year][payload.week]['attendances'], 
-                        //         [payload.index]: payload.attendance
-                        //    }
                             attendances: state.items[payload.year][payload.week].attendances.map((item, i) => {
                                 if (payload.index === i) {
                                     return payload.attendance

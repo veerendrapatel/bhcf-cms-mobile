@@ -39,20 +39,20 @@ class People extends Component {
        
     }
 
-    paginate = (items, page, per_page) => {
+    paginate = (network, page, per_page) => {
  
         var page = page || 1,
         per_page = per_page || 10,
         offset = (page - 1) * per_page,
         
-        paginatedItems = items.slice(offset).slice(0, per_page),
-        total_pages = Math.ceil(items.length / per_page);
+        paginatedItems = network.slice(offset).slice(0, per_page),
+        total_pages = Math.ceil(network.length / per_page);
         return {
             page: page,
             per_page: per_page,
             pre_page: page - 1 ? page - 1 : null,
             next_page: (total_pages > page) ? page + 1 : null,
-            total: items.length,
+            total: network.length,
             total_pages: total_pages,
             data: paginatedItems
         };
@@ -78,12 +78,12 @@ class People extends Component {
 
     fetchPeople = (leaderID) => {
         const { dispatch } = this.props;
-        dispatch(peopleActions.getAll( leaderID ));  
+        dispatch(peopleActions.getNetwork( leaderID ));  
     }
 
     componentWillReceiveProps(nextProps){
-        if(nextProps.people.items !== this.props.people.items){
-            this._data = nextProps.people.items;
+        if(nextProps.people.network !== this.props.people.network){
+            this._data = nextProps.people.network;
             this.setState({ people: [], page: 1, search: false, loading: nextProps.people.loading }, () => this.loadMore());
         }
     }
@@ -91,13 +91,16 @@ class People extends Component {
     
 
     loadMore() {
-        if (!this.state.searching && this._data.length >= this.state.page ) {
-            const people = this.paginate(this._data, this.state.page, 12).data;
-            if (people.length) {
-                this.setState({ people: this.state.people.concat(people) });
+        if (this._data) {
+            if (!this.state.searching && this._data.length >= this.state.page ) {
+                const people = this.paginate(this._data, this.state.page, 12).data;
+                if (people.length) {
+                    this.setState({ people: this.state.people.concat(people) });
+                }
+                
             }
-            this.setState({ loading: false });
         }
+        this.setState({ loading: false });
     }
 
     search = (keyword) => {
@@ -226,7 +229,7 @@ class People extends Component {
                                 (data, rowmap) => (
                                      <View style={styles.rowBack}>
                                         <Icon 
-                                            onPress={() => navigation.navigate('PeopleCreateEdit', { person: data.item })}
+                                            onPress={() => navigation.navigate('PersonForm', { person: data.item })}
                                             size={30}
                                             name="ios-create"
                                             type="ionicon"
@@ -308,7 +311,7 @@ class People extends Component {
                         rounded 
                         icon={{ name: 'add', color: colors.tertiary }} 
                         overlayContainerStyle={{backgroundColor: colors.primary}}
-                        onPress={() => this.props.navigation.navigate('PeopleCreateEdit', { leaderID: this.state.leaderID })}
+                        onPress={() => this.props.navigation.navigate('PersonForm', { leaderID: this.state.leaderID })}
                     />
                 </View>
             </ThemeProvider>

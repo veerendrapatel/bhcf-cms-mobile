@@ -2,11 +2,15 @@ import { peopleConstants } from '../constants';
 
 
 const initState = {
-    items: null,
+    people: null,
+    network: null,
     error: null,
     loading: false
 }
+let payload = null;
 const peopleReducer = (state = initState, action) => {
+    payload = action.payload;
+
     switch(action.type) {
         case peopleConstants.GETALL_REQUEST: 
             return {
@@ -17,9 +21,27 @@ const peopleReducer = (state = initState, action) => {
             return {
                 ...state,
                 loading: false,
-                items: action.people
+                people: payload.people
             }
         case peopleConstants.GETALL_FAILURE:
+            return {
+                ...state,
+                loading: false,
+                error: action.error
+            }
+
+        case peopleConstants.GETNETWORK_REQUEST: 
+            return {
+                ...state,
+                loading: true
+            }
+        case peopleConstants.GETNETWORK_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                network: payload.network
+            }
+        case peopleConstants.GETNETWORK_FAILURE:
             return {
                 ...state,
                 loading: false,
@@ -35,7 +57,7 @@ const peopleReducer = (state = initState, action) => {
             return {
                 ...state,
                 loading: false,
-                items: [...state.items, action.person]
+                network: [...payload.network, payload.person]
             }
         case peopleConstants.CREATE_FAILURE:
             return {
@@ -49,13 +71,13 @@ const peopleReducer = (state = initState, action) => {
             }
         case peopleConstants.UPDATE_SUCCESS:
         
-            const index = state.items.findIndex(item => item.id === action.person.id);  
+            const index = state.network.findIndex(item => item.id === payload.person.id);  
             return {
                 ...state,
                 // optional 2nd arg in callback is the array index
-                items: state.items.map((item, i) => {
+                network: state.network.map((item, i) => {
                 if (i === index) {
-                    return action.person
+                    return payload.person
                 }
 
                 return item
@@ -71,10 +93,10 @@ const peopleReducer = (state = initState, action) => {
         case peopleConstants.FETCH_DROPDOWN_OPTIONS:
             return {
                 ...state,
-                options: action.options
+                options: payload.options
             }
         case peopleConstants.FIND_BY_ID: 
-            const person = state.items.filter(item => item.id === action.payload.id);
+            const person = state.network.filter(item => item.id === payload.id);
             return {
                 ...state,
                 person: person ? person[0] : null

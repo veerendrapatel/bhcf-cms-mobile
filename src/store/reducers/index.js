@@ -3,12 +3,16 @@ import  peopleReducer  from './people.reducer';
 import  authReducer  from './auth.reducer';
 import  alertReducer from './alert.reducer';
 import cellGroupReducer from './cellgroup.reducer';
+import schoolClassReducer from './schoolClass.reducer';
+import schoolStatusReducer from './schoolStatus.reducer';
 
 const appReducer = combineReducers({
     alert: alertReducer,
     auth: authReducer,
     people: peopleReducer,
-    cellgroup: cellGroupReducer
+    cellgroup: cellGroupReducer,
+    schoolStatus: schoolStatusReducer,
+    schoolClass: schoolClassReducer
 });
 
 

@@ -11,7 +11,7 @@ import { dimensions, colors, padding, fonts } from '../../styles/base';
 
 const today = Moment();
 
-class CreateCellGroupAttendance extends Component {
+class AttendanceForm extends Component {
     static navigationOptions = ({ navigation }) => {
       
       const headerTitle = today.startOf('week').add(1, 'day').format('MMM D') +' -  ' + today.endOf('week').add(1, 'day').format('D') + ' ' + today.format('YYYY');
@@ -43,8 +43,7 @@ class CreateCellGroupAttendance extends Component {
       const { dispatch, user } = this.props;
       const { year, week } = this.state;
       const leaderID = this.props.navigation.state.params && this.props.navigation.state.params.personID ? this.props.navigation.state.params.personID : user.member.id;
-      // console.log(leaderID);
-      dispatch( cellGroupActions.createCellGroupAttendance( leaderID,  year, week ) );
+      dispatch( cellGroupActions.AttendanceForm( leaderID,  year, week ) );
      
     }
 
@@ -65,15 +64,15 @@ class CreateCellGroupAttendance extends Component {
     render() {
         const { loading, items } = this.props.cellgroup;
         const { year, week } = this.state;
-        const data = typeof items !== undefined && typeof items[year] !== undefined  && typeof items[year][week] !== undefined ? items[year][week] : null;
+        const data = items !== undefined && items[year] !== undefined && items[year][week] !== undefined ? items[year][week] : null;
         return (
             <View style={styles.container}>
             { 
-                !loading ?
+                !loading && data ?
                 (
                     <ScrollView style={{ width: '100%' }}>
                     {
-                        data && data.attendances ? (
+                        data !== undefined && data.attendances ? (
                             data.attendances.map((item, i) => {
                               const avatar = item.avatar ? JSON.parse(item.avatar) : null;
                               return (
@@ -103,7 +102,7 @@ class CreateCellGroupAttendance extends Component {
                                     }
                                     onPress={
                                       () => {
-                                        item.attended = item.attended ? 0 : 1;
+                                        item.attended = item.attended === 1 ? 0 : 1;
                                         this.updateAttendance(item, i);
                                       }
                                     }
@@ -146,4 +145,4 @@ const mapStatetoProps = (state) => {
   }
 }
 
-export default connect(mapStatetoProps)(CreateCellGroupAttendance);
+export default connect(mapStatetoProps)(AttendanceForm);

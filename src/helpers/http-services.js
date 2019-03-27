@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
 import { API_URL } from 'react-native-dotenv';
-import { onSignOut, getCurrentUser } from './async-storage';
-
-
+import { getCurrentUser } from './async-storage';
+// import { store } from '../store';
+// import { signOut } from '../store/actions/auth.actions';
 
 
 export const get = ( route ) => {
@@ -26,9 +26,9 @@ export const get = ( route ) => {
                     return res.text().then(text => {
                         const data = text && JSON.parse(text);
                         if (!res.ok) {
-                            if (res.status === 401) {
-                                onSignOut();
-                            }
+                            // if (res.status === 401) {
+                            //     store.dispatch(signOut());
+                            // }
 
                             const error = (data && data.message) || res.statusText;
                             return reject(error);
@@ -42,6 +42,9 @@ export const get = ( route ) => {
                 resolve(res);
             })
             .catch(error => {
+                // if (error === 'Unauthenticated.') {
+                //     store.dispatch(signOut());
+                // }
                 reject(error);
             });
         });
@@ -66,7 +69,7 @@ export const postNoToken = ( route, body ) => {
                     const data = text && JSON.parse(text);
                     if (!res.ok) {
                         if (res.status === 401) {
-                            onSignOut();
+                            store.dispatch(signOut());
                         }
 
                         const error = (data && data.message) || res.statusText;
@@ -110,9 +113,9 @@ export const post = (route, body) => {
                     return res.text().then(text => {
                         const data = text && JSON.parse(text);
                         if (!res.ok) {
-                            if (res.status === 401) {
-                                onSignOut();
-                            }
+                            // if (res.status === 401) {
+                            //     store.dispatch(signOut());
+                            // }
 
                             const error = (data && data.message) || res.statusText;
                             return reject(error);
@@ -126,6 +129,9 @@ export const post = (route, body) => {
                 resolve(res);
             })
             .catch(error => {
+                // if (error === 'Unauthenticated.') {
+                //     store.dispatch(signOut());
+                // }
                  reject(error);
             });
         });

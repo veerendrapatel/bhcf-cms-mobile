@@ -4,7 +4,7 @@ import { alertActions } from '../actions/alert.actions';
 
 
 
-const getAll = (currentUserId) => {
+const getAll = () => {
     const request = () => { return { type: peopleConstants.GETALL_REQUEST } }
     const success = (people) => { return { type: peopleConstants.GETALL_SUCCESS, people } }
     const failure = (error) => { return { type: peopleConstants.GETALL_FAILURE, error } }
@@ -12,7 +12,7 @@ const getAll = (currentUserId) => {
     return (dispatch, getState) => {
         dispatch(request());
 
-        peopleService.getAll( currentUserId )
+        peopleService.getAll()
             .then(
                 res => {
                     if (res.ok) {
@@ -33,13 +33,45 @@ const getAll = (currentUserId) => {
 }
 
 
+const getNetwork = (currentUserId) => {
+    const request = () => { return { type: peopleConstants.GETNETWORK_REQUEST } }
+    const success = (payload) => { return { type: peopleConstants.GETNETWORK_SUCCESS, payload } }
+    const failure = (error) => { return { type: peopleConstants.GETNETWORK_FAILURE, error } }
+
+    return (dispatch, getState) => {
+        dispatch(request());
+
+        peopleService.getNetwork( currentUserId )
+            .then(
+                res => {
+                    if (res.ok) {
+                        dispatch(success({
+                            network: res.network
+                        }));
+                    } else {
+                        dispatch(failure( res.data ));
+                        dispatch(alertActions.error( res.data ));
+                    }
+                },
+                err => {
+                    
+                    const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
+                    dispatch(failure( error ));
+                    dispatch(alertActions.error( error ));
+                }
+            )
+    }
+
+}
+
+
 const getOptions = () => {
     return (dispatch, getState) => {
         peopleService.getOptions()
             .then(
                 res => {
                     if (res.ok) {
-                        dispatch({ type: peopleConstants.FETCH_DROPDOWN_OPTIONS, options: res.data });
+                        dispatch({ type: peopleConstants.FETCH_DROPDOWN_OPTIONS, payload: { options: res.data }});
                     }
                 },
                 err => {
@@ -54,7 +86,7 @@ const getOptions = () => {
 
 const createPerson = (person) => {
     const request = () => { return { type: peopleConstants.CREATE_REQUEST } }
-    const success = (person) => { return { type: peopleConstants.CREATE_SUCCESS, person } }
+    const success = (payload) => { return { type: peopleConstants.CREATE_SUCCESS, payload } }
     const failure = (error) => { return { type: peopleConstants.CREATE_FAILURE, error } }
 
     return (dispatch, getState) => {
@@ -64,7 +96,7 @@ const createPerson = (person) => {
             res => {
                 if (res.ok) {
                     // make async call to database
-                    dispatch(success(res.data));
+                    dispatch(success({person: res.data}));
                     dispatch(alertActions.success( 'Successfully Saved!' ));
                 } else {
                     dispatch(failure(res.data));
@@ -83,15 +115,14 @@ const createPerson = (person) => {
 
 const updatePerson = (id, person) => {
     const request = () => { return { type: peopleConstants.UPDATE_REQUEST } }
-    const success = (person) => { return { type: peopleConstants.UPDATE_SUCCESS, person } }
+    const success = (payload) => { return { type: peopleConstants.UPDATE_SUCCESS, payload } }
     const failure = (error) => { return { type: peopleConstants.UPDATE_FAILURE, error } }
     return (dispatch, getState) => {
-        console.log(person);
         dispatch(request());
         peopleService.updatePerson(id, person).then(
             res => {
                 if (res.ok) {
-                    dispatch(success(res.data));
+                    dispatch(success({person: res.data}));
                     dispatch(alertActions.success( 'Successfully Saved!' ));
                 } else {
                     dispatch(failure(res.data));
@@ -130,5 +161,6 @@ export const peopleActions = {
     createPerson,
     updatePerson,
     deletePerson,
-    getOptions
+    getOptions,
+    getNetwork
 }
