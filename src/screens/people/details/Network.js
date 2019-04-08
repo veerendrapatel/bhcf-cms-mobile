@@ -14,9 +14,7 @@ class Network extends Component {
     
     render() {
         return (
-            <View style={styles.container}>
-                <People personID={ this.state.person.id } {...this.props}/>
-            </View>
+            <People personID={ this.state.person.id } {...this.props}/>
         )
     }
 }

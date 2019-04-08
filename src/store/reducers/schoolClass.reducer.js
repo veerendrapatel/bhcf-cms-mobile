@@ -1,9 +1,10 @@
 import { schoolClassConstants } from '../constants';
 
+
 const initState = {
     loading: false,
     people: null,
-    school_classes: null,
+    classes: null,
     selected_batch_ID: null,
     success: false
 }
@@ -20,8 +21,8 @@ const schoolClassReducer = (state = initState, action) => {
             return {
                 ...state,
                 loading: false,
-                school_classes: {
-                    ...state.school_classes,
+                classes: {
+                    ...state.classes,
                     [payload.type] : payload.data
                 }
             }
@@ -42,11 +43,11 @@ const schoolClassReducer = (state = initState, action) => {
                 ...state,
                 success: true,
                 loading: false,
-                // selected_batch_ID: payload.data.id,
-                school_classes: {
-                    ...state.school_classes,
+                selected_batch_ID: payload.data.id,
+                classes: {
+                    ...state.classes,
                     [payload.type] : [
-                        ...state.school_classes[payload.type], payload.data,
+                        ...state.classes[payload.type], payload.data,
                     ]
                 }
             }
@@ -55,6 +56,22 @@ const schoolClassReducer = (state = initState, action) => {
                 ...state,
                 success: false,
                 loading: false,
+            }
+        case schoolClassConstants.UPDATE_MEMBER_COMMIT:
+            return {
+                ...state,
+                success: true,
+                loading: false,
+                selected_batch_ID: payload.data.id,
+                classes: {
+                    ...state.classes,
+                    [payload.type] : state.classes[payload.type].map(item => {
+                        if (item.id === payload.data.id) {
+                            return payload.data
+                        }
+                        return item;
+                    })
+                }
             }
         case schoolClassConstants.GET_PEOPLE_WITH_STUDENTS_REQUEST:
             return {
@@ -65,7 +82,7 @@ const schoolClassReducer = (state = initState, action) => {
             return {
                 ...state,
                 loading: false,
-                people: payload.people
+                people: payload.data
             }
             break;
         case schoolClassConstants.GET_PEOPLE_WITH_STUDENTS_FAILURE:
@@ -76,13 +93,16 @@ const schoolClassReducer = (state = initState, action) => {
         case schoolClassConstants.ENROLL_SUCCESS:
             return {
                 ...state,
-                people: {
-                    ...people,
-                    [payload.id]: {
-                        ...people[payload.id],
-                        is_exist: payload.is_exist
-                    }
-                }
+                people: state.people.map(item => {
+                    
+                        if (item.id === payload.id) {
+                            return {
+                                ...item,
+                                is_exist: payload.is_exist
+                            }
+                        }
+                        return item;
+                    })
             }
         default: 
             return state;

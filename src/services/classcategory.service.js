@@ -1,11 +1,11 @@
 import { get, post } from '../helpers/http-services';
 
 const getAll = () => {
-    return get(`school/statuses`);
+    return get(`class/categories`);
 }
 
 
 
-export default schoolStatusService = {
+export default classCategoryService = {
     getAll
 }

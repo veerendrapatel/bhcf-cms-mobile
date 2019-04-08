@@ -26,7 +26,7 @@ class CellReports extends Component {
         this.state = {
             personID: null,
             selectedYear: today.format('YYYY'),
-            selectedWeek: today.format('ww'),
+            selectedWeek: today.format('ww') - 1,
         }
     }
 

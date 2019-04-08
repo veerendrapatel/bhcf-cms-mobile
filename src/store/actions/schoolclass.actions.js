@@ -39,12 +39,12 @@ const save = (data) => {
 
 const update = (id, data) => {
     const request = () => { return { type: schoolClassConstants.SAVE_REQUEST } }
-    const success = (payload) => { return { type: schoolClassConstants.SAVE_SUCCESS, payload } }
+    const success = (payload) => { return { type: schoolClassConstants.UPDATE_MEMBER_COMMIT, payload } }
     const failure = (error) => { return { type: schoolClassConstants.SAVE_FAILURE, error } }
-    console.log(id, data);
+    
     return (dispatch, getState) => {
         dispatch(request());
-        schoolClassService.save(id, data)
+        schoolClassService.update(id, data)
             .then(
                 res => {
                     if (res.ok) {
@@ -60,7 +60,6 @@ const update = (id, data) => {
                     }
                 },
                 err => {
-                    console.log(err);
                     const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
                     dispatch(failure( error ));
                     dispatch(alertActions.error( error ));
@@ -72,7 +71,7 @@ const update = (id, data) => {
 
 
 
-const getPeopleWithEnrolledStudents = ( class_ID, query ) => {
+const getPeopleWithEnrolledStudents = ( class_ID, query = null ) => {
     const request = () => { return { type: schoolClassConstants.GET_PEOPLE_WITH_STUDENTS_REQUEST } }
     const success = (payload) => { return { type: schoolClassConstants.GET_PEOPLE_WITH_STUDENTS_SUCCESS, payload } }
     const failure = (error) => { return { type: schoolClassConstants.GET_PEOPLE_WITH_STUDENTS_FAILURE, error } }
@@ -125,7 +124,6 @@ const getByType = ( typeID ) => {
                     }
                 },
                 err => {
-                    console.log(err);
                     const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
                     dispatch(failure( error ));
                     dispatch(alertActions.error( error ));
@@ -137,19 +135,20 @@ const getByType = ( typeID ) => {
 
 
 const enroll = (classID, personID, data) => {
-    const request = () => { return { type: schoolClassConstants.GETALL_REQUEST } }
-    const success = (payload) => { return { type: schoolClassConstants.GETALL_SUCCESS, payload } }
-    const failure = (error) => { return { type: schoolClassConstants.GETALL_FAILURE, error } }
+    // const request = () => { return { type: schoolClassConstants.GET_ALL_REQUEST } }
+    const success = (payload) => { return { type: schoolClassConstants.ENROLL_SUCCESS, payload } }
+    // const failure = (error) => { return { type: schoolClassConstants.GET_ALL_ROLLBACK, error } }
 
     return (dispatch, getState) => {
-        dispatch(request());
+        // dispatch(request());
 
         schoolClassService.enroll(classID, personID, data)
             .then(
                 res => {
                     if (res.ok) {
                         const payload = {
-                            id: personID
+                            id: personID,
+                            is_exist: data.flag
                         }
                         dispatch(success(payload));
                     } else {

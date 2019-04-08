@@ -10,8 +10,7 @@ import { alertActions } from '../../store/actions';
 class Login extends Component {
     constructor(props) {
         super(props);
-
-        this.props.dispatch(signOut());
+        
         this.state = {
             username: '',
             password: '',
@@ -21,8 +20,8 @@ class Login extends Component {
     }
     
     componentDidUpdate() {
-        const { isLoggedIn, alert } = this.props;
-        if(isLoggedIn === true) {
+        const { auth} = this.props;
+        if(auth.isLoggedIn && auth.user) {
             this.props.navigation.navigate('Home');
         }
    
@@ -31,18 +30,18 @@ class Login extends Component {
 
     onPressLogin() {
         const { username, password } = this.state;
-        const { dispatch } = this.props;
+        const { login, notifyError } = this.props;
 
         this.setState({ submitted: true });
         if (username && password) {
-            dispatch(signIn(username, password));
+            login(username, password);
         } else {
-            dispatch(alertActions.error('Username and password is required'));
+            notifyError('Username and password is required');
         }
     }
 
     render() {
-        const { loggingIn, isLoggedIn, navigation } = this.props;
+        const { auth } = this.props;
         return ( 
             <ThemeProvider>
             <View style={styles.container}>
@@ -89,10 +88,11 @@ class Login extends Component {
                     inputStyle={styles.txtInput}
                     
                 />
+                
                 <View style={styles.btnContainer}>
                     <Button
                         title="Login"
-                        loading={ loggingIn  }
+                        loading={ auth.loggingIn  }
                         onPress={this.onPressLogin} 
                         buttonStyle={styles.btn}
                     />
@@ -104,17 +104,7 @@ class Login extends Component {
 }
 
 
-const mapStateToProps = (state) => {
-    
-    const { loggingIn, isLoggedIn } = state.auth;
-    const {alert} = state;
-    
-    return {
-        alert,
-        loggingIn,
-        isLoggedIn
-    }
-}
+
 
 const styles = StyleSheet.create({
     container: {
@@ -147,8 +137,27 @@ const styles = StyleSheet.create({
     btn: {
         backgroundColor: colors.primary,
         borderRadius: 30,
-        padding: padding.sm
+        padding: padding.sm,
+        width: '100%'
     }
 });
 
-export default connect(mapStateToProps)(Login);
+
+const mapStateToProps = (state) => {
+    
+    const { auth, alert } = state;
+    
+    return {
+        alert,
+        auth
+    }
+}
+
+const mapPropsToDispatch = (dispatch) => {
+    return {
+        login: (username, password) => dispatch(signIn(username, password)),
+        notifyError: (message) => dispatch(alertActions.error(message))
+    }
+}
+
+export default connect(mapStateToProps, mapPropsToDispatch)(Login);

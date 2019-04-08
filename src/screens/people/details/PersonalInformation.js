@@ -23,15 +23,16 @@ class PersonalInformation extends Component {
     }
 
     componentDidMount() {
-        const { dispatch } = this.props;
+        const { findPersonById } = this.props;
         if (this.props.navigation.state.params != undefined) {
             const person = this.props.navigation.state.params.person;
 
             const didBlurSubscription = this.props.navigation.addListener(
                 'willFocus',
                 payload => {
-                    //Todo
-                    dispatch(peopleActions.findPeopleById( person.id ));
+                    
+                    findPersonById( person.id );
+                
                 }
             );
             
@@ -335,4 +336,10 @@ const mapStateToProps = ( state ) => {
     
 }
 
-export default connect(mapStateToProps)(PersonalInformation);
+const mapPropsToDispatch = ( dispatch ) => {
+    return {
+        findPersonById: (id) => dispatch(peopleActions.findPeopleById( id ))
+    }
+}
+
+export default connect(mapStateToProps, mapPropsToDispatch)(PersonalInformation);

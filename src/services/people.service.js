@@ -1,7 +1,7 @@
 import { get, post } from '../helpers/http-services';
 
 const getAll = () => {
-    return get(`members`);
+    return get(`members/all`);
 }
 
 const getNetwork = (currentUserId) => {

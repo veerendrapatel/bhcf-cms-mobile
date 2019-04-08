@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import {NavigationActions} from 'react-navigation';
-import { View, Text, ScrollView, Image, ActivityIndicator,StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Image, ActivityIndicator,StyleSheet, Alert } from 'react-native';
 import { Icon, Avatar } from 'react-native-elements';
 import { connect } from 'react-redux';
 import { signOut } from '../store/actions/auth.actions';
@@ -21,6 +21,7 @@ class SideMenu extends Component {
     }
 
     componentDidUpdate() {  
+      
         if(this.props.user === null) {
             this.props.navigation.navigate('Login');
         }
@@ -29,9 +30,6 @@ class SideMenu extends Component {
     render() {
       
       const { user } = this.props;
-      if (!user) {
-        return <Text>Loading...</Text>;
-      }
       return (
           <View style={styles.sideMenuContainer}>
               <ScrollView>
@@ -228,8 +226,21 @@ class SideMenu extends Component {
                             style={styles.navItemText}  
                             onPress={ () => 
                               {
-                                const { navigate } = this.props.navigation;
-                                this.props.dispatch(signOut());
+                                const { signOut } = this.props;
+                                // Works on both iOS and Android
+                                Alert.alert(
+                                  'Sign Out',
+                                  'Your data have unsynced changes. If you sign out now, you`ll lose those changes',
+                                  [
+                                    {
+                                      text: 'No',
+                                      onPress: () => console.log('Cancel Pressed'),
+                                      style: 'cancel',
+                                    },
+                                    {text: 'Yes', onPress: () => signOut()},
+                                  ],
+                                  {cancelable: false},
+                                );
                               } 
                             }
                           >Signout</Text>
@@ -356,10 +367,16 @@ SideMenu.propTypes = {
 
 const mapStateToProps = (state) => {
   const { user } = state.auth;
-
   return {
     user
   }
 }
 
-export default connect(mapStateToProps)(SideMenu);
+const mapPropsToDispatch = (dispatch) => {
+    return {
+        signOut: () => dispatch(signOut()),
+    }
+}
+
+
+export default connect(mapStateToProps, mapPropsToDispatch)(SideMenu);

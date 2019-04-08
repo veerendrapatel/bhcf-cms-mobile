@@ -47,8 +47,6 @@ const saveCellGroupAttendance = ( memberID, year, week, attendance, index ) => {
                 res => {
                     
                     if (res.ok) {
-                        console.log(attendance);
-                        console.log(res.data);
                         const payload =  {
                             year: year,
                             week: week,
@@ -63,7 +61,6 @@ const saveCellGroupAttendance = ( memberID, year, week, attendance, index ) => {
                     }
                 },
                 err => {
-                    console.log(err);
                     const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
                     dispatch(failure( error ));
                     dispatch(alertActions.error( error ));

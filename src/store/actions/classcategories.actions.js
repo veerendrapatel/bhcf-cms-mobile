@@ -1,18 +1,18 @@
-import schoolStatusService  from '../../services/schoolstatus.service';
-import { schoolStatusConstants } from '../constants';
-import { alertActions } from '../actions/alert.actions';
+import classCategoryService  from '../../services/classcategory.service';
+import { classCategoryConstants } from '../constants';
+import { alertActions } from './alert.actions';
 
 
 
 const getAll = (currentUserId) => {
-    const request = () => { return { type: schoolStatusConstants.GETALL_REQUEST } }
-    const success = (payload) => { return { type: schoolStatusConstants.GETALL_SUCCESS, payload } }
-    const failure = (error) => { return { type: schoolStatusConstants.GETALL_FAILURE, error } }
+    const request = () => { return { type: classCategoryConstants.GET_ALL_REQUEST } }
+    const success = (payload) => { return { type: classCategoryConstants.GET_ALL_COMMIT, payload } }
+    const failure = (error) => { return { type: classCategoryConstants.GET_ALL_ROLLBACK, error } }
 
     return (dispatch, getState) => {
         dispatch(request());
 
-        schoolStatusService.getAll()
+        classCategoryService.getAll()
             .then(
                 res => {
                     if (res.ok) {

@@ -1,5 +1,6 @@
 import { authConstants } from '../constants/auth.constants';
 
+
 const initState = {
     loggingIn:false,
     isLoggedIn: false,
@@ -9,41 +10,34 @@ const initState = {
 const authReducer = (state = initState, action) => {
     
     switch(action.type) {
-        // case REHYDRATE:
-        //     return {
-        //         ...state,
-        //         isLoggedIn: action.payload.isLoggedIn,
-        //         user: action.payload.user
-        //     }
         case authConstants.LOGIN_REQUEST:
+            console.log(action);
             return {
                 ...state,
-                loggingIn: true,
-                user: action.user
+                loggingIn: true
             };
-        case authConstants.SET_CURRENT_USER:
+        case authConstants.LOGIN_COMMIT:
+            console.log('LOGIN_COMMIT');
+            console.log(action);
             return {
                 ...state,
                 loggingIn:false,
-                isLoggedIn: true,
-                user: action.user
-            }
-        case authConstants.LOGIN_SUCCESS:
-            return {
-                ...state,
-                loggingIn:false,
-                isLoggedIn: true,
-                user: action.user
+                isLoggedIn: action.payload.ok,
+                user: action.payload.ok ? action.payload.data : null
             };
         
-        case authConstants.LOGIN_FAILURE:
-            return {};
-        // case authConstants.LOGOUT_SUCCESS:
-        //     return {
-        //         loggingIn:false,
-        //         isLoggedIn: false,
-        //         user: null
-        //     }
+        case authConstants.LOGIN_ROLLBACK:
+            console.log('LOGIN_ROLLBACK');
+            return {
+                ...state,
+                loggingIn:false,
+            };
+        case authConstants.LOGOUT_COMMIT:
+            return {
+                loggingIn:false,
+                isLoggedIn: false,
+                user: null
+            }
         default:
             return state;
     }

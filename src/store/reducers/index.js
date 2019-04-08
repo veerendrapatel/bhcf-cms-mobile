@@ -4,20 +4,22 @@ import  authReducer  from './auth.reducer';
 import  alertReducer from './alert.reducer';
 import cellGroupReducer from './cellgroup.reducer';
 import schoolClassReducer from './schoolClass.reducer';
-import schoolStatusReducer from './schoolStatus.reducer';
+import classCategoryReducer from './classCategory.reducer';
+import netInfoReducer from './netinfo.reducer';
 
 const appReducer = combineReducers({
     alert: alertReducer,
     auth: authReducer,
     people: peopleReducer,
     cellgroup: cellGroupReducer,
-    schoolStatus: schoolStatusReducer,
-    schoolClass: schoolClassReducer
+    classCategory: classCategoryReducer,
+    schoolClass: schoolClassReducer,
+    netInfo: netInfoReducer
 });
 
 
 const rootReducer = ( state, action ) => {
-  if ( action.type === 'USERS_LOGOUT_SUCCESS' ) {
+  if ( action.type === 'USERS_LOGOUT_COMMIT' ) {
     state = undefined;
   }
       

@@ -69,8 +69,8 @@ class LifeClass extends Component {
     }
 
     componentWillReceiveProps(nextProps){
-        if(nextProps.school_classes && this.props.school_classes && nextProps.school_classes[CLASS_TYPE_ID] !== this.props.school_classes[CLASS_TYPE_ID]){
-            this._data = nextProps.school_classes[CLASS_TYPE_ID];
+        if(nextProps.classes && this.props.classes && nextProps.classes[CLASS_TYPE_ID] !== this.props.classes[CLASS_TYPE_ID]){
+            this._data = nextProps.classes[CLASS_TYPE_ID];
             this.setState({ classes: [], page: 1, search: false, loading: nextProps.loading }, () => this.loadMore());
         }
     }
@@ -98,7 +98,7 @@ class LifeClass extends Component {
 
 
     render() {
-        const { school_classes, loading, navigation } = this.props;
+        const { loading, navigation } = this.props;
         const { keyword, classes } = this.state;
         return (
             <View style={ styles.container }>
@@ -172,6 +172,24 @@ class LifeClass extends Component {
                                                         type="ionicon"
                                                         color={ colors.tertiary }
                                                     />
+                                                    <TouchableOpacity style={[
+                                                        styles.backRightBtn, 
+                                                        styles.backRightBtnRight,
+                                                            {
+                                                                display: 'flex',
+                                                                flexDirection: 'row',
+                                                                alignItems: 'center'
+                                                            }
+                                                        ]}
+                                                        onPress={() => navigation.navigate('EnrollmentForm', { selected_batch_ID: data.item.id })}
+                                                        >
+                                                        <Icon 
+                                                            size={30}
+                                                            name="ios-contacts"
+                                                            type="ionicon"
+                                                            color={ colors.tertiary }
+                                                        />
+                                                    </TouchableOpacity>
                                                 </View>
                                             )
                                         } 
@@ -229,10 +247,10 @@ class LifeClass extends Component {
 }
 
 const mapsStateToProps = (state) => {
-    const { school_classes, loading }  = state.schoolClass;
+    const { classes, loading }  = state.schoolClass;
     return {
         loading,
-        school_classes,
+        classes,
     }
 }
 

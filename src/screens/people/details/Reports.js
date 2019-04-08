@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import { dimensions, colors, padding, fonts, container } from '../../../styles/base';
-import CellGroupAttendance from '../../cellgroup/CellReports';
-class CellReport extends Component {
+import CellReports from '../../cellgroup/CellReports';
+class Reports extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -14,7 +14,7 @@ class CellReport extends Component {
     render() {
         return (
             <View style={styles.container}>
-                <CellGroupAttendance personID={ this.state.person.id } {...this.props}/>
+                <CellReports personID={ this.state.person.id } {...this.props}/>
             </View>
         )
     }
@@ -33,4 +33,4 @@ const mapStateToProps = ( state ) => {
     }
 }
 
-export default connect(mapStateToProps)(CellReport);
+export default connect(mapStateToProps)(Reports);

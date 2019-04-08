@@ -18,40 +18,42 @@ class PersonForm extends Component {
 
     constructor(props) {
         super(props);
+        this.state = {
+            submitted: false,
+            person: {
+                id: 0,
+                email: '',
+                first_name: '',
+                last_name: '',
+                middle_name: '',
+                nick_name: '',
+                birthdate: '2016-08-01',
+                address: '',
+                city: '',
+                contact_no: '',
+                parent_id : this.props.user.member.id,
+                secondary_contact_no: '',
+                facebook_name: '',
+                school_status_id: null,
+                leadership_level_id: null,
+                auxiliary_group_id: null,
+                // status_id: null,
+                category_id: 1,
+                gender: 'male',
+                remarks: '',
+                avatar: null,
+                new_avatar: '',
+                ministries: null,
+            }
+        }
+        
         this.onChange = this.onChange.bind(this);
     }
 
-    state = {
-        submitted: false,
-        person: {
-            id: 0,
-            email: '',
-            first_name: '',
-            last_name: '',
-            middle_name: '',
-            nick_name: '',
-            birthdate: '2016-08-01',
-            address: '',
-            city: '',
-            contact_no: '',
-            leader_id : 0,
-            secondary_contact_no: '',
-            facebook_name: '',
-            school_status_id: null,
-            leadership_level_id: null,
-            auxiliary_group_id: null,
-            status_id: null,
-            category_id: 1,
-            gender: 'male',
-            remarks: '',
-            avatar: null,
-            new_avatar: '',
-            ministries: null,
-        }
-    }
+   
 
     componentDidMount = () => {
-        const { dispatch } = this.props;
+        const { getDropdownSelections } = this.props;
         const { person } = this.state;
 
         if (this.props.navigation.state.params && this.props.navigation.state.params.person) {
@@ -80,7 +82,7 @@ class PersonForm extends Component {
             }
         );
 
-        dispatch( peopleActions.getOptions() );
+        getDropdownSelections();
 
         if (this.props.navigation.state.params && this.props.navigation.state.params.leaderID) {
             
@@ -103,18 +105,19 @@ class PersonForm extends Component {
     }
 
     save = () => {
-        const { dispatch } = this.props;
+        const { update, create } = this.props;
         const { person } = this.state;
         this.setState({ submitted: true });
         const p = {
             email: person.email,
+            full_name: `${person.first_name} ${person.middle_name.charAt(0)} ${person.first_name}`,
             first_name: person.first_name,
             last_name: person.last_name,
             middle_name: person.middle_name,
             nick_name: person.nick_name,
             birthdate: person.birthdate,
             address: person.address,
-            leader_id: person.leader_id,
+            parent_id: person.parent_id,
             city: person.city,
             contact_no: person.contact_no,
             secondary_contact_no: person.secondary_contact_no,
@@ -122,7 +125,7 @@ class PersonForm extends Component {
             school_status_id: person.school_status_id,
             leadership_level_id: person.leadership_level_id,
             auxiliary_group_id: person.auxiliary_group_id,
-            status_id: person.status_id,
+            // status_id: person.status_id,
             category_id: person.category_id,
             gender: person.gender,
             remarks: person.remarks,
@@ -131,11 +134,9 @@ class PersonForm extends Component {
         };
 
         if (person.id) {
-            p._method = 'PUT';
-            dispatch(peopleActions.updatePerson(person.id, p));
+            update(person.id, p);
         } else {
-            p._method = 'POST';
-            dispatch(peopleActions.createPerson(p));
+            create(p);
         }
     }
 
@@ -152,7 +153,7 @@ class PersonForm extends Component {
 
     render() {
         const {person} = this.state;
-        const { options } = this.props;
+        const { options, netInfo } = this.props;
         
         return (
             <ThemeProvider>
@@ -168,7 +169,11 @@ class PersonForm extends Component {
                                 <View style={{ width: '20%' }}>
                                     <ImageUploader 
                                         source={person.avatar ? person.avatar.thumbnail : null} 
-                                        onSelectedImage={image => this.onChange('new_avatar', image)}
+                                        onSelectedImage={(image, url) => {
+                                            this.onChange('new_avatar', image);
+                                            this.onChange('new_avatar_url', url)
+                                            }
+                                        }
                                     />
                                 </View>
                                 <View style={{ width: '80%' }}>
@@ -209,13 +214,14 @@ class PersonForm extends Component {
                             <DatePicker
                                 style={{width: '100%', padding: padding.sm}}
                                 date={person.birthdate}
+                                value={person.birthdate}
                                 mode="date"
                                 placeholder="select date"
                                 format="YYYY-MM-DD"
                                 confirmBtnText="Confirm"
                                 cancelBtnText="Cancel"
                                 showIcon={false}
-                                onDateChange={(date) => {this.setState({birthdate: date})}}
+                                onDateChange={(date) => {this.onChange({birthdate: date})}}
                                 customStyles={{
                                     dateIcon: {
                                         position: 'absolute',
@@ -449,45 +455,6 @@ class PersonForm extends Component {
                             </View>
                             <View style={styles.collapseableContainer}>
                                 <CollapsibleView
-                                    title="Status"
-                                    collapsed={false}
-                                    headerStyle={styles.headerStyle}
-                                    headerIconSize={30}
-                                    headerIconColor="black"
-                                    headerTextStyle={styles.headerTextStyle}
-                                >
-                                    <View style={styles.collapsViewStyle}>
-                                    { 
-                                        options &&
-                                        options.statuses && options.statuses.map((item, i) => {
-                                            return (
-                                                    <CheckBox key={item.id}
-                                                        title={item.name}
-                                                        checkedIcon={
-                                                            <Icon 
-                                                                name="ios-checkmark-circle" 
-                                                                type="ionicon"
-                                                            />
-                                                        }
-                                                        uncheckedIcon={
-                                                            <Icon 
-                                                                name="ios-checkmark-circle-outline" 
-                                                                type="ionicon"
-                                                            />
-                                                        }
-                                                        checked={ person.status == item.id }
-                                                        onPress={() =>  this.onChange('status', item.id) }
-                                                        containerStyle={styles.checkboxContainer}
-                                                    />
-                                                )
-                                            }
-                                        )
-                                    }
-                                    </View>
-                                </CollapsibleView>
-                            </View>
-                            <View style={styles.collapseableContainer}>
-                                <CollapsibleView
                                     title="School Level"
                                     collapsed={false}
                                     headerStyle={styles.headerStyle}
@@ -498,7 +465,7 @@ class PersonForm extends Component {
                                     <View style={styles.collapsViewStyle}>
                                     { 
                                         options &&
-                                        options.school_statuses && options.school_statuses.map((item, i) => {
+                                        options.class_categories && options.class_categories.map((item, i) => {
                                             return (
                                                     <CheckBox key={item.id}
                                                         title={item.name}
@@ -643,12 +610,23 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state) => {
     const { options, person } =  state.people;
-    
+    const { user } = state.auth;
     return {
         options,
-        person
+        person,
+        user
     }
 }
 
 
-export default connect(mapStateToProps)(PersonForm)
+
+const mapPropsToDispatch = (dispatch) => {
+    return {
+        getDropdownSelections: () => dispatch(peopleActions.getOptions()),
+        create: (person) => dispatch(peopleActions.createPerson(person)),
+        update: (id, person) => dispatch(peopleActions.updatePerson(id, Object.assign(person, { _method: 'PUT' })))
+    }
+}
+
+
+export default connect(mapStateToProps, mapPropsToDispatch)(PersonForm)

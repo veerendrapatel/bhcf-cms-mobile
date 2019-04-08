@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
-import { Text, View, ActivityIndicator, FlatList, TouchableHighlight, TouchableOpacity, StyleSheet } from 'react-native';
-import { Icon, ThemeProvider, Badge, SearchBar, Avatar } from 'react-native-elements';
+import { Text, View, ActivityIndicator, TouchableHighlight, TouchableOpacity, StyleSheet, NetInfo, AppState } from 'react-native';
+import { Icon, Badge, SearchBar, Avatar } from 'react-native-elements';
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { peopleActions, alertActions } from '../../store/actions';
+import { peopleActions, alertActions, connectionState } from '../../store/actions';
+import { paginate } from '../../helpers/misc';
 import Moment from 'moment';
 import { connect } from 'react-redux';
 import { dimensions, colors, padding, fonts } from '../../styles/base';
 import call from 'react-native-phone-call';
-
 
 class People extends Component {
   
@@ -36,56 +36,50 @@ class People extends Component {
         }
 
         this.search = this.search.bind(this);
-       
+        NetInfo.isConnected.fetch().then(this.props.handleConnectivityChange);
     }
-
-    paginate = (network, page, per_page) => {
+    
+    componentWillUnmount() {
  
-        var page = page || 1,
-        per_page = per_page || 10,
-        offset = (page - 1) * per_page,
-        
-        paginatedItems = network.slice(offset).slice(0, per_page),
-        total_pages = Math.ceil(network.length / per_page);
-        return {
-            page: page,
-            per_page: per_page,
-            pre_page: page - 1 ? page - 1 : null,
-            next_page: (total_pages > page) ? page + 1 : null,
-            total: network.length,
-            total_pages: total_pages,
-            data: paginatedItems
-        };
+        NetInfo.isConnected.removeEventListener(
+            'connectionChange',
+            this.props.handleConnectivityChange
+    
+        );
+    
     }
-
-
+    
     componentDidMount = () => {
-        const { dispatch, user } = this.props;
+        const { user } = this.props;
+
         const leaderID = this.props.personID ? this.props.personID : user.member.id;
-        const didBlurSubscription = this.props.navigation.addListener(
-            'willFocus',
-            payload => {
-                this.setState({ loading: true, 'leaderID': leaderID }, () => this.fetchPeople(leaderID));
-            }
+        
+        NetInfo.isConnected.addEventListener(
+            'connectionChange',
+            this.props.handleConnectivityChange
         );
         this.setState({ leaderID: leaderID })
-        // Remove the listener when you are done
-        // didBlurSubscription.remove();
-        this.fetchPeople(leaderID);
-        
-        
+        this.fetchNetwork(leaderID);
+        this.fetNetwork(this.props);
     }
 
-    fetchPeople = (leaderID) => {
-        const { dispatch } = this.props;
-        dispatch(peopleActions.getNetwork( leaderID ));  
+    fetchNetwork = (leaderID) => {
+        const { fetchNetwork } = this.props;
+        fetchNetwork(leaderID);
     }
 
     componentWillReceiveProps(nextProps){
-        if(nextProps.people.network !== this.props.people.network){
-            this._data = nextProps.people.network;
-            this.setState({ people: [], page: 1, search: false, loading: nextProps.people.loading }, () => this.loadMore());
+        if(nextProps.people.people !== this.props.people.people){
+            this.fetNetwork(nextProps);
         }
+
+    }
+
+    fetNetwork = (props) => {
+        const leaderID = props.personID ? props.personID : props.user.member.id;
+
+        this._data = props.people.people ? props.people.people.filter(person => person.parent_id == leaderID): null;
+        this.setState({ people: [], page: 1, search: false, loading: props.people.loading }, () => this.loadMore());
     }
 
     
@@ -93,7 +87,7 @@ class People extends Component {
     loadMore() {
         if (this._data) {
             if (!this.state.searching && this._data.length >= this.state.page ) {
-                const people = this.paginate(this._data, this.state.page, 12).data;
+                const people = paginate(this._data, this.state.page, 12).data;
                 if (people.length) {
                     this.setState({ people: this.state.people.concat(people) });
                 }
@@ -113,9 +107,21 @@ class People extends Component {
          
 
         const { keyword, people, loading } = this.state;
-        const { navigation, dispatch } = this.props;
+        const { navigation, dispatch, netInfo } = this.props;
         return (
-            <ThemeProvider style={styles.container}>
+            <View style={ styles.container }>
+                {  
+                    !netInfo.isConnected &&
+                    <View style={{
+                        width: '100%',
+                        backgroundColor: colors.danger,
+                        alignItems: 'center',
+                        padding: 3
+                    }}>
+                        <Text style={{ color: colors.tertiary }}>No Internet Connection</Text>
+                    </View>
+
+                }
                { !loading ? 
                     (
                         <SwipeListView
@@ -125,6 +131,9 @@ class People extends Component {
                             rightOpenValue={-75}
                             keyExtractor={(person, index) => index.toString()}
                             data={people}
+                            ListEmptyComponent={
+                                <View style={ styles.container }><Text>Oops! No data to display.</Text></View>
+                            }
                             renderItem={
                                 (row, rowMap) => {
                                     const person =  row.item;
@@ -173,48 +182,51 @@ class People extends Component {
                                                             }
                                                         }
                                                     >{ person.full_name } ({person.nick_name})</Text>
-                                                    <View style={
-                                                        { 
-                                                            flex: 1, 
-                                                            flexDirection: 'row', 
-                                                            alignItems: 'center',
-                                                        }
-                                                    }>
+                                                    <View style={ styles.row }>
                                                         <Icon 
                                                             name="birthday-cake" 
                                                             type="font-awesome" 
-                                                            iconStyle={{color: person.is_birthday_today ? '#f15bf1'  :'rgba(34,34,34,0.5)'}} size={10}
+                                                            iconStyle={{color: person.is_birthday_today ? colors.violet  :colors.grey}} size={10}
                                                         />
                                                         <Text 
-                                                            style={{ marginLeft: 5, color: 'rgba(34,34,34,0.5)' }}>
+                                                            style={{ marginLeft: 5, color: colors.grey }}>
                                                             {Moment(person.birthdate).format('MMM Do YYYY')}
                                                         </Text>
                                                     </View>
-                                                    <View style={
-                                                        { 
-                                                            flex: 1, 
-                                                            flexDirection: 'row', 
-                                                            alignItems: 'center'
-                                                        }
-                                                    }>
+                                                    <View>
                                                         {
-                                                            person.leadership_level &&
-                                                            <Text>{ person.leadership_level.name } with </Text>
+                                                            person.school_status &&
+                                                            <Text>{ person.school_status.name }</Text>
                                                         }
-                                                        <Badge status="success" textStyle={{ fontSize: 8 }} value="1,000"/>
                                                     </View>
+                                                    { 
+                                                        person.category.name &&
+                                                        <View style={ styles.row }>
+                                                            <Text>Category Level: </Text>
+                                                            <Text>{ person.category.name }</Text>
+                                                        </View>
+                                                    }
                                                     {
-                                                        person.status &&
-                                                        <View style={
-                                                            { 
-                                                                flex: 1, 
-                                                                flexDirection: 'row', 
-                                                                alignItems: 'center',
-                                                                marginTop: 2,
+                                                        person.my_ministries.length &&
+                                                        <View style={ styles.row }>
+                                                            <Text>Ministry: </Text>
+                                                            <Text style={{ color: colors.grey }}>
+                                                            {
+                                                                person.my_ministries.map((item, i) =>  item.name  )
                                                             }
-                                                        }>
-                                                            <Text style={{ color: '#222' }}>Status: </Text>
-                                                            <Text style={{ color: '#222' }}>{ person.status.name }</Text>
+                                                            </Text>
+                                                        </View>
+                                                    }
+                                                    {
+                                                        person.auxiliary_group &&
+                                                        <View>
+                                                            <Text style={{ color: colors.grey }}>{ person.auxiliary_group.name }</Text>
+                                                        </View>
+                                                    }
+                                                    {
+                                                        person.active_status &&
+                                                        <View>
+                                                            <Text style={{ color: colors.grey }}>{ person.active_status }</Text>
                                                         </View>
                                                     }
                                                 </View>
@@ -227,7 +239,7 @@ class People extends Component {
 
                             renderHiddenItem={
                                 (data, rowmap) => (
-                                     <View style={styles.rowBack}>
+                                    <View style={styles.rowBack}>
                                         <Icon 
                                             onPress={() => navigation.navigate('PersonForm', { person: data.item })}
                                             size={30}
@@ -314,23 +326,15 @@ class People extends Component {
                         onPress={() => this.props.navigation.navigate('PersonForm', { leaderID: this.state.leaderID })}
                     />
                 </View>
-            </ThemeProvider>
+            </View>
         )
     }
 }
 
-const mapStateToProps = (state) => {
-    const {people, auth} = state;
-    
-    return {
-        people,
-        user: auth.user
-    }
-}
+
 
 const styles = StyleSheet.create({
     container: {
-        padding: padding.sm,
         flex: 1,
         flexDirection: 'column',
         alignItems: 'center',
@@ -402,4 +406,22 @@ const styles = StyleSheet.create({
     }
 });
 
-export default connect(mapStateToProps)(People);
+
+const mapStateToProps = (state) => {
+    const {people, auth, netInfo} = state;
+    console.log(people.people);
+    return {
+        people,
+        netInfo,
+        user: auth.user
+    }
+}
+
+const mapPropsToDispatch = (dispatch) => {
+    return {
+        fetchNetwork: ( leaderID ) => dispatch(peopleActions.fetchNetwork( leaderID )),
+        handleConnectivityChange: (isConnected) => dispatch(connectionState(isConnected))
+    }
+}
+
+export default connect(mapStateToProps, mapPropsToDispatch)(People);

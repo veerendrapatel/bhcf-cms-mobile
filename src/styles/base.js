@@ -11,7 +11,10 @@ export const colors = {
     tertiary: '#FFF',
     black: '#000',
     orange: '#FF5722',
-    grey: '#c1c1c1'
+    grey: '#c1c1c1',
+    warning: '#FFC107',
+    danger: '#F44336',
+    violet: '#f15bf1'
 }
 
 export const padding = {

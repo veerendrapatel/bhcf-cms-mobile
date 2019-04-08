@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { colors } from '../../styles/base';
 import PersonalInformation from './details/PersonalInformation';
 import Network from './details/Network';
-import CellReport from './details/CellReport';
+import Reports from './details/Reports';
 
 
 
@@ -29,7 +29,7 @@ export default createAppContainer(
         {
             PersonalInformation: { screen: PersonalInformation },
             Network: { screen: Network },
-            CellReport: { screen: CellReport }
+            Reports: { screen: Reports }
         },
         {
             defaultNavigationOptions: ({ navigation }) => (

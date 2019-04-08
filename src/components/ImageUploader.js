@@ -1,8 +1,9 @@
 
 import React, {Component} from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Avatar, Icon, Overlay, ButtonGroup  } from 'react-native-elements';
 import { ImagePicker, Permissions } from 'expo';
+import { dimensions, colors, padding, fonts, container } from '../styles/base';
 class ImageUploader extends Component {
     constructor(props) {
         super(props);
@@ -32,7 +33,7 @@ class ImageUploader extends Component {
                 this.setState({ isVisible: false });
                 break;
             case 1: 
-                this.props.onSelectedImage(this.state.selectedImageForUpload);
+                this.props.onSelectedImage(this.state.selectedImageForUpload, this.state.selectedImageTmp);
                 this.setState({ isVisible: false, selectedImage: this.state.selectedImageTmp });
                 
                 break;
@@ -118,20 +119,24 @@ class ImageUploader extends Component {
                 isVisible={isVisible}
                 onBackdropPress={() => this.setState({ isVisible: false })}
                 >
-                <View>
+                <View style={styles.container}>
                  <ButtonGroup
                     onPress={this.updateIndex}
                     selectedIndex={selectedIndex}
                     buttons={buttons}
-                    containerStyle={{height: 100}}
+                    containerStyle={{height: 50}}
                     />
-                    {selectedImageTmp ?
-                        <Avatar rounded size="xlarge" source={{uri: selectedImageTmp}}/>
-                        :
-                        <Avatar rounded size="xlarge" icon={{name: 'user', type: 'font-awesome'}}/>
-                    }
-                    <Icon name="ios-camera" type="ionicon" onPress={this._takePhoto}/>
-                    <Icon name="ios-image" type="ionicon" onPress={this._pickImage}/>
+                    <View>
+                        {selectedImageTmp ?
+                            <Avatar containerStyle={styles.avatar} size="xlarge" source={{uri: selectedImageTmp}}/>
+                            :
+                            <Avatar containerStyle={styles.avatar} size="xlarge" icon={{name: 'user', type: 'font-awesome'}}/>
+                        }
+                        <View style={ styles.iconContainer }>
+                            <Icon name="ios-camera" containerStyle={styles.icon} size={30} type="ionicon" onPress={this._takePhoto}/>
+                            <Icon name="ios-image" containerStyle={styles.icon} size={30} type="ionicon" onPress={this._pickImage}/>
+                        </View>
+                    </View>
                 </View>
             </Overlay>
             </View>
@@ -140,4 +145,34 @@ class ImageUploader extends Component {
     }
     
 }
+
+const styles = StyleSheet.create({
+    container: {
+        ...container,
+    },
+    avatarContainer: {
+        ...container,
+        position:'relative',
+        flexDirection: 'column',
+        alignItems: 'center',
+        width: '100%',
+        height: 300,
+        borderWidth:1,
+        borderColor: '#000'
+    },
+    avatar: {
+        width: 300,
+        height: 300
+    },
+    iconContainer: {
+        ...container,
+        flexDirection: 'row',
+        alignItems: 'center',
+        position:'absolute',
+        bottom:0
+    },
+    icon: {
+        margin: padding.sm
+    }
+});
 export default ImageUploader;

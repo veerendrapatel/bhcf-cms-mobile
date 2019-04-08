@@ -1,102 +1,119 @@
 import { peopleConstants } from '../constants';
 
 
+
+
 const initState = {
     people: null,
     network: null,
-    error: null,
+    alert: null,
     loading: false
 }
 let payload = null;
+let index = null;
 const peopleReducer = (state = initState, action) => {
     payload = action.payload;
 
     switch(action.type) {
-        case peopleConstants.GETALL_REQUEST: 
+        case peopleConstants.GET_ALL_REQUEST: 
             return {
                 ...state,
                 loading: true
             }
-        case peopleConstants.GETALL_SUCCESS:
+        case peopleConstants.GET_ALL_COMMIT:
+        
             return {
                 ...state,
                 loading: false,
                 people: payload.people
             }
-        case peopleConstants.GETALL_FAILURE:
+        case peopleConstants.GET_ALL_ROLLBACK:
+            return {
+                ...state,
+                loading: false
+            }
+
+        case peopleConstants.GET_MY_NETWORK_REQUEST: 
+            
+            return {
+                ...state,
+                loading: true
+            }
+        case peopleConstants.GET_MY_NETWORK_COMMIT:
+            
+            return {
+                ...state,
+                loading: false,
+                people: action.payload.ok ? payload.network : state.people
+            }
+        case peopleConstants.GET_MY_NETWORK_ROLLBACK:
             return {
                 ...state,
                 loading: false,
                 error: action.error
             }
-
-        case peopleConstants.GETNETWORK_REQUEST: 
+        case peopleConstants.GET_MY_NETWORK:
             return {
                 ...state,
-                loading: true
-            }
-        case peopleConstants.GETNETWORK_SUCCESS:
-            return {
-                ...state,
+                network: state.people.filter(item => item.parent_id === payload.memberID),
                 loading: false,
-                network: payload.network
-            }
-        case peopleConstants.GETNETWORK_FAILURE:
-            return {
-                ...state,
-                loading: false,
-                error: action.error
             }
 
-        case peopleConstants.CREATE_REQUEST:
+        case peopleConstants.ADD_NEW_MEMBER_REQUEST:
             return {
                 ...state,
-                loading: true
+                loading: true,
+                people: [...state.people, payload.data]
             }
-        case peopleConstants.CREATE_SUCCESS:
+        case peopleConstants.ADD_NEW_MEMBER_COMMIT:
             return {
                 ...state,
                 loading: false,
-                network: [...payload.network, payload.person]
+                alert: {
+                    type: 'success',
+                    message: 'Successfully saved.'
+                },
+                people: state.people.filter(item => {
+                    if (item.id === action.meta.uid) {
+                        return payload.data;
+                    }
+                    return item;
+                }),
+            }
+        case peopleConstants.ADD_NEW_MEMBER_ROLLBACK:
+            return {
+                ...state
             }
         case peopleConstants.CREATE_FAILURE:
             return {
                 ...state,
                 loading: false
             }
-        case peopleConstants.UPDATE_REQUEST:
+        case peopleConstants.UPDATE_MEMBER_REQUEST:
             return {
                 ...state,
                 loading: true
             }
-        case peopleConstants.UPDATE_SUCCESS:
-        
-            const index = state.network.findIndex(item => item.id === payload.person.id);  
+        case peopleConstants.UPDATE_MEMBER_COMMIT:
+            index = state.network.findIndex(item => item.id === payload.person.id);  
             return {
                 ...state,
-                // optional 2nd arg in callback is the array index
-                network: state.network.map((item, i) => {
-                if (i === index) {
-                    return payload.person
-                }
-
-                return item
-                })
+                people: state.people.splice(index, 1, payload.data)
             }
 
-        case peopleConstants.UPDATE_FAILURE:
+        case peopleConstants.UPDATE_MEMBER_ROLLBACK:
             return {
                 ...state,
                 loading: false
             }
 
-        case peopleConstants.FETCH_DROPDOWN_OPTIONS:
+        case peopleConstants.FETCH_PEOPLE_OPTIONS_COMMIT:
             return {
                 ...state,
-                options: payload.options
+                options: payload.data
             }
         case peopleConstants.FIND_BY_ID: 
-            const person = state.network.filter(item => item.id === payload.id);
+            const person = state.people.filter(item => item.id === payload.id);
             return {
                 ...state,
                 person: person ? person[0] : null

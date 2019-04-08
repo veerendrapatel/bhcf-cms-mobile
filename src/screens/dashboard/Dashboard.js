@@ -5,6 +5,7 @@ import {  Icon, ThemeProvider } from 'react-native-elements';
 import {connect} from 'react-redux';
 import { dimensions, colors, padding, fonts } from '../../styles/base';
 
+
 const screenWidth = Dimensions.get('window').width
 import {
   LineChart,
@@ -26,7 +27,8 @@ class Dashboard extends React.Component {
         };
     };
 
-    
+    componentDidMount() {
+    }
 
     render() {
         return (
@@ -89,11 +91,7 @@ class Dashboard extends React.Component {
     }
 }
 
-const mapStateToProps = (state) => {
-    return {
 
-    }
-}
 
 const box = {
     width: dimensions.fullWidth / 2, 
@@ -155,4 +153,19 @@ const styles = StyleSheet.create({
 });
 
 
-export default connect(mapStateToProps)(Dashboard);
+
+const mapStateToProps = (state) => {
+  const { user } = state.auth;
+  return {
+    user
+  }
+}
+
+const mapPropsToDispatch = (dispatch) => {
+    return {
+       
+    }
+}
+
+
+export default connect(mapStateToProps, mapPropsToDispatch)(Dashboard);

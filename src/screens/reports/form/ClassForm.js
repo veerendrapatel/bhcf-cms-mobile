@@ -60,16 +60,18 @@ class ClassForm extends React.Component{
     }
 
     componentWillReceiveProps(newProps) {
-        if(newProps.selected_batch_ID && this.props.selected_batch_ID && newProps.selected_batch_ID !== this.props.selected_batch_ID) {
-            this.props.navigate('EnrollmentForm', { selected_batch_ID: selected_batch_ID });
+        if(newProps.selected_batch_ID && newProps.classes !== this.props.classes) {
+            this.props.navigation.navigate('EnrollmentForm', { selected_batch_ID: newProps.selected_batch_ID  });
         }
     }
 
     componentDidMount = () => {
         const { params } = this.props.navigation.state;
+        let screenTitle = 'Create Batch';
         if (params != undefined) {
             const data = params.class;
             if (data !== undefined) {
+                screenTitle = data.batch_name;
                 this.setState({ school_class: {
                     id: data.id,
                     batch_name: data.batch_name,
@@ -82,12 +84,12 @@ class ClassForm extends React.Component{
 
         this.props.navigation.setParams(
             {
-                headerTitle: 'Create Batch',
+                headerTitle: screenTitle,
                 headerRight: (
                     <TouchableOpacity 
                         style={{ padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center' }} 
                         onPress={this.save.bind(this)}>
-                        <Text>Save</Text>
+                        <Text>Save & Next</Text>
                     </TouchableOpacity>
                 )
             }
@@ -175,12 +177,12 @@ const styles = StyleSheet.create({
 })
 
 const mapStateToProps = (state) => {
-    const { success, school_classes, loading, selected_batch_ID } =  state.schoolClass;
+    const { success, classes, loading, selected_batch_ID } =  state.schoolClass;
     
     return {
         selected_batch_ID,
         loading,
-        school_classes,
+        classes,
         success
     }
 }

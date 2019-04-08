@@ -3,4 +3,5 @@ export * from './auth.actions';
 export * from './people.actions';
 export * from './cellgroup.actions';
 export * from './schoolclass.actions';
-export * from './schoolstatus.actions';
+export * from './classcategories.actions';
+export * from './netinfo.actions';

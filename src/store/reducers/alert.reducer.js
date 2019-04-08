@@ -1,4 +1,5 @@
 import { alertConstants } from '../constants/index';
+
 const initState = {
     type: null,
     message: null

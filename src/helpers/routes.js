@@ -29,11 +29,14 @@ const DashboardStack = createStackNavigator({
 
 
 export const SignedOut = createStackNavigator({ Login: Login});
-const SignedIn = createDrawerNavigator({
-  Dashboard: DashboardStack
-}, {
-  contentComponent: SideMenu
-})
+const SignedIn = createDrawerNavigator(
+    {
+        Dashboard: DashboardStack
+    }, 
+    {
+        contentComponent: SideMenu
+    }
+);
 
 
 
@@ -41,11 +44,11 @@ const SignedIn = createDrawerNavigator({
 export const createRootNavigator = (signedIn = false) => {
     return createAppContainer(createSwitchNavigator(
         {
-            SignedIn: {
-                screen: SignedIn
-            },
             SignedOut: {
                 screen: SignedOut
+            },
+            SignedIn: {
+                screen: SignedIn
             }
         }, 
         {
