@@ -4,6 +4,7 @@ import { peopleConstants } from '../constants';
 
 
 const initState = {
+    totalSize: null,
     people: null,
     network: null,
     alert: null,
@@ -11,21 +12,23 @@ const initState = {
 }
 let payload = null;
 let index = null;
+let people = null;
 const peopleReducer = (state = initState, action) => {
     payload = action.payload;
 
     switch(action.type) {
+        
         case peopleConstants.GET_ALL_REQUEST: 
             return {
                 ...state,
                 loading: true
             }
         case peopleConstants.GET_ALL_COMMIT:
-        
             return {
                 ...state,
                 loading: false,
-                people: payload.people
+                totalSize: payload.totalSize,
+                people:[...state.people, payload.people]
             }
         case peopleConstants.GET_ALL_ROLLBACK:
             return {
@@ -34,17 +37,35 @@ const peopleReducer = (state = initState, action) => {
             }
 
         case peopleConstants.GET_MY_NETWORK_REQUEST: 
-            
             return {
                 ...state,
                 loading: true
             }
         case peopleConstants.GET_MY_NETWORK_COMMIT:
+        
+            people = state.people;
             
+            if (payload.ok && payload.network) {
+                if (people !== null) {
+                    
+                    payload.network.map(data => {
+                               
+                        index = people.findIndex(item => item.id === data.id); 
+                        
+                        if (index === -1) {
+                            people.push(data);
+                        } else {
+                            people.splice(index, 1, data);
+                        }
+                    })
+                } else {
+                    people = payload.network;
+                }
+            }
             return {
                 ...state,
                 loading: false,
-                people: action.payload.ok ? payload.network : state.people
+                people: people
             }
         case peopleConstants.GET_MY_NETWORK_ROLLBACK:
             return {
@@ -52,37 +73,32 @@ const peopleReducer = (state = initState, action) => {
                 loading: false,
                 error: action.error
             }
-        case peopleConstants.GET_MY_NETWORK:
-            return {
-                ...state,
-                network: state.people.filter(item => item.parent_id === payload.memberID),
-                loading: false,
-            }
 
         case peopleConstants.ADD_NEW_MEMBER_REQUEST:
+            console.log('ADD_NEW_MEMBER_REQUEST');
             return {
                 ...state,
                 loading: true,
-                people: [...state.people, payload.data]
+                people: [payload.data, ...state.people]
             }
         case peopleConstants.ADD_NEW_MEMBER_COMMIT:
+            index = state.people.findIndex(item => item.id === action.meta.uid);
+            state.people[index] = payload.data;
+            console.log('ADD_NEW_MEMBER_COMMIT');
             return {
                 ...state,
                 loading: false,
-                alert: {
-                    type: 'success',
-                    message: 'Successfully saved.'
-                },
-                people: state.people.filter(item => {
-                    if (item.id === action.meta.uid) {
-                        return payload.data;
-                    }
-                    return item;
-                }),
+                people: state.people
             }
         case peopleConstants.ADD_NEW_MEMBER_ROLLBACK:
+            console.log('ADD_NEW_MEMBER_ROLLBACK');
+            index = state.people.findIndex(item => item.id === action.meta.uid);
             return {
-                ...state
+                ...state,
+                people: [
+                     ...state.people.slice(0, index),
+                     ...state.people.slice(index + 1),
+                ]
             }
         case peopleConstants.CREATE_FAILURE:
             return {
@@ -95,10 +111,12 @@ const peopleReducer = (state = initState, action) => {
                 loading: true
             }
         case peopleConstants.UPDATE_MEMBER_COMMIT:
-            index = state.network.findIndex(item => item.id === payload.person.id);  
+            
+            index = state.people.findIndex(item => item.id === payload.data.id);
+            state.people[index] = payload.data;
             return {
                 ...state,
-                people: state.people.splice(index, 1, payload.data)
+                people: state.people,
             }
 
         case peopleConstants.UPDATE_MEMBER_ROLLBACK:
@@ -117,6 +135,25 @@ const peopleReducer = (state = initState, action) => {
             return {
                 ...state,
                 person: person ? person[0] : null
+            }
+        case peopleConstants.DELETE_MEMBER_REQUEST:
+            console.log('DELETE_MEMBER_REQUEST');
+            return {
+                ...state
+            }
+        case peopleConstants.DELETE_MEMBER_COMMIT:
+            console.log('hello world');
+            index = state.people.findIndex(item => item.id === payload.data.id);
+            console.log('DELETE_MEMBER_COMMIT ' + index);
+
+            return {
+                ...state.people.slice(0, index),
+                ...state.people.slice(index + 1)
+            }
+        case peopleConstants.DELETE_MEMBER_ROLLBACK:
+            console.log('DELETE_MEMBER_ROLLBACK', action);
+            return {
+                ...state
             }
         default:
             return state;

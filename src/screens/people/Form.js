@@ -1,13 +1,30 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { View, ScrollView, Text, Alert, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
-import { ThemeProvider, Icon, Input, CheckBox  } from 'react-native-elements';
-import DatePicker from 'react-native-datepicker'
+import { ThemeProvider, Icon, Input, CheckBox, Divider } from 'react-native-elements';
+import DatePicker from 'react-native-datepicker';
 import ImageUploader from '../../components/ImageUploader';
 import { peopleActions } from '../../store/actions';
-import { dimensions, colors, padding, fonts } from '../../styles/base';
+import { dimensions, colors, padding, fonts, container } from '../../styles/base';
 import CollapsibleView from '../../components/CollapseableView';
+import Validate from '../../helpers/validations';
+import FloatingLabel from 'react-native-floating-labels';
 
+const labelInput = (isError) => {
+    return isError ? styles.labelInputError : styles.labelInput;
+}
+const validations = {
+    first_name: 'required',
+    last_name: 'required',
+    middle_name: 'required',
+    birthdate: 'required',
+    address: 'required',
+    city: 'required',
+    contact_no: 'required',
+    civil_status: 'required'
+};
+
+    
 class PersonForm extends Component {
     static navigationOptions = ({ navigation }) => {
         return {
@@ -19,6 +36,7 @@ class PersonForm extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            errors: [],
             submitted: false,
             person: {
                 id: 0,
@@ -37,7 +55,8 @@ class PersonForm extends Component {
                 school_status_id: null,
                 leadership_level_id: null,
                 auxiliary_group_id: null,
-                // status_id: null,
+                civil_status: 'Single',
+                status: null,
                 category_id: 1,
                 gender: 'male',
                 remarks: '',
@@ -48,10 +67,9 @@ class PersonForm extends Component {
         }
         
         this.onChange = this.onChange.bind(this);
+        this.save = this.save.bind(this);
     }
-
-   
-
+    
     componentDidMount = () => {
         const { getDropdownSelections } = this.props;
         const { person } = this.state;
@@ -75,7 +93,7 @@ class PersonForm extends Component {
                 headerRight: (
                     <TouchableOpacity 
                         style={{ padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center' }} 
-                        onPress={this.save.bind(this)}>
+                        onPress={this.save}>
                         <Text>Save</Text>
                     </TouchableOpacity>
                 )
@@ -105,6 +123,26 @@ class PersonForm extends Component {
     }
 
     save = () => {
+        const errors = Validate(validations, this.state.person);
+        if (Object.keys(errors).length !== 0) {
+            this.setState({ errors: errors });
+        } else {
+            this.submitSuccess();
+        }
+    }
+
+    onChange = (name, value) => {
+        this.setState(
+            prevState => ({ 
+                person: {
+                    ...prevState.person,
+                    [name]: value
+                }
+            })
+        );
+    }
+
+    submitSuccess() {
         const { update, create } = this.props;
         const { person } = this.state;
         this.setState({ submitted: true });
@@ -140,19 +178,8 @@ class PersonForm extends Component {
         }
     }
 
-    onChange = (name, value) => {
-        this.setState(
-            prevState => ({ 
-                person: {
-                    ...prevState.person,
-                    [name]: value
-                }
-            })
-        );
-    }
-
     render() {
-        const {person} = this.state;
+        const {person, errors} = this.state;
         const { options, netInfo } = this.props;
         
         return (
@@ -160,189 +187,262 @@ class PersonForm extends Component {
                 <View style={styles.container}>
                 { person ? 
                     (
-                        <ScrollView style={{ width: '100%' }}>
-                            <View style={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                width: '100%',
-                            }}>
-                                <View style={{ width: '20%' }}>
-                                    <ImageUploader 
-                                        source={person.avatar ? person.avatar.thumbnail : null} 
-                                        onSelectedImage={(image, url) => {
-                                            this.onChange('new_avatar', image);
-                                            this.onChange('new_avatar_url', url)
-                                            }
+                        <ScrollView style={{ width: '100%', display: 'flex' }}>
+                            <View style={styles.avatarContainer}>
+                                <ImageUploader 
+                                    source={person.avatar ? person.avatar.thumbnail : null} 
+                                    onSelectedImage={(image, url) => {
+                                        this.onChange('new_avatar', image);
+                                        this.onChange('new_avatar_url', url)
                                         }
-                                    />
+                                    }
+                                />
+                            </View>
+                            <View style={styles.viewContainer}>
+                                
+
+                                <View style={styles.txtGroup}>
+                               
+                                    <View style={styles.txtWrapperFull}>
+                                        <FloatingLabel 
+                                            labelStyle={labelInput(errors['first_name'] !== undefined)}
+                                            inputStyle={styles.input}
+                                            style={styles.formInput}
+                                            value={ person.first_name }
+                                            onChangeText={text => this.onChange('first_name', text )}
+                                            onBlur={this.onBlur}
+                                            autoCorrect={false}
+                                        >First Name</FloatingLabel>
+                                        {
+                                            errors['first_name'] !== undefined &&
+                                            (<Text style={ styles.errorStyle }>{ errors['first_name'] }</Text>)
+                                        }
+
+                                        <FloatingLabel 
+                                            labelStyle={labelInput(errors['last_name'] !== undefined)}
+                                            inputStyle={styles.input}
+                                            style={styles.formInput}
+                                            value={ person.last_name }
+                                            onChangeText={text => this.onChange('last_name', text )}
+                                            onBlur={this.onBlur}
+                                            autoCorrect={false}
+                                        >Last Name</FloatingLabel>
+                                        {
+                                            errors['last_name'] !== undefined &&
+                                            (<Text style={ styles.errorStyle }>{ errors['last_name'] }</Text>)
+                                        }
+
+                                        <FloatingLabel 
+                                            labelStyle={labelInput(errors['middle_name'] !== undefined)}
+                                            inputStyle={styles.input}
+                                            style={styles.formInput}
+                                            value={ person.middle_name }
+                                            onChangeText={text => this.onChange('middle_name', text )}
+                                            onBlur={this.onBlur}
+                                            autoCorrect={false}
+                                        >Middle Name</FloatingLabel>
+                                        {
+                                            errors['middle_name'] !== undefined &&
+                                            (<Text style={ styles.errorStyle }>{ errors['middle_name'] }</Text>)
+                                        }
+
+                                        <FloatingLabel 
+                                            labelStyle={labelInput(errors['nick_name'] !== undefined)}
+                                            inputStyle={styles.input}
+                                            style={styles.formInput}
+                                            value={ person.nick_name }
+                                            onChangeText={text => this.onChange('nick_name', text )}
+                                            onBlur={this.onBlur}
+                                            autoCorrect={false}
+                                        >Nick Name</FloatingLabel>
+                                        {
+                                            errors['nick_name'] !== undefined &&
+                                            (<Text style={ styles.errorStyle }>{ errors['nick_name'] }</Text>)
+                                        }
+                                        
+                                    </View>
                                 </View>
-                                <View style={{ width: '80%' }}>
-                                    <Input 
-                                        placeholder='First Name'
-                                        defaultValue={person.first_name}
-                                        onChangeText={text => this.onChange('first_name', text )}
-                                        autoCorrect={false}
-                                        inputContainerStyle={styles.inputContainer}
-                                        inputStyle={styles.txtInput}
-                                    />
-                                    <Input 
-                                        placeholder='Last Name'
-                                        defaultValue={person.last_name}
-                                        onChangeText={text => this.onChange('last_name', text )}
-                                        autoCorrect={false}
-                                        inputContainerStyle={styles.inputContainer}
-                                        inputStyle={styles.txtInput}
-                                    />
+                                <View style={styles.txtGroup}>
+                                    <View style={styles.txtWrapperFull}>
+                                        <Text style={styles.txtLabel}>Date of Birth</Text>
+                                        <DatePicker
+                                            style={{width: '100%', padding: 0,margin:0}}
+                                            date={person.birthdate}
+                                            mode="date"
+                                            placeholder="select date"
+                                            format="YYYY-MM-DD"
+                                            confirmBtnText="Confirm"
+                                            cancelBtnText="Cancel"
+                                            showIcon={false}
+                                            onDateChange={(date) => {this.onChange('birthdate', date)}}
+                                            customStyles={{
+                                                dateIcon: {
+                                                    position: 'absolute',
+                                                    left: 5,
+                                                    top: 4,
+                                                    marginLeft: 0
+                                                },
+                                                dateInput: {
+                                                    borderWidth:0,
+                                                    paddingLeft: padding.sm,
+                                                    alignItems: 'flex-start',
+                                                    height:30
+                                                }
+                                            }}
+                                        />
+                                    </View>
+                                </View>
+                                <Divider style={styles.divider} />
+                                <View style={styles.txtGroup}>
+                                    <View style={styles.txtWrapperFull}>
+                                        <Text style={{...styles.txtLabel, marginTop: padding.sm}}>Gender</Text>
+                                        {
+                                            ['Male', 'Female'].map((item, i) => <CheckBox
+                                            key={i}
+                                            title={item}
+                                            checkedIcon={
+                                                <Icon 
+                                                    name="ios-checkmark-circle" 
+                                                    type="ionicon"    
+                                                />
+                                            }
+                                            uncheckedIcon={
+                                                <Icon 
+                                                    name="ios-checkmark-circle-outline" 
+                                                    type="ionicon"    
+                                                />
+                                            }
+                                            checked={person.gender == item.toLowerCase()}
+                                            onPress={() => this.onChange('gender', item.toLowerCase())}
+                                            containerStyle={{...styles.checkboxContainer, paddingLeft: padding.sm}}
+                                            />)
+                                        }
+                                    </View>
+                                </View>
+                                <Divider style={styles.divider} />
+                                <View style={styles.txtGroup}>
+                                    <View style={styles.txtWrapperFull}>
+                                        <Text style={{...styles.txtLabel, marginTop: padding.sm}}>Civil Status</Text>
+                                        {
+                                            ['Married', 'Widowed', 'Separated', 'Divorced', 'Single'].map((item, i) => <CheckBox
+                                                key={i}
+                                                title={item}
+                                                checkedIcon={
+                                                    <Icon 
+                                                        name="ios-checkmark-circle" 
+                                                        type="ionicon"    
+                                                    />
+                                                }
+                                                uncheckedIcon={
+                                                    <Icon 
+                                                        name="ios-checkmark-circle-outline" 
+                                                        type="ionicon"    
+                                                    />
+                                                }
+                                                checked={person.civil_status == item}
+                                                onPress={() => this.onChange('civil_status', item)}
+                                                containerStyle={{...styles.checkboxContainer, paddingLeft: padding.sm}}
+                                                />)
+                                    
+                                        }
+                                    </View>
+                                </View>
+                                <Divider style={styles.divider} />
+                            </View>
+                            <View style={styles.viewContainer}>
+                                <View style={styles.txtGroup}>
+                                    <View style={styles.txtWrapperFull}>
+                                        <FloatingLabel 
+                                            labelStyle={labelInput(errors['city'] !== undefined)}
+                                            inputStyle={styles.input}
+                                            style={styles.formInput}
+                                            value={ person.city }
+                                            onChangeText={text => this.onChange('city', text )}
+                                            onBlur={this.onBlur}
+                                            autoCorrect={false}
+                                        >City</FloatingLabel>
+                                        {
+                                            errors['city'] !== undefined &&
+                                            (<Text style={ styles.errorStyle }>{ errors['city'] }</Text>)
+                                        }
+
+                                        <FloatingLabel 
+                                            labelStyle={labelInput(errors['address'] !== undefined)}
+                                            inputStyle={styles.input}
+                                            style={styles.formInput}
+                                            value={ person.address }
+                                            onChangeText={text => this.onChange('address', text )}
+                                            onBlur={this.onBlur}
+                                            autoCorrect={false}
+                                        >Address</FloatingLabel>
+                                        {
+                                            errors['address'] !== undefined &&
+                                            (<Text style={ styles.errorStyle }>{ errors['address'] }</Text>)
+                                        }
+
+                                        <FloatingLabel 
+                                            labelStyle={labelInput(errors['contact_no'] !== undefined)}
+                                            inputStyle={styles.input}
+                                            style={styles.formInput}
+                                            value={ person.contact_no }
+                                            onChangeText={text => this.onChange('contact_no', text )}
+                                            onBlur={this.onBlur}
+                                            autoCorrect={false}
+                                        >Contact No</FloatingLabel>
+                                        {
+                                            errors['contact_no'] !== undefined &&
+                                            (<Text style={ styles.errorStyle }>{ errors['contact_no'] }</Text>)
+                                        }
+                                        <FloatingLabel 
+                                            labelStyle={labelInput(errors['secondary_contact_no'] !== undefined)}
+                                            inputStyle={styles.input}
+                                            style={styles.formInput}
+                                            value={ person.secondary_contact_no }
+                                            onChangeText={text => this.onChange('secondary_contact_no', text )}
+                                            onBlur={this.onBlur}
+                                            autoCorrect={false}
+                                        >Secondary Contact No</FloatingLabel>
+                                        {
+                                            errors['secondary_contact_no'] !== undefined &&
+                                            (<Text style={ styles.errorStyle }>{ errors['secondary_contact_no'] }</Text>)
+                                        }
+                                        <FloatingLabel 
+                                            labelStyle={labelInput(errors['facebook_name'] !== undefined)}
+                                            inputStyle={styles.input}
+                                            style={styles.formInput}
+                                            value={ person.facebook_name }
+                                            onChangeText={text => this.onChange('facebook_name', text )}
+                                            onBlur={this.onBlur}
+                                            autoCorrect={false}
+                                        >Facebook Name</FloatingLabel>
+                                        {
+                                            errors['facebook_name'] !== undefined &&
+                                            (<Text style={ styles.errorStyle }>{ errors['facebook_name'] }</Text>)
+                                        }
+                                        <FloatingLabel 
+                                            labelStyle={labelInput(errors['remarks'] !== undefined)}
+                                            inputStyle={{...styles.input, height: 100}}
+                                            style={styles.formInput}
+                                            value={ person.remarks }
+                                            onChangeText={text => this.onChange('remarks', text )}
+                                            onBlur={this.onBlur}
+                                            multiline={true}
+                                            autoCorrect={false}
+                                        >Remarks</FloatingLabel>
+                                        {
+                                            errors['remarks'] !== undefined &&
+                                            (<Text style={ styles.errorStyle }>{ errors['remarks'] }</Text>)
+                                        }
+                                    </View>
                                 </View>
                             </View>
-                            <Input 
-                                placeholder='Middle Name'
-                                defaultValue={person.middle_name}
-                                onChangeText={text => this.onChange('middle_name', text )}
-                                autoCorrect={false}
-                                inputContainerStyle={styles.inputContainer}
-                                inputStyle={styles.txtInput}
-                            />
-                            <Input 
-                                placeholder='Nick Name'
-                                defaultValue={person.nick_name}
-                                onChangeText={text => this.onChange('nick_name', text )}
-                                autoCorrect={false}
-                                inputContainerStyle={styles.inputContainer}
-                                inputStyle={styles.txtInput}
-                            />
-                            <DatePicker
-                                style={{width: '100%', padding: padding.sm}}
-                                date={person.birthdate}
-                                value={person.birthdate}
-                                mode="date"
-                                placeholder="select date"
-                                format="YYYY-MM-DD"
-                                confirmBtnText="Confirm"
-                                cancelBtnText="Cancel"
-                                showIcon={false}
-                                onDateChange={(date) => {this.onChange({birthdate: date})}}
-                                customStyles={{
-                                    dateIcon: {
-                                        position: 'absolute',
-                                        left: 5,
-                                        top: 4,
-                                        marginLeft: 0
-                                    },
-                                    dateInput: {
-                                        borderWidth: 0,
-                                        borderBottomWidth: 0.5,
-                                        borderBottomColor: '#c3c3c3',
-                                        textAlign: 'left'
-                                    }
-                                }}
-                            />
-                            <Input 
-                                placeholder='City'
-                                defaultValue={person.city}
-                                onChangeText={text => this.onChange('city', text )}
-                                autoCorrect={false}
-                                inputStyle={styles.txtInput}
-                                inputContainerStyle={styles.inputContainer}
-                            />
-                            <Input 
-                                multiline={true}
-                                placeholder='Address'
-                                defaultValue={person.address}
-                                onChangeText={text => this.onChange('address', text )}
-                                autoCorrect={false}
-                                inputStyle={styles.txtInput}
-                                inputContainerStyle={styles.inputContainer}
-                            />
-                            <Input 
-                                placeholder='Contact No'
-                                defaultValue={person.contact_no}
-                                onChangeText={text => this.onChange('contact_no', text )}
-                                autoCorrect={false}
-                                inputStyle={styles.txtInput}
-                                inputContainerStyle={styles.inputContainer}
-                                
-                            />
-                            <Input 
-                                placeholder='Secondary Contact No'
-                                defaultValue={person.secondary_contact_no}
-                                onChangeText={text => this.onChange('secondary_contact_no', text )}
-                                autoCorrect={false}
-                                inputStyle={styles.txtInput}
-                                inputContainerStyle={styles.inputContainer}
-                                
-                            />
-                            <Input 
-                                placeholder='Facebook Name'
-                                defaultValue={person.facebook_name}
-                                onChangeText={text => this.onChange('facebook_name', text )}
-                                autoCorrect={false}
-                                autoCapitalize="none"
-                                inputStyle={styles.txtInput}
-                                inputContainerStyle={styles.inputContainer}
-                            
-                            />
-                            <Input 
-                                placeholder='Remarks' 
-                                defaultValue={person.remarks}
-                                onChangeText={text => this.onChange('remarks', text )}
-                                multiline={true}
-                                autoCorrect={false}
-                                inputStyle={styles.txtInput}
-                                inputContainerStyle={styles.inputContainer}
-                                
-                            />
-                            <View style={styles.checkboxWrapper}>
-                                <Text style={styles.inputLabel}>Gender</Text>
-                                <View style={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        width: '100%',
-                                    }}>
-                                <CheckBox
-                                    title='Male'
-                                    checkedIcon={
-                                        <Icon 
-                                            name="ios-checkmark-circle" 
-                                            type="ionicon"    
-                                        />
-                                    }
-                                    uncheckedIcon={
-                                        <Icon 
-                                            name="ios-checkmark-circle-outline" 
-                                            type="ionicon"    
-                                        />
-                                    }
-                                    checked={person.gender == 'male'}
-                                    onPress={() => this.onChange('gender', 'male')}
-                                    containerStyle={styles.checkboxContainer}
-                                    />
-                                <CheckBox
-                                    title='Female'
-                                    checkedIcon={
-                                        <Icon 
-                                            name="ios-checkmark-circle" 
-                                            type="ionicon"
-                                        />
-                                    }
-                                    uncheckedIcon={
-                                        <Icon 
-                                            name="ios-checkmark-circle-outline" 
-                                            type="ionicon"
-                                        />
-                                    }
-                                    checked={person.gender == 'female'}
-                                    onPress={() => this.onChange('gender', 'female')}
-                                    containerStyle={styles.checkboxContainer}
-                                    />
-                                </View>
-                            </View>
-                            <View style={styles.collapseableContainer}>
+                            <View style={styles.viewContainer}>
                                 <CollapsibleView
                                     title="Ministry"
                                     collapsed={false}
+                                    style={{...styles.container, width: '100%' }}
                                     headerStyle={styles.headerStyle}
-                                    headerIconSize={30}
+                                    headerIconSize={20}
                                     headerIconColor="black"
                                     headerTextStyle={styles.headerTextStyle}
                                 >
@@ -375,13 +475,13 @@ class PersonForm extends Component {
                                         }
                                     </View>
                                 </CollapsibleView>
-                            </View>
-                            <View style={styles.collapseableContainer}>
+                                <Divider style={styles.divider} />
                                 <CollapsibleView
                                     title="Leadership Level"
                                     collapsed={false}
+                                    style={{...styles.container, width: '100%' }}
                                     headerStyle={styles.headerStyle}
-                                    headerIconSize={30}
+                                    headerIconSize={20}
                                     headerIconColor="black"
                                     headerTextStyle={styles.headerTextStyle}
                                 >
@@ -413,13 +513,13 @@ class PersonForm extends Component {
                                         }
                                     </View>
                                 </CollapsibleView>
-                            </View>
-                            <View style={styles.collapseableContainer}>
+                                <Divider style={styles.divider} />
                                 <CollapsibleView
                                     title="Auxiliary Group"
                                     collapsed={false}
+                                    style={{...styles.container, width: '100%' }}
                                     headerStyle={styles.headerStyle}
-                                    headerIconSize={30}
+                                    headerIconSize={20}
                                     headerIconColor="black"
                                     headerTextStyle={styles.headerTextStyle}
                                 >
@@ -452,13 +552,14 @@ class PersonForm extends Component {
                                         }
                                     </View>
                                 </CollapsibleView>
-                            </View>
-                            <View style={styles.collapseableContainer}>
+                                <Divider style={styles.divider} />
+
                                 <CollapsibleView
+                                    style={{...styles.container, width: '100%' }}
                                     title="School Level"
                                     collapsed={false}
                                     headerStyle={styles.headerStyle}
-                                    headerIconSize={30}
+                                    headerIconSize={20}
                                     headerIconColor="black"
                                     headerTextStyle={styles.headerTextStyle}
                                 >
@@ -491,13 +592,13 @@ class PersonForm extends Component {
                                     }
                                     </View>
                                 </CollapsibleView>
-                            </View>
-                            <View style={styles.collapseableContainer}>
+                                <Divider style={styles.divider} />
                                 <CollapsibleView
                                     title="Categories"
+                                    style={{...styles.container, width: '100%' }}
                                     collapsed={false}
                                     headerStyle={styles.headerStyle}
-                                    headerIconSize={30}
+                                    headerIconSize={20}
                                     headerIconColor={colors.black}
                                     headerTextStyle={styles.headerTextStyle}
                                 >
@@ -546,29 +647,99 @@ class PersonForm extends Component {
 
 
 const styles = StyleSheet.create({
-    container: {
-        padding: padding.sm,
-        flex: 1,
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#fcfcfa'
+
+    row: {
+        flex: 1, 
+        flexDirection: 'row', 
+        marginVertical: 5,
     },
-    txtInputWrapper: {
-        borderWidth: 0.5,
-        borderColor: '#c3c3c3',
-        marginTop: 5,
-        borderColor: '#f9f9f9'
+    container: {
+        ...container,
+        padding:0,
+        backgroundColor: colors.grey
+    },
+    heading: {
+        fontSize: 20,
+    },
+    avatarContainer: {
+        ...container,
+        alignItems: 'center',
         
     },
+    divider: { 
+        backgroundColor: colors.grey, 
+        height: 1, 
+        width: '100%',
+        margin:0,
+        padding:0,
+    },
+    viewContainer: {
+        marginBottom: padding.sm,
+        backgroundColor: colors.tertiary,
+        // alignItems: 'flex-start',
+    },
+    txtGroup: {
+        // ...container,
+        // flexDirection: 'column',
+        // width: '100%',
+        display: 'flex'
+    },
+    txtWrapperFull: {
+        width: '100%',
+        marginBottom:padding.sm
+        // flex: 1,
+        // flexDirection: 'column',
+        // alignItems: 'flex-start',
+    },
+    txtWrapperLeft: {
+        width: '70%',
+    },  
+    txtWrapperRight: {
+        width: '30%',
+    },
+    txtLabel: {
+        fontSize:14,
+        color: colors.grey2,
+        marginBottom: 0,
+        paddingLeft: padding.sm
+        // alignSelf: 'stretch'
+    },
+    txtLabelError: {
+        fontSize:14,
+        marginBottom: 0,
+        alignSelf: 'stretch',
+        color: 'red'
+    },
+    txtValue: {
+        fontSize: 18,
+        alignSelf: 'stretch'
+    },
+    txtIcon: {
+        padding: 0,
+        paddingRight: padding.md,
+        paddingLeft: padding.md
+    },
+    txtIconRightBordered: {
+        padding: 0,
+        paddingRight: padding.md,
+        paddingLeft: padding.md,
+        borderRightWidth: 1,
+        borderRightColor: colors.grey2
+    },
+    iconWrapper: { 
+        display: 'flex',
+        flexDirection: 'row'
+    },
     inputContainer: { 
-        borderBottomColor: '#c1c1c1', 
-        borderBottomWidth: 0.5 
+        width: '100%',
+        alignSelf: 'stretch',
+        // borderBottomWidth: 0,
+        padding:0,
+        margin:0
     },
     txtInput: {
-        paddingLeft: 0,
-        margin: 3,
-        borderColor: '#f9f9f9'
+        fontSize: 16,
+        height:30,
     },
     checkboxWrapper: { 
         padding: padding.sm,
@@ -582,16 +753,12 @@ const styles = StyleSheet.create({
         backgroundColor: colors.tertiary
         
     },
-    inputLabel: {
-        fontWeight: 'bold',
-        paddingBottom: 10
-    },
     headerStyle: {
         padding: padding.sm,
         paddingLeft: 0,
         paddingRight: 0,
         borderBottomWidth: 1,
-        borderColor: '#c3c3c3',
+        borderColor: colors.grey,
         backgroundColor: colors.tertiary
     },
     headerTextStyle: {
@@ -599,11 +766,36 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     collapsViewStyle: {
+        width: '100%',
+        borderWidth: 0,
+        padding:padding.sm,
         backgroundColor: colors.tertiary
     },
     collapseableContainer: { 
         paddingLeft: padding.sm,
         paddingRight: padding.sm 
+    },
+    labelInput: {
+        color: colors.grey2,
+        fontSize: 14
+    },
+    labelInputError: {
+        color: 'red',
+        fontSize: 14
+    },
+    formInput: {    
+        borderBottomWidth: 1, 
+        marginLeft: 0,
+        borderColor: colors.grey,       
+    },
+    input: {
+        borderWidth: 0,
+        fontSize: 14
+    },
+    errorStyle: { 
+        color: 'red', 
+        fontSize: 12,
+        padding: padding.sm
     }
 });
 

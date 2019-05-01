@@ -40,7 +40,7 @@ export default createAppContainer(
             ),
             tabBarOptions: {
                 activeTintColor: colors.primary,
-                inactiveTintColor: colors.grey,
+                inactiveTintColor: colors.grey2,
             }
         }
     )

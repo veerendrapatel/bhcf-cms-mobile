@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import {Icon} from 'react-native-elements';
 import {
   View,
   Text,
@@ -7,6 +8,9 @@ import {
   TouchableOpacity
 } from "react-native";
 import PropTypes from "prop-types";
+
+const DROPUPICON = "chevron-up";
+const DROPDOWNICON = "chevron-down";
 
 export default class CollapsibleView extends Component {
   animationObject = {
@@ -18,7 +22,7 @@ export default class CollapsibleView extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      toggleIcon: props.collapsed ? "-" : "+",
+      toggleIcon: props.collapsed ? DROPUPICON : DROPDOWNICON,
       border: this.props.bottomBorder
     };
     this.initialHeight = this.initialHeight.bind(this);
@@ -43,7 +47,7 @@ export default class CollapsibleView extends Component {
   }
 
   toggle() {
-    this.setState({ toggleIcon: this.state.toggleIcon == "+" ? "-" : "+" });
+    this.setState({ toggleIcon: this.state.toggleIcon == DROPDOWNICON ? DROPUPICON : DROPDOWNICON });
     Animated.timing(this.animationObject.height, {
       toValue: this.animationObject.collapsed
         ? this.getMinHeight()
@@ -68,19 +72,17 @@ export default class CollapsibleView extends Component {
             <Text style={this.props.headerTextStyle}>{this.props.title}</Text>
           </View>
           <View style={styles.iconPosition}>
-            <Text
-              style={{
-                fontSize: this.props.headerIconSize,
-                color: this.props.headerIconColor
-              }}
-            >
-              {this.state.toggleIcon}
-            </Text>
+            <Icon 
+                name={this.state.toggleIcon}
+                type="feather"
+                size={ this.props.headerIconSize }
+                color={ this.props.headerIconColor }
+            />
           </View>
         </TouchableOpacity>
 
         <Animated.View
-          style={{ height: this.animationObject.height }}
+          style={{ width: '100%', height: this.animationObject.height, overflow: 'hidden' }}
           onLayout={this.initialHeight}
         >
           {this.props.children}
@@ -96,6 +98,9 @@ CollapsibleView.propTypes = {
 };
 
 const styles = StyleSheet.create({
+  borderView: {
+    width: '100%'
+  },
   iconPosition: {
     position: "absolute",
     right: 10,

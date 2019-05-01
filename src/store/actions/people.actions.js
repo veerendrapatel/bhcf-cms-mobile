@@ -3,7 +3,7 @@ import { API_URL } from 'react-native-dotenv';
 import uuid from 'uuid/v4';
 
 
-const fetchAll = () => {
+const fetchAll = (query = '') => {
     return (dispatch, getState) => {
         const { auth } = getState();
         dispatch({
@@ -12,7 +12,7 @@ const fetchAll = () => {
             meta: {
                 offline: {
                     effect: {
-                        url: `${API_URL}members/all`,
+                        url: `${API_URL}members/all?${query}`,
                         headers: {
                             Authorization: `Bearer ${auth.user.api_token}`
                         }
@@ -30,7 +30,6 @@ const fetchAll = () => {
 const fetchNetwork = (leaderID) => {
     return (dispatch, getState) => {
         const { auth } = getState();
-        console.log(auth.user.api_token);
         dispatch({
             type: peopleConstants.GET_MY_NETWORK_REQUEST, 
             payload: null,
@@ -106,21 +105,22 @@ const createPerson = (person) => {
 const updatePerson = (id, person) => {
     return (dispatch, getState) => {
         const { auth } = getState();
+        
         dispatch({
             type: peopleConstants.UPDATE_MEMBER_REQUEST, 
             payload: {data: person},
             meta: {
                 offline: {
                     effect: {
-                        url: `${API_URL}members`,
+                        url: `${API_URL}members/${id}`,
                         json: person,
                         method: 'PUT',
                         headers: {
                             Authorization: `Bearer ${auth.user.api_token}`
                         }
                     },
-                    commit: { type: peopleConstants.UPDATE_MEMBER_COMMIT, meta: { uid } },
-                    rollback: { type: peopleConstants.UPDATE_MEMBER_ROLLBACK, meta: { uid }  }
+                    commit: { type: peopleConstants.UPDATE_MEMBER_COMMIT},
+                    rollback: { type: peopleConstants.UPDATE_MEMBER_ROLLBACK  }
                 }
             }
         });
@@ -130,8 +130,27 @@ const updatePerson = (id, person) => {
 
 const deletePerson = (id) => {
     return (dispatch, getState) => {
-        // make async call to database
-        dispatch({ type: 'DELETE_PEOPLE', id });
+        const { auth } = getState();
+        console.log(`${API_URL}members/${id}`);
+        console.log(`Bearer ${auth.user.api_token}`);
+
+        dispatch({
+            type: peopleConstants.DELETE_MEMBER_REQUEST, 
+            payload: {data: id},
+            meta: {
+                offline: {
+                    effect: {
+                        url: `${API_URL}members/${id}`,
+                        method: 'DELETE',
+                        headers: {
+                            Authorization: `Bearer ${auth.user.api_token}`
+                        }
+                    },
+                    commit: { type: peopleConstants.DELETE_MEMBER_COMMIT},
+                    rollback: { type: peopleConstants.DELETE_MEMBER_ROLLBACK  }
+                }
+            }
+        });
     }
 }
 

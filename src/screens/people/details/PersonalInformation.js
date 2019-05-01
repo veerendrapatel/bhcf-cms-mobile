@@ -5,6 +5,7 @@ import { dimensions, colors, padding, fonts, container } from '../../../styles/b
 import { Icon, Avatar, Divider, Badge, Button } from 'react-native-elements';
 import { peopleActions } from '../../../store/actions';
 
+
 class PersonalInformation extends Component {
     static navigationOptions = ({ navigation }) => {
         const {headerTitle,  headerRight} = navigation.state.params;
@@ -23,14 +24,13 @@ class PersonalInformation extends Component {
     }
 
     componentDidMount() {
-        const { findPersonById } = this.props;
-        if (this.props.navigation.state.params != undefined) {
-            const person = this.props.navigation.state.params.person;
+        const { findPersonById, navigation } = this.props;
+        if (navigation.state.params != undefined) {
+            const person = navigation.state.params.person;
 
-            const didBlurSubscription = this.props.navigation.addListener(
+            const didBlurSubscription = navigation.addListener(
                 'willFocus',
                 payload => {
-                    
                     findPersonById( person.id );
                 
                 }
@@ -53,10 +53,10 @@ class PersonalInformation extends Component {
 
     render() {
         const { person } = this.props;
+        console.log(person);
         return (
             <View style={styles.container}>
-                {
-                    person ? (
+                {   person ? (
                         <ScrollView style={{ width: '100%' }}>
                             <View>
                                 <Button
@@ -76,7 +76,23 @@ class PersonalInformation extends Component {
                                 )
                                 
                             }
-                            <Text style={styles.heading}>{ person.full_name }({ person.nick_name })</Text>
+                            <View style={{
+                                ...styles.row,
+                                backgroundColor: colors.tertiary,
+                                }}>
+                                <Text style={styles.heading}>{ person.nick_name }</Text>
+                                {
+                                    person.is_birthday_today &&
+                                    <Icon 
+                                        name="birthday-cake" 
+                                        type="font-awesome" 
+                                        color={colors.violet} 
+                                        containerStyle={{ marginLeft: 5, marginTop: 5 }}
+                                        size={15}
+                                    />
+                                }
+                            </View>
+                            <Text >{ person.full_name }</Text>
                             </View>
                             <View style={styles.viewContainer}>
                                 <View style={styles.txtGroup}>
@@ -176,15 +192,83 @@ class PersonalInformation extends Component {
                             </View>
                             <View style={styles.viewContainer}>
                                 {
-                                    person.status &&
+                                    person.birthdate &&
                                     <View style={styles.txtGroup}>
                                         <View style={styles.txtWrapperFull}>
-                                            <Text style={styles.txtLabel}>Status</Text>
-                                            <Text style={styles.txtValue}>{ person.status.name }</Text>
+                                            <Text style={styles.txtLabel}>Birthdate</Text>
+                                            <Text style={styles.txtValue}>{ person.birthdate }</Text>
                                         </View>
                                     </View>
                                 }
                                 <Divider style={styles.divider} />
+                                {
+                                    person.gender &&
+                                    <View style={styles.txtGroup}>
+                                        <View style={styles.txtWrapperFull}>
+                                            <Text style={styles.txtLabel}>Gender</Text>
+                                            <Text style={styles.txtValue}>{ person.gender }</Text>
+                                        </View>
+                                    </View>
+                                }
+                                <Divider style={styles.divider} />
+                                {
+                                    person.civil_status &&
+                                    <View style={styles.txtGroup}>
+                                        <View style={styles.txtWrapperFull}>
+                                            <Text style={styles.txtLabel}>Civil Status</Text>
+                                            <Text style={styles.txtValue}>{ person.civil_status }</Text>
+                                        </View>
+                                    </View>
+                                }
+                                <Divider style={styles.divider} />
+                                
+                                {
+                                    person.address &&
+                                    <View style={styles.txtGroup}>
+                                        <View style={styles.txtWrapperFull}>
+                                            <Text style={styles.txtLabel}>Address</Text>
+                                            <Text style={styles.txtValue}>{ person.address }</Text>
+                                        </View>
+                                    </View>
+                                }
+                                <Divider style={styles.divider} />
+                                {
+                                    person.city &&
+                                    <View style={styles.txtGroup}>
+                                        <View style={styles.txtWrapperFull}>
+                                            <Text style={styles.txtLabel}>City</Text>
+                                            <Text style={styles.txtValue}>{ person.city }</Text>
+                                        </View>
+                                    </View>
+                                }
+                                
+                                <Divider style={styles.divider} />
+                                {
+                                    person.facebook_name &&
+                                    <View style={styles.txtGroup}>
+                                        <View style={styles.txtWrapperFull}>
+                                            <Text style={styles.txtLabel}>Facebook Name</Text>
+                                            <Text style={styles.txtValue}  
+                                                onPress={() => {
+                                                    Linking.openURL(`https://www.facebook.com/${person.facebook_name}`);
+                                                }}>/{ person.facebook_name }</Text>
+                                        </View>
+                                    </View>
+                                }
+                                <Divider style={styles.divider} />
+
+                                {
+                                    person.status &&
+                                    <View style={styles.txtGroup}>
+                                        <View style={styles.txtWrapperFull}>
+                                            <Text style={styles.txtLabel}>Status</Text>
+                                            <Text style={styles.txtValue}>{ person.status }</Text>
+                                        </View>
+                                    </View>
+                                }
+                                
+                            </View>
+                            <View style={styles.viewContainer}>
                                 {
                                     person.leader &&
                                     <View style={styles.txtGroup}>
@@ -194,8 +278,7 @@ class PersonalInformation extends Component {
                                         </View>
                                     </View>
                                 }
-                            </View>
-                            <View style={styles.viewContainer}>
+                                <Divider style={styles.divider} />
                                 {
                                     person.school_status &&
                                     <View style={styles.txtGroup}>
@@ -251,7 +334,6 @@ class PersonalInformation extends Component {
                         </View>
                     )
                 }
-                
             </View>
         )
     }
@@ -259,6 +341,11 @@ class PersonalInformation extends Component {
 
 
 const styles = StyleSheet.create({
+    row: {
+        flex: 1, 
+        flexDirection: 'row', 
+        marginVertical: 5,
+    },
     container: {
         ...container,
         padding:0,
@@ -299,14 +386,12 @@ const styles = StyleSheet.create({
     },
     txtLabel: {
         fontSize:14,
-        color: colors.grey,
+        color: colors.grey2,
         marginBottom: 5,
-        textAlign: 'left',
         alignSelf: 'stretch'
     },
     txtValue: {
         fontSize: 18,
-        textAlign: 'left',
         alignSelf: 'stretch'
     },
     txtIcon: {
@@ -319,7 +404,7 @@ const styles = StyleSheet.create({
         paddingRight: padding.md,
         paddingLeft: padding.md,
         borderRightWidth: 1,
-        borderRightColor: colors.grey
+        borderRightColor: colors.grey2
     },
     iconWrapper: { 
         display: 'flex',

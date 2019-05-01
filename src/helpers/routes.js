@@ -44,11 +44,11 @@ const SignedIn = createDrawerNavigator(
 export const createRootNavigator = (signedIn = false) => {
     return createAppContainer(createSwitchNavigator(
         {
-            SignedOut: {
-                screen: SignedOut
-            },
             SignedIn: {
                 screen: SignedIn
+            },
+            SignedOut: {
+                screen: SignedOut
             }
         }, 
         {

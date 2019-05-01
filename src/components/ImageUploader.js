@@ -1,6 +1,6 @@
 
 import React, {Component} from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ImageBackground } from 'react-native';
 import { Avatar, Icon, Overlay, ButtonGroup  } from 'react-native-elements';
 import { ImagePicker, Permissions } from 'expo';
 import { dimensions, colors, padding, fonts, container } from '../styles/base';
@@ -104,13 +104,17 @@ class ImageUploader extends Component {
         const buttons = ['Cancel', 'Save']
         const { selectedIndex, selectedImage, isVisible, selectedImageTmp } = this.state;
 
+        let source = selectedImageTmp ? selectedImageTmp : selectedImage;
+        
+        source = source === null ? require('../../assets/default.png') : { uri: source};
+
         return (
             <View>
             {selectedImage ?
                 (
-                    <Avatar rounded size="large" source={{ uri:  selectedImage  }} onPress={() => this.setState({ isVisible: true })}/>
+                    <Avatar rounded size="xlarge" source={{ uri:  selectedImage  }} iconStyle={{ fontSize: 15 }} showEditButton={true} onEditPress={() => this.setState({ isVisible: true })}/>
                 ) : (
-                    <Avatar rounded size="large" icon={{name: 'user', type: 'font-awesome'}} onPress={() => this.setState({ isVisible: true })}/>
+                    <Avatar rounded size="xlarge" icon={{name: 'user', type: 'font-awesome'}} iconStyle={{ fontSize: 15 }} showEditButton={true} onEditPress={() => this.setState({ isVisible: true })}/>
                 
                 )
                 
@@ -119,24 +123,19 @@ class ImageUploader extends Component {
                 isVisible={isVisible}
                 onBackdropPress={() => this.setState({ isVisible: false })}
                 >
-                <View style={styles.container}>
+                <View style={{...styles.container, alignItems: 'center'}}>
                  <ButtonGroup
                     onPress={this.updateIndex}
                     selectedIndex={selectedIndex}
                     buttons={buttons}
                     containerStyle={{height: 50}}
                     />
-                    <View>
-                        {selectedImageTmp ?
-                            <Avatar containerStyle={styles.avatar} size="xlarge" source={{uri: selectedImageTmp}}/>
-                            :
-                            <Avatar containerStyle={styles.avatar} size="xlarge" icon={{name: 'user', type: 'font-awesome'}}/>
-                        }
+                    <ImageBackground source={source} style={{overflow: 'hidden', width: '100%', height: 250, marginTop: 20}}>
                         <View style={ styles.iconContainer }>
-                            <Icon name="ios-camera" containerStyle={styles.icon} size={30} type="ionicon" onPress={this._takePhoto}/>
-                            <Icon name="ios-image" containerStyle={styles.icon} size={30} type="ionicon" onPress={this._pickImage}/>
+                            <Icon name="ios-camera" color={'#FFF'} containerStyle={styles.icon} size={25} type="ionicon" onPress={this._takePhoto}/>
+                            <Icon name="ios-image" color={'#FFF'} containerStyle={styles.icon} size={25} type="ionicon" onPress={this._pickImage}/>
                         </View>
-                    </View>
+                    </ImageBackground>
                 </View>
             </Overlay>
             </View>
@@ -157,8 +156,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: '100%',
         height: 300,
-        borderWidth:1,
-        borderColor: '#000'
+        
     },
     avatar: {
         width: 300,
@@ -166,13 +164,15 @@ const styles = StyleSheet.create({
     },
     iconContainer: {
         ...container,
+        width: '100%',
         flexDirection: 'row',
         alignItems: 'center',
         position:'absolute',
-        bottom:0
+        bottom:0,
+        backgroundColor: 'rgba(0, 0, 0, 0.611764705882353)'
     },
     icon: {
-        margin: padding.sm
+        margin: 5
     }
 });
 export default ImageUploader;

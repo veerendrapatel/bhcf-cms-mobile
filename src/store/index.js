@@ -44,7 +44,7 @@ const sagaMiddleware = createSagaMiddleware();
 const { middleware, enhanceReducer, enhanceStore } = createOffline(config);
 const store = createStore(
   enhanceReducer(rootReducer),
-  compose(applyMiddleware(thunk, middleware, sagaMiddleware), enhanceStore)
+  compose(enhanceStore, applyMiddleware(middleware, thunk, sagaMiddleware))
 );
 sagaMiddleware.run(appSaga)
 

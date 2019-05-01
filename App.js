@@ -6,6 +6,7 @@ import FlashMessage, { showMessage } from "react-native-flash-message";
 import { alertActions } from './src/store/actions/alert.actions';
 
 
+
 store.subscribe(() => {
   const {alert} = store.getState();
 
@@ -27,7 +28,6 @@ class App extends Component {
 
     const { auth }  = store.getState();
     const isLoggedIn = auth.isLoggedIn && auth.user != null;
-            
     const Layout = createRootNavigator(isLoggedIn);
   
     return <Provider store={store}>

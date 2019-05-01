@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Text, View, ActivityIndicator, TouchableHighlight, TouchableOpacity, StyleSheet, NetInfo, AppState } from 'react-native';
+import { Text, View, ActivityIndicator, TouchableHighlight, TouchableOpacity, StyleSheet, NetInfo, AppState, Alert } from 'react-native';
 import { Icon, Badge, SearchBar, Avatar } from 'react-native-elements';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { peopleActions, alertActions, connectionState } from '../../store/actions';
@@ -8,6 +8,7 @@ import Moment from 'moment';
 import { connect } from 'react-redux';
 import { dimensions, colors, padding, fonts } from '../../styles/base';
 import call from 'react-native-phone-call';
+
 
 class People extends Component {
   
@@ -36,7 +37,26 @@ class People extends Component {
         }
 
         this.search = this.search.bind(this);
+        this.doDelete = this.doDelete.bind(this);
         NetInfo.isConnected.fetch().then(this.props.handleConnectivityChange);
+    }
+
+    doDelete = (id) => {
+         const { deletePerson } = this.props;
+        // Works on both iOS and Android
+        Alert.alert(
+            'Are you sure you want to continue?',
+            'Your data have unsynced changes. If you delete now, you`ll lose those changes',
+            [
+            {
+                text: 'No',
+                onPress: () => console.log('Cancel Pressed'),
+                style: 'cancel',
+            },
+            {text: 'Yes', onPress: () => deletePerson(id)},
+            ],
+            {cancelable: false},
+        );
     }
     
     componentWillUnmount() {
@@ -48,19 +68,26 @@ class People extends Component {
         );
     
     }
-    
-    componentDidMount = () => {
-        const { user } = this.props;
 
-        const leaderID = this.props.personID ? this.props.personID : user.member.id;
+    componentDidMount = () => {
+        const { user, personID, navigation } = this.props;
+
+        const leaderID = personID ? personID : (user ? user.member.id : null);
+        
+        this.setState({ leaderID: leaderID })
         
         NetInfo.isConnected.addEventListener(
             'connectionChange',
             this.props.handleConnectivityChange
         );
-        this.setState({ leaderID: leaderID })
+        this.navigationListener = navigation.addListener('willFocus', payload => {
+            this.setState({ loading: true }, () => this.fetchNetwork(leaderID))
+            
+        })
+
+        
         this.fetchNetwork(leaderID);
-        this.fetNetwork(this.props);
+        this.initNetwork(this.props);
     }
 
     fetchNetwork = (leaderID) => {
@@ -69,17 +96,18 @@ class People extends Component {
     }
 
     componentWillReceiveProps(nextProps){
-        if(nextProps.people.people !== this.props.people.people){
-            this.fetNetwork(nextProps);
-        }
+        // if(nextProps.people.people !== this.props.people.people){
+            this.initNetwork(nextProps);
+        // }
+        this.setState({ loading: false });
 
     }
 
-    fetNetwork = (props) => {
-        const leaderID = props.personID ? props.personID : props.user.member.id;
+    initNetwork = (props) => {
+        const leaderID = props.personID ? props.personID : (props.user ? props.user.member.id : null);
 
         this._data = props.people.people ? props.people.people.filter(person => person.parent_id == leaderID): null;
-        this.setState({ people: [], page: 1, search: false, loading: props.people.loading }, () => this.loadMore());
+        this.setState({ people: [], page: 1, search: false, leaderID: leaderID, loading: props.people.loading }, () => this.loadMore());
     }
 
     
@@ -94,7 +122,7 @@ class People extends Component {
                 
             }
         }
-        this.setState({ loading: false });
+        
     }
 
     search = (keyword) => {
@@ -104,10 +132,9 @@ class People extends Component {
     }
 
     render() {
-         
-
         const { keyword, people, loading } = this.state;
         const { navigation, dispatch, netInfo } = this.props;
+        const _this = this;
         return (
             <View style={ styles.container }>
                 {  
@@ -122,201 +149,242 @@ class People extends Component {
                     </View>
 
                 }
-               { !loading ? 
-                    (
-                        <SwipeListView
-                            useFlatList
-                            onEndReachedThreshold={0.5}
-                            leftOpenValue={75}
-                            rightOpenValue={-75}
-                            keyExtractor={(person, index) => index.toString()}
-                            data={people}
-                            ListEmptyComponent={
-                                <View style={ styles.container }><Text>Oops! No data to display.</Text></View>
-                            }
-                            renderItem={
-                                (row, rowMap) => {
-                                    const person =  row.item;
-                                    return (
-                                        <TouchableHighlight
-                                            onPress={() => {
-                                                this.props.navigation.navigate(
-                                                    {
-                                                        key: person.id, 
-                                                        routeName: 'Person',
-                                                        params: { person: person }
-                                                    }
-                                                );
-                                            }}
-                                            style={styles.rowFront}
-                                            underlayColor={colors.tertiary}>
-                                            <View style={styles.row}>
-                                                <View>
-                                                    { 
-                                                        person.avatar ?
-                                                        (
-                                                            <Avatar 
-                                                                rounded
-                                                                size="large"
-                                                                source={{ uri: person.avatar.small}}
-                                                                title={person.full_name.charAt(0)} 
-                                                            />
-                                                        ) : (
-                                                            <Avatar 
-                                                                rounded
-                                                                size="large"
-                                                                title={person.full_name.charAt(0)} 
-                                                            />
-                                                        )
-                                                    }
-                                                </View>
-                                                <View style={
-                                                    {
-                                                        marginLeft: 10,
-                                                    }
-                                                }>
-                                                    <Text 
-                                                        style={
-                                                            {
-                                                                fontWeight: 'bold',
-                                                            }
-                                                        }
-                                                    >{ person.full_name } ({person.nick_name})</Text>
-                                                    <View style={ styles.row }>
-                                                        <Icon 
-                                                            name="birthday-cake" 
-                                                            type="font-awesome" 
-                                                            iconStyle={{color: person.is_birthday_today ? colors.violet  :colors.grey}} size={10}
-                                                        />
-                                                        <Text 
-                                                            style={{ marginLeft: 5, color: colors.grey }}>
-                                                            {Moment(person.birthdate).format('MMM Do YYYY')}
-                                                        </Text>
-                                                    </View>
-                                                    <View>
+        
+                <SwipeListView
+                    useFlatList
+                    onEndReachedThreshold={0.5}
+                    leftOpenValue={120}
+                    rightOpenValue={-75}
+                    keyExtractor={(person, index) => index.toString()}
+                    data={people}
+                    ListEmptyComponent={
+                        <View style={{...styles.container, height: dimensions.fullHeight / 1.5 }}>
+                        { 
+                            loading ? (
+                                <ActivityIndicator size="large"/>
+                            ) :
+                            (
+                                <Text>Oops! No data to display.</Text>
+                            )
+                        }
+                        </View>
+                    }
+                    renderItem={
+                        (row, rowMap) => {
+                            const person =  row.item;
+                            return (
+                                <TouchableHighlight
+                                    onPress={() => {
+                                        this.props.navigation.navigate(
+                                            {
+                                                key: person.id, 
+                                                routeName: 'Person',
+                                                params: { person: person }
+                                            }
+                                        );
+                                    }}
+                                    style={styles.rowFront}
+                                    underlayColor={colors.tertiary}>
+                                    <View style={styles.row}>
+                                        <View style={{ paddingLeft: padding.sm }}>
+                                            { 
+                                                person.avatar ?
+                                                (
+                                                    <Avatar 
+                                                        rounded
+                                                        size="medium"
+                                                        source={{ uri: person.avatar.small}}
+                                                        title={person.full_name.charAt(0)} 
+                                                    />
+                                                ) : (
+                                                    <Avatar 
+                                                        rounded
+                                                        size="medium"
+                                                        title={person.full_name.charAt(0)} 
+                                                    />
+                                                )
+                                            }
+                                        </View>
+                                        <View style={
+                                            {
+                                                marginLeft: 10,
+                                                width: '75%'
+                                            }
+                                        }>
+                                            
+                                            <View  style={ {...styles.row} }>
+                                                {
+                                                    person.is_birthday_today &&
+                                                    <Icon 
+                                                        name="birthday-cake" 
+                                                        type="font-awesome" 
+                                                        color={colors.violet} 
+                                                        containerStyle={{ marginRight: 5 }}
+                                                        size={13}
+                                                    />
+                                                }
+                                                
+                                                <Text 
+                                                    style={
                                                         {
-                                                            person.school_status &&
-                                                            <Text>{ person.school_status.name }</Text>
+                                                            fontWeight: 'bold',
                                                         }
-                                                    </View>
-                                                    { 
-                                                        person.category.name &&
-                                                        <View style={ styles.row }>
-                                                            <Text>Category Level: </Text>
-                                                            <Text>{ person.category.name }</Text>
-                                                        </View>
                                                     }
-                                                    {
-                                                        person.my_ministries.length &&
-                                                        <View style={ styles.row }>
-                                                            <Text>Ministry: </Text>
-                                                            <Text style={{ color: colors.grey }}>
-                                                            {
-                                                                person.my_ministries.map((item, i) =>  item.name  )
-                                                            }
-                                                            </Text>
-                                                        </View>
-                                                    }
-                                                    {
-                                                        person.auxiliary_group &&
-                                                        <View>
-                                                            <Text style={{ color: colors.grey }}>{ person.auxiliary_group.name }</Text>
-                                                        </View>
-                                                    }
-                                                    {
-                                                        person.active_status &&
-                                                        <View>
-                                                            <Text style={{ color: colors.grey }}>{ person.active_status }</Text>
-                                                        </View>
-                                                    }
-                                                </View>
+                                                >{ person.full_name }</Text>
                                             </View>
-                                        </TouchableHighlight>
-                                    )
-                            
-                                }
+                                            <View style={ {...styles.row, marginTop: -5} }>
+                                                {
+                                                    person.class_category &&
+                                                    (<View style={ styles.listContainer }>
+                                                        <Icon 
+                                                            name="ios-school" 
+                                                            type="ionicon"
+                                                            size={16}
+                                                            color={colors.grey2}
+                                                        /> 
+                                                        <Text style={{ fontSize: 13, color: colors.grey2, marginLeft: 5 }}>{ person.class_category.label }</Text>
+                                                    </View>)
+                                                }
+                                                {
+                                                    person.category &&
+                                                    (<View style={ styles.listContainer }>
+                                                        <Icon 
+                                                            name="ios-ribbon" 
+                                                            type="ionicon"
+                                                            size={16}
+                                                            color={colors.grey2}
+                                                        /> 
+                                                        <Text style={{ fontSize: 13, color: colors.grey2, marginLeft: 5 }}>{ person.category.name }</Text>
+                                                    </View>)
+                                                }
+                                            </View>
+                                            <View style={ {...styles.row, marginTop: -10} }>
+                                                {
+                                                    person.auxiliary_group &&
+                                                    (<View style={ styles.listContainer }>
+                                                        <Icon 
+                                                            name="ios-contacts" 
+                                                            type="ionicon"
+                                                            size={16}
+                                                            color={colors.grey2}
+                                                        /> 
+                                                        <Text style={{ fontSize: 13, color: colors.grey2, marginLeft: 5 }}>{ person.auxiliary_group.name }</Text>
+                                                    </View>)
+                                                }
+                                                {
+                                                    person.my_ministries !== undefined && person.my_ministries.length !== 0 &&
+                                                    (<View style={ styles.listContainer }>
+                                                        <Icon 
+                                                            name="ios-star-outline" 
+                                                            type="ionicon"
+                                                            size={16}
+                                                            color={colors.grey2}
+                                                        /> 
+                                                        <Text style={{ fontSize: 13, color: colors.grey2, marginLeft: 5 }}>{ person.my_ministries[0].name }</Text>
+                                                    </View>)
+                                                }
+                                            </View>
+                                        </View>
+                                    </View>
+                                </TouchableHighlight>
+                            )
+                        
                             }
+                        }
 
-                            renderHiddenItem={
-                                (data, rowmap) => (
-                                    <View style={styles.rowBack}>
+                        renderHiddenItem={
+                            (data, rowmap) => (
+                                <View style={styles.rowBack}>
+                                    <TouchableOpacity style={[
+                                        {
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            alignItems: 'center'
+                                        }
+                                    ]}>
                                         <Icon 
                                             onPress={() => navigation.navigate('PersonForm', { person: data.item })}
                                             size={30}
                                             name="ios-create"
                                             type="ionicon"
                                             color={ colors.tertiary }
+                                            containerStyle={{ padding:padding.md, backgroundColor: colors.orange }}
                                         />
-                                        <TouchableOpacity style={[
-                                            styles.backRightBtn, 
-                                            styles.backRightBtnRight,
-                                            {
-                                                display: 'flex',
-                                                flexDirection: 'row',
-                                                alignItems: 'center'
-                                            }
-                                            ]}>
-                                            <Icon 
-                                                size={30}
-                                                name="ios-call"
-                                                type="ionicon"
-                                                color={ colors.tertiary }
-                                                onPress ={() => {
-                                                    const args = {
-                                                        number: data.item.contact_no,
-                                                        prompt: false,
-                                                    };
-                                                    
-                                                    call(args).catch(err => {
-                                                        dispatch(alertActions.error(err.message));
-                                                    });
-                                                }}
-                                            />
-                                        </TouchableOpacity>
-                                    </View>
-                                )
-                            } 
-                            
-                            ListHeaderComponent={
-                                <SearchBar
-                                    round={true}
-                                    lightTheme
-                                    platform="ios"
-                                    placeholder="Type Here..."
-                                    onChangeText={text => this.search(text)} 
-                                    value={keyword}
-                                    autoCorrect={false} 
-                                    onClear={
-                                        () => {
-                                            this.setState({ page: 1, searching: false }, () => this.loadMore())
+                                        <Icon 
+                                            onPress={ () => _this.doDelete(data.item.id) }
+                                            size={30}
+                                            name="ios-trash"
+                                            type="ionicon"
+                                            color={ colors.tertiary }
+                                            containerStyle={{padding:padding.md, backgroundColor: 'red' }}
+                                        />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={[
+                                        styles.backRightBtn, 
+                                        styles.backRightBtnRight,
+                                        {
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            alignItems: 'center'
                                         }
+                                        ]}>
+                                        <Icon 
+                                            size={30}
+                                            name="ios-call"
+                                            type="ionicon"
+                                            color={ colors.tertiary }
+                                            onPress ={() => {
+                                                const args = {
+                                                    number: data.item.contact_no,
+                                                    prompt: false,
+                                                };
+                                                
+                                                call(args).catch(err => {
+                                                    dispatch(alertActions.error(err.message));
+                                                });
+                                            }}
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                            )
+                        } 
+                        
+                        ListHeaderComponent={
+                            <SearchBar
+                                round={true}
+                                lightTheme
+                                platform="ios"
+                                placeholder="Type Here..."
+                                onChangeText={text => this.search(text)} 
+                                value={keyword}
+                                autoCorrect={false} 
+                                onClear={
+                                    () => {
+                                        this.setState({ page: 1, searching: false }, () => this.loadMore())
                                     }
-
-                                    onCancel={
-                                        () => {
-                                            this.setState({ page: 1, searching: false }, () => this.loadMore())
-                                        }
-                                    }
-                                />
-                            }
-
-                            onEndReached={
-                                () => {
-                                    this.setState((prevState, props) => (
-                                        { 
-                                            page: prevState.page + 1 
-                                        }), () => this.loadMore() );
                                 }
-                            }
 
-                            
-                        />
-                    ): (
-                        <View style={styles.container}>
-                            <ActivityIndicator size="large" />
-                        </View>
-                    )
-                }
+                                onCancel={
+                                    () => {
+                                        this.setState({ page: 1, searching: false }, () => this.loadMore())
+                                    }
+                                }
+                            />
+                        }
+
+                        onEndReached={
+                            () => {
+                                this.setState((prevState, props) => (
+                                    { 
+                                        page: prevState.page + 1 
+                                    }), () => this.loadMore() );
+                            }
+                        }
+
+                        
+                    />
+                
+                
                 <View style={styles.btnNew}>
                     <Avatar 
                         size="medium"
@@ -345,7 +413,11 @@ const styles = StyleSheet.create({
         flex: 1, 
         flexDirection: 'row', 
         marginVertical: 5,
-        padding: 5,
+    },
+    listContainer: {
+        flex: 1, 
+        flexDirection: 'row', 
+        marginVertical: 5,
     },
 	backTextWhite: {
 		color: '#FFF'
@@ -357,11 +429,8 @@ const styles = StyleSheet.create({
 	},
 	rowBack: {
 		alignItems: 'center',
-		backgroundColor: '#FF5722',
 		flex: 1,
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		paddingLeft: 15,
+		flexDirection: 'row'
 	},
 	backRightBtn: {
 		alignItems: 'center',
@@ -409,7 +478,7 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state) => {
     const {people, auth, netInfo} = state;
-    console.log(people.people);
+    
     return {
         people,
         netInfo,
@@ -420,6 +489,7 @@ const mapStateToProps = (state) => {
 const mapPropsToDispatch = (dispatch) => {
     return {
         fetchNetwork: ( leaderID ) => dispatch(peopleActions.fetchNetwork( leaderID )),
+        deletePerson: ( id ) => dispatch(peopleActions.deletePerson( id )),
         handleConnectivityChange: (isConnected) => dispatch(connectionState(isConnected))
     }
 }

@@ -4,7 +4,8 @@ import { Dimensions, ScrollView } from 'react-native';
 import {  Icon, ThemeProvider } from 'react-native-elements';
 import {connect} from 'react-redux';
 import { dimensions, colors, padding, fonts } from '../../styles/base';
-
+import { peopleActions } from '../../store/actions';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 const screenWidth = Dimensions.get('window').width
 import {
@@ -27,14 +28,52 @@ class Dashboard extends React.Component {
         };
     };
 
+    constructor(props) {
+        super(props);
+        this.state = {
+            spinner: false,
+        }
+    }
+
+    runSyncer = () => {
+        
+        this.setState({ spinner: true });
+
+        const { fetchPeople, people, fetchPeopleDropdownOptions } = this.props;
+        let flag = true;
+        let limit = 1000;
+        let offset = 0;
+        let refreshId = setInterval( function( ) {
+            const query = `offset=${offset}&limit=${limit}`;
+
+            
+            fetchPeople(query);
+            if (people.totalSize !== null && people.people !== null && people.totalSize === people.people.length + 1) {
+                flag = false;
+                clearInterval(refreshId);
+            }
+            offset++;
+            // offset += limit;
+        }, 2000);
+        fetchPeopleDropdownOptions();
+
+
+        // this.setState({ spinner: false });
+    }
+
     componentDidMount() {
+        // this.runSyncer();
     }
 
     render() {
+        const { spinner } = this.state;
         return (
-            <ThemeProvider>
-                <View style={styles.container}>
-                
+            <View style={styles.container}>
+                <Spinner
+                    visible={spinner}
+                    textContent={'Please wait while syncing data...'}
+                    textStyle={styles.spinnerTextStyle}
+                />
                 <ScrollView>
                     <View>
                         <View style={styles.row}>
@@ -85,8 +124,7 @@ class Dashboard extends React.Component {
                         </Text>
                     </View>
                 </ScrollView>
-                </View>
-            </ThemeProvider>
+            </View>
         )
     }
 }
@@ -112,13 +150,16 @@ const chartConfig = {
 }
 
 const styles = StyleSheet.create({
+    spinnerTextStyle: {
+        color: colors.tertiary
+    },
     container: {
         padding: padding.sm,
         flex: 1,
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#fcfcfa'
+        backgroundColor: colors.tertiary
     },
     row: {
         flex: 1, 
@@ -127,7 +168,7 @@ const styles = StyleSheet.create({
     },
     box1: {
         ...box,
-        backgroundColor: '#3cea8d',
+        backgroundColor: colors.primary,
     },
     box2: {
         ...box,
@@ -155,15 +196,17 @@ const styles = StyleSheet.create({
 
 
 const mapStateToProps = (state) => {
-  const { user } = state.auth;
+  const { auth, people } = state;
   return {
-    user
+    auth,
+    people
   }
 }
 
 const mapPropsToDispatch = (dispatch) => {
     return {
-       
+       fetchPeople: ( q ) => dispatch(peopleActions.fetchAll(q)),
+       fetchPeopleDropdownOptions: () => dispatch(peopleActions.getOptions())
     }
 }
 

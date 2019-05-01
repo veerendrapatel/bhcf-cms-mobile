@@ -11,14 +11,11 @@ const authReducer = (state = initState, action) => {
     
     switch(action.type) {
         case authConstants.LOGIN_REQUEST:
-            console.log(action);
             return {
                 ...state,
                 loggingIn: true
             };
         case authConstants.LOGIN_COMMIT:
-            console.log('LOGIN_COMMIT');
-            console.log(action);
             return {
                 ...state,
                 loggingIn:false,
@@ -27,7 +24,6 @@ const authReducer = (state = initState, action) => {
             };
         
         case authConstants.LOGIN_ROLLBACK:
-            console.log('LOGIN_ROLLBACK');
             return {
                 ...state,
                 loggingIn:false,

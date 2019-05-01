@@ -11,7 +11,8 @@ export const colors = {
     tertiary: '#FFF',
     black: '#000',
     orange: '#FF5722',
-    grey: '#c1c1c1',
+    grey: 'rgb(236, 236, 236);',
+    grey2: '#464646',
     warning: '#FFC107',
     danger: '#F44336',
     violet: '#f15bf1'

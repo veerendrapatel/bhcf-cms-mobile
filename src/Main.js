@@ -13,7 +13,6 @@ class Main extends Component {
   render() {
     const { auth }  = this.props;
     const isLoggedIn = auth.loggingIn && auth.user != null;
-    console.log('hello');
     const Layout = createRootNavigator(isLoggedIn);
     return <Layout />
     

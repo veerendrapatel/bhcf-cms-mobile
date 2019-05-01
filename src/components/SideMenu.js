@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import {NavigationActions} from 'react-navigation';
-import { View, Text, ScrollView, Image, ActivityIndicator,StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, Image, ActivityIndicator,StyleSheet, Alert, TouchableHighlight } from 'react-native';
 import { Icon, Avatar } from 'react-native-elements';
 import { connect } from 'react-redux';
 import { signOut } from '../store/actions/auth.actions';
@@ -30,201 +30,83 @@ class SideMenu extends Component {
     render() {
       
       const { user } = this.props;
+      if (!user) {
+        return false;
+      }
+
+      const avatar = user.member.avatar ? JSON.parse(user.member.avatar) : null;
+      
       return (
           <View style={styles.sideMenuContainer}>
               <ScrollView>
-              { user ?
-              (
                 <View>
-                
-                  <View  style={
-                    { 
-                      display: 'flex', 
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center', 
-                      width: '100%',
-                      paddingTop: 100
-                    }
-                  }>
-                        { user.member && user.member.avatar ?
+                  <View  
+                    style={{ 
+                      ...styles.container,
+                      padding:0,
+                      paddingTop: 50,
+                      backgroundColor: colors.primary}}>
+                      { user.member && avatar ?
                         (
                           <Avatar
                             rounded
-                            source={{ uri: user.member.avatar.thumbnail }}
+                            source={{ uri: avatar.thumbnail }}
                             size="xlarge"
                           />
                         ) : 
                         (
-                          <Avatar size="xlarge" rounded title={ user.member ? user.member.first_name.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase() } />
+                          <Avatar 
+                            size="xlarge" 
+                            rounded 
+                            title={user.member.first_name.charAt(0).toUpperCase()} />
                         )
-                        }
-                    <View style={styles.collapseableContainer}>
+                      }
+                    <View 
+                      style={{...styles.collapseableContainer, marginTop: padding.md, padding: 0}}>
                       <CollapsibleView
-                          title={user.member ? user.member.first_name : user.username}
+                          title={user.member ? `${user.member.first_name} ${ user.member.last_name }` : user.username}
                           collapsed={false}
                           headerStyle={styles.headerStyle}
-                          headerIconSize={26}
-                          headerIconColor={colors.grey}
+                          headerIconSize={15}
+                          headerIconColor={colors.grey2}
                           headerTextStyle={styles.headerTextStyle}
                       >
                           <View style={styles.collapsViewStyle}>
-                            <View  style={styles.navItem}>
-                              <Icon                                   
-                                iconStyle={styles.iconStyle} 
-                                name='users'
-                                type='font-awesome'  
-                              />
-                              <Text style={styles.navItemText} onPress={this.navigateToScreen('Person', { person: user.member })}>Profile</Text>
-                            </View>
-                            <View  style={styles.navItem}>
-                              <Icon                                   
-                                iconStyle={styles.iconStyle} 
-                                name='users'
-                                type='font-awesome'  
-                              />
-                              <Text style={styles.navItemText} onPress={this.navigateToScreen('Person', { person: user.member })}>Account Information</Text>
-                            </View>
-                            <View  style={styles.navItem}>
-                              <Icon                                   
-                                iconStyle={styles.iconStyle} 
-                                name='users'
-                                type='font-awesome'  
-                              />
-                              <Text style={styles.navItemText} onPress={this.navigateToScreen('Person', { person: user.member })}>Settings</Text>
-                            </View>
-                              
-                          </View>
-                      </CollapsibleView>
-                    </View>
-                    
-                  </View>
-                  
-                    <View style={styles.navSection}>
-                        <View style={styles.navItem}>
-                          <Icon                                   
-                            iconStyle={styles.iconStyle} 
-                            name='home'
-                            type='font-awesome'  
-                          />
-                          <Text style={styles.navItemText} onPress={this.navigateToScreen('Home')}>Dashboard</Text>
-                        </View>
-                        <View  style={styles.navItem}>
-                          <Icon                                   
-                            iconStyle={styles.iconStyle} 
-                            name='users'
-                            type='font-awesome'  
-                          />
-                          <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>People</Text>
-                        </View>
-                        <View  style={styles.navItem}>
-                          <Icon                                   
-                            iconStyle={styles.iconStyle} 
-                            name='calendar'
-                            type='font-awesome'  
-                          />
-                          <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>Registrations</Text>
-                        </View>
-                        <View  style={styles.navItem}>
-                          <Icon                                   
-                            iconStyle={styles.iconStyle} 
-                            name='calendar'
-                            type='font-awesome'  
-                          />
-                          <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>Events</Text>
-                        </View>
-                        <View  style={styles.navItem}>
-                          <Icon 
-                            iconStyle={styles.iconStyle} 
-                            name='calendar'
-                            type='font-awesome'  
-                          />
-                          <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>Services</Text>
-                        </View>
-                        
-                        <View  style={styles.navItem}>
-                          <Icon                                   
-                            iconStyle={styles.iconStyle} 
-                            name='calendar'
-                            type='font-awesome'
-                            
-                          />
-                          <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>Booking</Text>
-                        </View>
-                    </View>
-                    <View style={styles.navSection}>
-                      <View style={styles.collapseableContainer}>
-                        <CollapsibleView
-                            title='Reports'
-                            collapsed={false}
-                            headerStyle={styles.headerStyle}
-                            headerIconSize={26}
-                            headerIconColor={colors.grey}
-                            headerTextStyle={styles.headerTextStyle}
-                        >
-                            <View style={styles.collapsViewStyle}>
-                                <View  style={styles.navItem}>
-                                  <Icon                                   
-                                    iconStyle={styles.iconStyle} 
-                                    name='users'
-                                    type='font-awesome'  
-                                  />
-                                  <Text style={styles.navItemText} onPress={this.navigateToScreen('CellReports')}>Cell Group</Text>
-                                </View>
-                                <View  style={styles.navItem}>
-                                  <Icon                                   
-                                    iconStyle={styles.iconStyle} 
-                                    name='users'
-                                    type='font-awesome'  
-                                  />
-                                  <Text style={styles.navItemText} onPress={this.navigateToScreen('LifeClass')}>Life Class</Text>
-                                </View>
-                                <View style={styles.navItem}>
-                                  <Icon                                   
-                                    iconStyle={styles.iconStyle} 
-                                    name='user'
-                                    type='font-awesome'  
-                                  />
-                                  <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>SUYNL</Text>
-                                </View>
-                                <View  style={styles.navItem}>
-                                  <Icon                                   
-                                    iconStyle={styles.iconStyle} 
-                                    name='calendar'
-                                    type='font-awesome'  
-                                  />
-                                  <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>SOL</Text>
-                                </View>
-                                <View  style={styles.navItem}>
-                                  <Icon                                   
-                                    iconStyle={styles.iconStyle} 
-                                    name='calendar'
-                                    type='font-awesome'  
-                                  />
-                                  <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>Finance</Text>
-                                </View>
-                            </View>
-                        </CollapsibleView>
-                      </View>
-                    </View>
-                    <View style={styles.navSection}>
-                      <View  style={styles.navItem}>
-                        <Icon 
-                          iconStyle={styles.iconStyle}  
-                          name='cogs' 
-                          type='font-awesome'  
-                        />
-                        <Text style={styles.navItemText} onPress={this.navigateToScreen('People')}>Settings</Text>
-                      </View>
-                      <View  style={styles.navItem}>
-                        <Icon                                   
-                          iconStyle={styles.iconStyle}  
-                          name='sign-out' 
-                          type='font-awesome'
-                        />
-                          <Text 
-                            style={styles.navItemText}  
-                            onPress={ () => 
+                            <TouchableHighlight underlayColor={colors.primary}   
+                              onPress={this.navigateToScreen('Person', { person: user.member })}>
+                              <View style={styles.navItem}>
+                                <Icon                                   
+                                  iconStyle={styles.iconStyle} 
+                                  name='ios-contact'
+                                  type='ionicon'  
+                                />
+                                <Text style={styles.navItemText}>Profile</Text>
+                              </View>
+                            </TouchableHighlight>
+                            <TouchableHighlight underlayColor={colors.primary}  
+                              onPress={this.navigateToScreen('Person', { person: user.member })}>
+                              <View style={styles.navItem}>
+                                <Icon                                   
+                                  iconStyle={styles.iconStyle} 
+                                  name='ios-options'
+                                  type='ionicon'  
+                                />
+                                <Text style={styles.navItemText}>Account Information</Text>
+                              </View>
+                            </TouchableHighlight>
+                            <TouchableHighlight underlayColor={colors.primary} 
+                              onPress={this.navigateToScreen('People')}>
+                              <View style={styles.navItem}>
+                                <Icon 
+                                  iconStyle={styles.iconStyle}  
+                                  name='ios-cog' 
+                                  type='ionicon'  
+                                />
+                                <Text style={styles.navItemText}>Settings</Text>
+                              </View>
+                            </TouchableHighlight>
+                            <TouchableHighlight underlayColor={colors.primary} 
+                              onPress={ () => 
                               {
                                 const { signOut } = this.props;
                                 // Works on both iOS and Android
@@ -243,17 +125,173 @@ class SideMenu extends Component {
                                 );
                               } 
                             }
-                          >Signout</Text>
-                      </View>
+                            >
+                              <View style={styles.navItem}>
+                              <Icon                                   
+                                iconStyle={styles.iconStyle}  
+                                name='ios-power' 
+                                type='ionicon'
+                              />
+                                <Text 
+                                  style={styles.navItemText}>Signout</Text>
+                              </View>
+                            </TouchableHighlight>
+                              
+                          </View>
+                      </CollapsibleView>
                     </View>
-                </View>
-              ) : (
-                <View style={styles.container}>
-                    <ActivityIndicator size="large" />
-                </View>
-              )
-            }
-              
+                    
+                  </View>
+                  
+                  <View style={styles.navSection}>
+                      <TouchableHighlight underlayColor={colors.primary} 
+                        underlayColor={colors.primary}
+                        onPress={this.navigateToScreen('Home')}>
+                        <View style={styles.navItem}>
+                          <Icon                                   
+                            iconStyle={styles.iconStyle} 
+                            name='ios-speedometer' 
+                            type='ionicon'
+                          />
+                          <Text style={styles.navItemText}>Dashboard</Text>
+                        </View>
+                      </TouchableHighlight>
+                      <TouchableHighlight underlayColor={colors.primary}
+                        onPress={this.navigateToScreen('People')}>
+                        <View style={styles.navItem}>
+                          <Icon                                   
+                            iconStyle={styles.iconStyle} 
+                            name='ios-people' 
+                            type='ionicon'
+                          />
+                          <Text style={styles.navItemText}>People</Text>
+                        </View>
+                      </TouchableHighlight>
+                      <TouchableHighlight underlayColor={colors.primary}
+                        onPress={this.navigateToScreen('People')}>
+                        <View style={styles.navItem}>
+                          <Icon                                   
+                            iconStyle={styles.iconStyle} 
+                            name='ios-list'
+                            type='ionicon'  
+                          />
+                          <Text style={styles.navItemText}>Registrations</Text>
+                        </View>
+                      </TouchableHighlight>
+                      <TouchableHighlight underlayColor={colors.primary} 
+                        onPress={this.navigateToScreen('People')}>
+                        <View style={styles.navItem}>
+                          <Icon                                   
+                            iconStyle={styles.iconStyle} 
+                            name='ios-basketball'
+                            type='ionicon' 
+                          />
+                          <Text style={styles.navItemText}>Events</Text>
+                        </View>
+                      </TouchableHighlight>
+                      <TouchableHighlight underlayColor={colors.primary} 
+                        onPress={this.navigateToScreen('People')}>
+                        <View style={styles.navItem}>
+                          <Icon 
+                            iconStyle={styles.iconStyle} 
+                            name='ios-paw'
+                            type='ionicon'
+                          />
+                          <Text style={styles.navItemText}>Services</Text>
+                        </View>
+                      </TouchableHighlight>
+                      
+                      <TouchableHighlight underlayColor={colors.primary} 
+                        onPress={this.navigateToScreen('People')}>
+                        <View style={styles.navItem}>
+                          <Icon                                   
+                            iconStyle={styles.iconStyle} 
+                            name='ios-cube'
+                            type='ionicon'
+                            
+                          />
+                          <Text style={styles.navItemText}>Booking</Text>
+                        </View>
+                      </TouchableHighlight>
+                  </View>
+                  <View style={styles.collapseableContainer}>
+                    <CollapsibleView
+                        title='Reports'
+                        collapsed={false}
+                        headerStyle={styles.headerStyle}
+                        headerIconSize={15}
+                        headerIconColor={colors.grey2}
+                        headerTextStyle={styles.headerTextStyle}>
+                        <View style={{...styles.collapsViewStyle}}>
+                            <TouchableHighlight underlayColor={colors.primary} 
+                              onPress={this.navigateToScreen('CellReports')}>
+                              <View style={styles.navItem}>
+                                <Icon                                   
+                                  iconStyle={styles.iconStyle} 
+                                  name='ios-git-network'
+                                  type='ionicon'  
+                                />
+                                <Text 
+                                  style={styles.navItemText}>Cell Group
+                                </Text>
+                              </View>
+                            </TouchableHighlight>
+                            <TouchableHighlight underlayColor={colors.primary} 
+                              onPress={this.navigateToScreen('LifeClass')}>
+                              <View style={styles.navItem}>
+                                <Icon                                   
+                                  iconStyle={styles.iconStyle} 
+                                  name='ios-git-network'
+                                  type='ionicon'  
+                                />
+                                <Text 
+                                  style={styles.navItemText}>Life Class
+                                </Text>
+                              </View>
+                            </TouchableHighlight>
+                            <TouchableHighlight underlayColor={colors.primary} 
+                              onPress={this.navigateToScreen('People')}>
+                              <View style={styles.navItem}>
+                                <Icon                                   
+                                  iconStyle={styles.iconStyle} 
+                                  name='ios-git-network'
+                                  type='ionicon'  
+                                />
+                                <Text 
+                                  style={styles.navItemText}>SUYNL
+                                </Text>
+                              </View>
+                            </TouchableHighlight>
+                            <TouchableHighlight underlayColor={colors.primary} 
+                              onPress={this.navigateToScreen('People')}>
+                              <View style={styles.navItem}>
+                                <Icon                                   
+                                  iconStyle={styles.iconStyle} 
+                                  name='ios-git-network'
+                                  type='ionicon'  
+                                />
+                                <Text 
+                                  style={styles.navItemText}>SOL
+                                </Text>
+                              </View>
+                            </TouchableHighlight>
+                            <TouchableHighlight underlayColor={colors.primary} 
+                              onPress={this.navigateToScreen('People')}>
+                              <View style={styles.navItem}>
+                                <Icon                                   
+                                  iconStyle={styles.iconStyle} 
+                                  name='ios-git-network'
+                                  type='ionicon'  
+                                />
+                                <Text 
+                                  style={styles.navItemText}>Finance
+                                </Text>
+                              </View>
+                            </TouchableHighlight>
+                        </View>
+                    </CollapsibleView>
+                  </View>
+            </View>
           </ScrollView>
         </View>
       )
@@ -272,7 +310,7 @@ const styles = StyleSheet.create({
     },
     iconStyle: {
       fontSize: 18,
-      color:colors.grey
+      color:colors.grey2
     },
     sideMenuContainer: {
         flex: 1,
@@ -287,7 +325,7 @@ const styles = StyleSheet.create({
     navItem: {
         width:'100%',
         padding:10,
-        fontSize: 16,
+        fontSize: 14,
         display: 'flex', 
         flexDirection: 'row', 
         alignItems: 'center',
@@ -300,7 +338,7 @@ const styles = StyleSheet.create({
         display: 'flex', 
         flexDirection: 'row', 
         alignItems: 'center',
-        marginLeft:padding.sm,
+        marginLeft:3,
         padding: 5,
         fontSize: 16,
         fontWeight: "500"
