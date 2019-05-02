@@ -3,7 +3,7 @@ import { StyleSheet, View, ScrollView, Text, Dimensions, Alert, TouchableOpacity
 import { ListItem, CheckBox, Icon, Avatar, SearchBar } from 'react-native-elements';
 import Moment from 'moment';
 import { connect } from 'react-redux';
-import { cellGroupActions } from '../../store/actions';
+import { cellGroupActions, connectionState } from '../../store/actions';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { dimensions, colors, padding, fonts } from '../../styles/base';
 
@@ -32,15 +32,15 @@ class CellReports extends Component {
 
 
     componentDidMount() {
-        const year = this.state.selectedYear;
-        const { dispatch, user } = this.props;
+        const selectedYear = this.state.selectedYear;
+        const { dispatch, user, fetchYearlyAttendance } = this.props;
         const leaderID = this.props.personID ? this.props.personID : user.member.id;
         this.setState({ personID: leaderID });
-        dispatch( cellGroupActions.getLeaderAttendancesByYear( leaderID, year ) );
+        fetchYearlyAttendance( leaderID, selectedYear );
 
         this.props.navigation.setParams(
             {
-                headerTitle: `${year}`
+                headerTitle: `${selectedYear}`
                 
             }
         );
@@ -49,7 +49,7 @@ class CellReports extends Component {
     }
 
     render() {
-        const { loading, items } = this.props.cellgroup;
+        const { loading, items } = this.props.cellReport;
         const {personID, selectedYear, selectedWeek} = this.state;
         if (items) {
             const data = items && typeof items[selectedYear] !== undefined ? items[selectedYear] : null;
@@ -137,11 +137,19 @@ const styles = StyleSheet.create({
 
 const mapStatetoProps = (state) => {
   
-  const { cellgroup, auth } = state;
+  const { cellReport, auth } = state;
   return {
-    cellgroup: cellgroup,
+    cellReport,
     user: auth.user
   }
 }
 
-export default connect(mapStatetoProps)(CellReports);
+const mapPropsToDispatch = (dispatch) => {
+    return {
+        fetchYearlyAttendance: ( leaderID, selectedYear ) => dispatch( cellGroupActions.getLeaderAttendancesByYear( leaderID, selectedYear ) ),
+        deletePerson: ( id ) => dispatch(peopleActions.deletePerson( id )),
+        handleConnectivityChange: (isConnected) => dispatch(connectionState(isConnected))
+    }
+}
+
+export default connect(mapStatetoProps, mapPropsToDispatch)(CellReports);

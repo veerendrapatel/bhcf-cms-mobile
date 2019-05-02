@@ -1,104 +1,90 @@
 import cellGroupService from '../../services/cellgroup.service';
 import { alertActions } from '../actions/alert.actions';
 import {cellGroupConstants} from '../constants/cellgroup.constants';
+import { API_URL } from 'react-native-dotenv';
+
+
 
 const AttendanceForm = ( memberID, year, week ) => {
-    const request = () => { return { type: cellGroupConstants.GET_CELLGROUP_ATTENDANCE_REQUEST } }
-    const success = ( payload ) => { return { type: cellGroupConstants.GET_CELLGROUP_ATTENDANCE_SUCCESS, payload } }
-    const failure = ( error ) => { return { type: cellGroupConstants.GET_CELLGROUP_ATTENDANCE_FAILURE, error } }
-    
     return (dispatch, getState) => {
-        dispatch(request());
-        cellGroupService.AttendanceForm(memberID, year, week)
-            .then(
-                res => {
-                    if (res.ok) {
-                        let payload = {
-                            year: year,
-                            week: week,
-                            data:  res.data
-                        };
-                         dispatch(success( payload ));
-                    } else {
-                        dispatch(failure( res.data ));
-                        dispatch(alertActions.error( res.data ));
-                    }
-                        
-                },
-                err => {
-                    const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
-                    dispatch(failure( error ));
-                    dispatch(alertActions.error( error ));
+        const { auth } = getState();
+        dispatch({
+            type: cellGroupConstants.CREATE_CELLREPORT_REQUEST, 
+            payload: null,
+            meta: {
+                offline: {
+                    effect: {
+                        url: `${API_URL}members/${memberID}/cellreport/${year}/${week}`,
+                        method: 'GET',
+                        headers: {
+                            Authorization: `Bearer ${auth.user.api_token}`
+                        }
+                    },
+                    commit: { type: cellGroupConstants.CREATE_CELLREPORT_COMMIT, meta: { year, week }},
+                    rollback: { type: cellGroupConstants.CREATE_CELLREPORT_ROLLBACK, meta: { year, week } }
                 }
-            )
+            }
+        });
     }
 }
 
 
-const saveCellGroupAttendance = ( memberID, year, week, attendance, index ) => {
-    const request = () => { return { type: cellGroupConstants.CREATE_CELLGROUP_ATTENDANCE_REQUEST } }
-    const success = ( payload ) => { return { type: cellGroupConstants.CREATE_CELLGROUP_ATTENDANCE_SUCCESS, payload } }
-    const failure = ( error ) => { return { type: cellGroupConstants.CREATE_CELLGROUP_ATTENDANCE_FAILURE, error } }
-
+const saveAttendance = ( memberID, year, week, attendance, index ) => {
     return (dispatch, getState) => {
-        dispatch(request());
-        cellGroupService.saveCellGroupAttendance( memberID, year, week, attendance )
-            .then(
-                res => {
-                    
-                    if (res.ok) {
-                        const payload =  {
-                            year: year,
-                            week: week,
-                            index: index, 
-                            attendance: res.data
-                        };
-                        dispatch(success( payload ));
-                        dispatch(alertActions.success( 'Successfully saved.' ));
-                    } else {
-                        dispatch(failure( res.data ));
-                        dispatch(alertActions.error( res.data ));
-                    }
-                },
-                err => {
-                    const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
-                    dispatch(failure( error ));
-                    dispatch(alertActions.error( error ));
+        const { auth } = getState();
+        const meta =  { year, week, index };
+        dispatch({
+            type: cellGroupConstants.SAVE_CELLGROUP_ATTENDANCE_REQUEST, 
+            payload: {
+                week, 
+                year,
+                attendance, 
+                index
+            },
+            meta: {
+                offline: {
+                    effect: {
+                        url: `${API_URL}members/${memberID}/cellreport/${year}/${week}`,
+                        method: 'POST',
+                        json: attendance,
+                        headers: {
+                            Authorization: `Bearer ${auth.user.api_token}`
+                        }
+                    },
+                    commit: { type: cellGroupConstants.SAVE_CELLGROUP_ATTENDANCE_COMMIT, meta: meta},
+                    rollback: { type: cellGroupConstants.SAVE_CELLGROUP_ATTENDANCE_ROLLBACK, meta: meta }
                 }
-            )
+            }
+        });
+
     }
 }
 
 const getLeaderAttendancesByYear = ( memberID, year ) =>  {
-    const request = () => { return { type: cellGroupConstants.GET_LEADER_ATTENDANCE_BY_YEAR_REQUEST } }
-    const success = ( payload ) => { return { type: cellGroupConstants.GET_LEADER_ATTENDANCE_BY_YEAR_SUCCESS, payload } }
-    const failure = ( error ) => { return { type: cellGroupConstants.GET_LEADER_ATTENDANCE_BY_YEAR_FAILURE, error } }
-
     return (dispatch, getState) => {
-        dispatch(request());
-        cellGroupService.getLeaderAttendancesByYear( memberID, year )
-            .then(
-                res => {
-                    
-                    if (res.ok) {
-                        const item = { year: year, data: res.data };
-                        dispatch(success( item ));
-                    } else {
-                        dispatch(failure( res.data ));
-                        dispatch(alertActions.error( res.data ));
-                    }
-                },
-                err => {
-                    const error = typeof err === 'string' ? 'Oops! network error.' : err.message;
-                    dispatch(failure( error ));
-                    dispatch(alertActions.error( error ));
+        const { auth } = getState();
+        dispatch({
+            type: cellGroupConstants.GET_LEADER_ATTENDANCE_BY_YEAR_REQUEST, 
+            payload: null,
+            meta: {
+                offline: {
+                    effect: {
+                        url: `${API_URL}members/${memberID}/cellreport/${year}`,
+                        method: 'GET',
+                        headers: {
+                            Authorization: `Bearer ${auth.user.api_token}`
+                        }
+                    },
+                    commit: { type: cellGroupConstants.GET_LEADER_YEARLY_ATTENDANCES_COMMIT, meta: { year }},
+                    rollback: { type: cellGroupConstants.GET_LEADER_YEARLY_ATTENDANCES_ROLLBACK, meta: { year } }
                 }
-            )
+            }
+        });
     }
 }
 
 export const cellGroupActions = {
     getLeaderAttendancesByYear,
-    saveCellGroupAttendance,
+    saveAttendance,
     AttendanceForm
 }

@@ -135,6 +135,7 @@ class People extends Component {
         const { keyword, people, loading } = this.state;
         const { navigation, dispatch, netInfo } = this.props;
         const _this = this;
+        
         return (
             <View style={ styles.container }>
                 {  
@@ -299,7 +300,10 @@ class People extends Component {
                                         {
                                             display: 'flex',
                                             flexDirection: 'row',
-                                            alignItems: 'center'
+                                            alignItems: 'center',
+                                            bottom: 0,
+                                            position: 'absolute',
+                                            top: 0
                                         }
                                     ]}>
                                         <Icon 
@@ -308,7 +312,7 @@ class People extends Component {
                                             name="ios-create"
                                             type="ionicon"
                                             color={ colors.tertiary }
-                                            containerStyle={{ padding:padding.md, backgroundColor: colors.orange }}
+                                            containerStyle={{ padding:padding.md, backgroundColor: colors.orange, height: '100%', alignItems: 'center', }}
                                         />
                                         <Icon 
                                             onPress={ () => _this.doDelete(data.item.id) }
@@ -316,7 +320,7 @@ class People extends Component {
                                             name="ios-trash"
                                             type="ionicon"
                                             color={ colors.tertiary }
-                                            containerStyle={{padding:padding.md, backgroundColor: 'red' }}
+                                            containerStyle={{padding:padding.md, backgroundColor: 'red', height: '100%', alignItems: 'center' }}
                                         />
                                     </TouchableOpacity>
                                     <TouchableOpacity style={[
@@ -413,6 +417,7 @@ const styles = StyleSheet.create({
         flex: 1, 
         flexDirection: 'row', 
         marginVertical: 5,
+        alignItems: 'center',
     },
     listContainer: {
         flex: 1, 

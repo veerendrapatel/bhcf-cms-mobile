@@ -31,13 +31,13 @@ class PersonalInformation extends Component {
             const didBlurSubscription = navigation.addListener(
                 'willFocus',
                 payload => {
-                    findPersonById( person.id );
+                    // findPersonById( person.id );
                 
                 }
             );
             
             
-            // this.setState({ person: person });
+            this.setState({ person: person });
             this.props.navigation.setParams({
                     headerTitle: person.full_name,
                     headerRight: (
@@ -52,8 +52,7 @@ class PersonalInformation extends Component {
     }
 
     render() {
-        const { person } = this.props;
-        console.log(person);
+        const { person } = this.state;
         return (
             <View style={styles.container}>
                 {   person ? (

@@ -131,8 +131,8 @@ const updatePerson = (id, person) => {
 const deletePerson = (id) => {
     return (dispatch, getState) => {
         const { auth } = getState();
-        console.log(`${API_URL}members/${id}`);
-        console.log(`Bearer ${auth.user.api_token}`);
+        // console.log(`${API_URL}members/${id}`);
+        // console.log(`Bearer ${auth.user.api_token}`);
 
         dispatch({
             type: peopleConstants.DELETE_MEMBER_REQUEST, 
@@ -146,8 +146,8 @@ const deletePerson = (id) => {
                             Authorization: `Bearer ${auth.user.api_token}`
                         }
                     },
-                    commit: { type: peopleConstants.DELETE_MEMBER_COMMIT},
-                    rollback: { type: peopleConstants.DELETE_MEMBER_ROLLBACK  }
+                    commit: { type: peopleConstants.DELETE_MEMBER_COMMIT, meta: { id }},
+                    rollback: { type: peopleConstants.DELETE_MEMBER_ROLLBACK, meta: { id }  }
                 }
             }
         });

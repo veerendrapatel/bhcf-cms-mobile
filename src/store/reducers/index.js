@@ -11,7 +11,7 @@ const appReducer = combineReducers({
     alert: alertReducer,
     auth: authReducer,
     people: peopleReducer,
-    cellgroup: cellGroupReducer,
+    cellReport: cellGroupReducer,
     classCategory: classCategoryReducer,
     schoolClass: schoolClassReducer,
     netInfo: netInfoReducer

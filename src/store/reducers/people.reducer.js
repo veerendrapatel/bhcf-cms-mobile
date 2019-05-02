@@ -75,7 +75,7 @@ const peopleReducer = (state = initState, action) => {
             }
 
         case peopleConstants.ADD_NEW_MEMBER_REQUEST:
-            console.log('ADD_NEW_MEMBER_REQUEST');
+            // console.log('ADD_NEW_MEMBER_REQUEST');
             return {
                 ...state,
                 loading: true,
@@ -84,14 +84,14 @@ const peopleReducer = (state = initState, action) => {
         case peopleConstants.ADD_NEW_MEMBER_COMMIT:
             index = state.people.findIndex(item => item.id === action.meta.uid);
             state.people[index] = payload.data;
-            console.log('ADD_NEW_MEMBER_COMMIT');
+            // console.log('ADD_NEW_MEMBER_COMMIT');
             return {
                 ...state,
                 loading: false,
                 people: state.people
             }
         case peopleConstants.ADD_NEW_MEMBER_ROLLBACK:
-            console.log('ADD_NEW_MEMBER_ROLLBACK');
+            // console.log('ADD_NEW_MEMBER_ROLLBACK');
             index = state.people.findIndex(item => item.id === action.meta.uid);
             return {
                 ...state,
@@ -131,27 +131,30 @@ const peopleReducer = (state = initState, action) => {
                 options: payload.data
             }
         case peopleConstants.FIND_BY_ID: 
-            const person = state.people.filter(item => item.id === payload.id);
+            const person = state.people ? state.people.filter(item => item.id === payload.id) : null;
             return {
                 ...state,
                 person: person ? person[0] : null
             }
         case peopleConstants.DELETE_MEMBER_REQUEST:
-            console.log('DELETE_MEMBER_REQUEST');
+            // console.log('DELETE_MEMBER_REQUEST');
             return {
                 ...state
             }
         case peopleConstants.DELETE_MEMBER_COMMIT:
-            console.log('hello world');
-            index = state.people.findIndex(item => item.id === payload.data.id);
-            console.log('DELETE_MEMBER_COMMIT ' + index);
-
+            // console.log(action);
+            index = state.people.findIndex(item => item.id === action.meta.id);
+            // console.log('DELETE_MEMBER_COMMIT ' + index);
+            
             return {
-                ...state.people.slice(0, index),
-                ...state.people.slice(index + 1)
+                ...state,
+                people: [
+                    ...state.people.slice(0, index),
+                    ...state.people.slice(index + 1)
+                ]
             }
         case peopleConstants.DELETE_MEMBER_ROLLBACK:
-            console.log('DELETE_MEMBER_ROLLBACK', action);
+            // console.log('DELETE_MEMBER_ROLLBACK', action);
             return {
                 ...state
             }

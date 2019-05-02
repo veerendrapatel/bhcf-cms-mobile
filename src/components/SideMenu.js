@@ -84,7 +84,12 @@ class SideMenu extends Component {
                               </View>
                             </TouchableHighlight>
                             <TouchableHighlight underlayColor={colors.primary}  
-                              onPress={this.navigateToScreen('Person', { person: user.member })}>
+                              onPress={
+                                this.navigateToScreen({
+                                    key: user.member.id, 
+                                    routeName: 'Person',
+                                    params: { person: user.member }
+                              })}>
                               <View style={styles.navItem}>
                                 <Icon                                   
                                   iconStyle={styles.iconStyle} 
