@@ -117,10 +117,12 @@ class AttendanceForm extends Component {
                                     }
                                     rightIcon={
                                         <Icon 
-                                          color={ colors.grey} 
+                                          color={ colors.grey } 
                                           size={30} 
                                           name='ios-more'
-                                          type="ionicon"   
+                                          type="ionicon"  
+                                          disabled={ item.attended != 1 } 
+                                          disabledStyle={{ backgroundColor: colors.tertiary }}
                                           onPress={() => {
                                             this.setState({ isOverlayVisible: true, selectedIndex: i, selectedItem: item })}}
                                         />
