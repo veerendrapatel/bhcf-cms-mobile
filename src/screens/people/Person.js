@@ -7,17 +7,19 @@ import { colors } from '../../styles/base';
 import PersonalInformation from './details/PersonalInformation';
 import Network from './details/Network';
 import Reports from './details/Reports';
-
+import AccountSettings from './details/AccountSettings';
 
 
 const getTabBarIcon = (navigation, focused, tintColor) => {
     const { routeName } = navigation.state;
     let iconName = null;
     let iconType = 'ionicon';
-    if (routeName === 'PersonalInformation') {
+    if (routeName === 'Information') {
         iconName = 'ios-contact';
     } else if(routeName === 'Network') {
         iconName = 'ios-git-network';
+    } else if (routeName == 'Settings') {
+        iconName = 'ios-finger-print';
     } else {
         iconName = 'ios-clipboard';
     }
@@ -27,9 +29,10 @@ const getTabBarIcon = (navigation, focused, tintColor) => {
 export default createAppContainer(
     createBottomTabNavigator(
         {
-            PersonalInformation: { screen: PersonalInformation },
+            Information: { screen: PersonalInformation },
             Network: { screen: Network },
-            Reports: { screen: Reports }
+            Reports: { screen: Reports },
+            Settings: { screen: AccountSettings }
         },
         {
             defaultNavigationOptions: ({ navigation }) => (

@@ -49,7 +49,7 @@ class PersonForm extends Component {
                 address: '',
                 city: '',
                 contact_no: '',
-                parent_id : this.props.user.member.id,
+                parent_id : this.props.user.id,
                 secondary_contact_no: '',
                 facebook_name: '',
                 school_status_id: null,

@@ -62,7 +62,7 @@ class SundayAttendanceForm extends Component {
       const { dispatch, user, initAttendanceForm } = this.props;
       const { year, week, personID } = this.props.navigation.state.params;
 
-      // const leaderID = this.props.navigation.state.params && this.props.navigation.state.params.personID ? this.props.navigation.state.params.personID : user.member.id;
+      // const leaderID = this.props.navigation.state.params && this.props.navigation.state.params.personID ? this.props.navigation.state.params.personID : user.id;
       
       initAttendanceForm( personID,  year, week );
      
@@ -72,14 +72,14 @@ class SundayAttendanceForm extends Component {
       const { dispatch, user, saveAttendance } = this.props;
       const { year, week, selectedDate } = this.state;
       // check if current user is the leader
-      if ( user.member.id == data.leader_id ) {
+      if ( user.id == data.leader_id ) {
         const attendance = {
             member_id: data['member_id'],
             attended: data['attended'],
             yearweek: data['yearweek'],
             date_attended: data['date_attended'] == null ? Moment(selectedDate).format('YYYY-MM-DD HH:mm:ss') : data['date_attended']
         }
-        saveAttendance( user.member.id, year, week, attendance, index );
+        saveAttendance( user.id, year, week, attendance, index );
       }
     }
     
@@ -154,7 +154,7 @@ class SundayAttendanceForm extends Component {
                                           size={30} 
                                           name='ios-more'
                                           type="ionicon"  
-                                          disabled={ user.member.id === item.leader_id && item.attended != 1 } 
+                                          disabled={ user.id === item.leader_id && item.attended != 1 } 
                                           disabledStyle={{ backgroundColor: colors.tertiary }}
                                           onPress={() => {
                                             this.setState({ isOverlayVisible: true, selectedIndex: i, selectedItem: item })}}

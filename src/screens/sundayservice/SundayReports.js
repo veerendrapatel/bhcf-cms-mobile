@@ -37,7 +37,7 @@ class SundayReports extends Component {
     componentDidMount() {
         const selectedYear = this.state.selectedYear;
         const { dispatch, user, fetchYearlyAttendance } = this.props;
-        const leaderID = this.props.personID ? this.props.personID : user.member.id;
+        const leaderID = this.props.personID ? this.props.personID : user.id;
         this.setState({ personID: leaderID });
         fetchYearlyAttendance( leaderID, selectedYear );
 

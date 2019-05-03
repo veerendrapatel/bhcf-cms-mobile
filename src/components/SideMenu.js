@@ -34,7 +34,7 @@ class SideMenu extends Component {
         return false;
       }
 
-      const avatar = user.member.avatar ? JSON.parse(user.member.avatar) : null;
+      const avatar = user.avatar ? user.avatar : null;
       
       return (
           <View style={styles.sideMenuContainer}>
@@ -46,7 +46,7 @@ class SideMenu extends Component {
                       padding:0,
                       paddingTop: 50,
                       backgroundColor: colors.primary}}>
-                      { user.member && avatar ?
+                      { user && avatar ?
                         (
                           <Avatar
                             rounded
@@ -58,13 +58,13 @@ class SideMenu extends Component {
                           <Avatar 
                             size="xlarge" 
                             rounded 
-                            title={user.member.first_name.charAt(0).toUpperCase()} />
+                            title={user.first_name.charAt(0).toUpperCase()} />
                         )
                       }
                     <View 
                       style={{...styles.collapseableContainer, marginTop: padding.md, padding: 0}}>
                       <CollapsibleView
-                          title={user.member ? `${user.member.first_name} ${ user.member.last_name }` : user.username}
+                          title={user ? `${user.first_name} ${ user.last_name }` : user.username}
                           collapsed={false}
                           headerStyle={styles.headerStyle}
                           headerIconSize={15}
@@ -73,7 +73,7 @@ class SideMenu extends Component {
                       >
                           <View style={styles.collapsViewStyle}>
                             <TouchableHighlight underlayColor={colors.primary}   
-                              onPress={this.navigateToScreen('Person', { person: user.member })}>
+                              onPress={this.navigateToScreen('Person', { person: user })}>
                               <View style={styles.navItem}>
                                 <Icon                                   
                                   iconStyle={styles.iconStyle} 
@@ -86,9 +86,9 @@ class SideMenu extends Component {
                             <TouchableHighlight underlayColor={colors.primary}  
                               onPress={
                                 this.navigateToScreen({
-                                    key: user.member.id, 
+                                    key: user.id, 
                                     routeName: 'Person',
-                                    params: { person: user.member }
+                                    params: { person: user }
                               })}>
                               <View style={styles.navItem}>
                                 <Icon                                   

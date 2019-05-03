@@ -30,6 +30,8 @@ const fetchAll = (query = '') => {
 const fetchNetwork = (leaderID) => {
     return (dispatch, getState) => {
         const { auth } = getState();
+        console.log(`${API_URL}members/${leaderID}/network`);
+        console.log(`Bearer ${auth.user.api_token}`);
         dispatch({
             type: peopleConstants.GET_MY_NETWORK_REQUEST, 
             payload: null,

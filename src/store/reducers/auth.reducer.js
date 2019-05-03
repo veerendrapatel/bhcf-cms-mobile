@@ -17,7 +17,7 @@ const authReducer = (state = initState, action) => {
                 loggingIn: true
             };
         case authConstants.LOGIN_COMMIT:
-            // console.log('LOGIN_COMMIT', action);
+            console.log('LOGIN_COMMIT', action);
             return {
                 ...state,
                 loggingIn:false,

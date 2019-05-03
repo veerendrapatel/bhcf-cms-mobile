@@ -8,14 +8,6 @@ import { authConstants } from '../../../store/constants';
 
 
 class PersonalInformation extends Component {
-    // static navigationOptions = ({ navigation }) => {
-    //     const {headerTitle,  headerRight} = navigation.state.params;
-
-    //     return {
-    //         headerTitle: headerTitle,
-    //         headerRight: headerRight
-    //     };
-    // };
 
     constructor(props) {
         super(props);
@@ -39,16 +31,6 @@ class PersonalInformation extends Component {
             
             
             this.setState({ person: person });
-            // this.props.navigation.setParams({
-            //         headerTitle: person.full_name,
-            //         headerRight: (
-            //         <TouchableOpacity 
-            //             style={{ padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center' }} 
-            //             onPress={() => this.props.navigation.navigate('PersonForm', { person: person })}>
-            //             <Text>Edit</Text>
-            //         </TouchableOpacity>
-            //         )
-            // });
         }
     }
 
@@ -60,7 +42,7 @@ class PersonalInformation extends Component {
                 {   person ? (
                         <ScrollView style={{ width: '100%' }}>
                             {
-                                (user.member.id == person.id || user.member.id == person.parent_id) &&
+                                (user.id == person.id || user.id == person.parent_id) &&
                                 <View>
                                     <Button
                                         title="Edit"

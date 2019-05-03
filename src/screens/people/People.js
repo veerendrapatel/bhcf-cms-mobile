@@ -72,7 +72,7 @@ class People extends Component {
     componentDidMount = () => {
         const { user, personID, navigation } = this.props;
 
-        const leaderID = personID ? personID : (user ? user.member.id : null);
+        const leaderID = personID ? personID : (user ? user.id : null);
         
         this.setState({ leaderID: leaderID })
         
@@ -104,7 +104,7 @@ class People extends Component {
     }
 
     initNetwork = (props) => {
-        const leaderID = props.personID ? props.personID : (props.user ? props.user.member.id : null);
+        const leaderID = props.personID ? props.personID : (props.user ? props.user.id : null);
 
         this._data = props.people.people ? props.people.people.filter(person => person.parent_id == leaderID): null;
         this.setState({ people: [], page: 1, search: false, leaderID: leaderID, loading: props.people.loading }, () => this.loadMore());
@@ -135,7 +135,7 @@ class People extends Component {
         const { keyword, people, loading } = this.state;
         const { navigation, dispatch, netInfo } = this.props;
         const _this = this;
-        
+        console.log(people);
         return (
             <View style={ styles.container }>
                 {  

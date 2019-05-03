@@ -20,7 +20,6 @@ const DashboardStack = createStackNavigator({
         Person: Person,
         PersonForm: PersonForm,
         AttendanceForm: AttendanceForm,
-        // CellReports: CellReports,
         SundayAttendanceForm,
         ClassForm,
         EnrollmentForm,
