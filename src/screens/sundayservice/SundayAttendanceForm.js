@@ -13,13 +13,6 @@ import { startOfWeek, endOfWeek } from '../../helpers/misc';
 
 const today = Moment();
 
-// const startOfWeek = ( date ) => {
-//   return Moment(date).startOf('week').add(1, 'day').format('MMM D');
-// }
-
-// const endOfWeek = ( date ) => {
-//   return Moment(date).endOf('week').add(1, 'day').format('MMM D');
-// }
 
 class SundayAttendanceForm extends Component {
     static navigationOptions = ({ navigation }) => {
@@ -39,21 +32,23 @@ class SundayAttendanceForm extends Component {
     constructor(props) {
         super(props);
         const { params } = this.props.navigation.state;
-        
+        const startDate = params.startDate != undefined ? Moment(params.startDate) : today;
+        const endDate = params.endDate != undefined ? Moment(params.endDate) : today;
+
         this.state = {
             date: null,
             selectedIndex: null,
             selectedItem: null,
             isOverlayVisible: false,
+            selectedDate: startDate,
             // personID: this.props.navigation.state.params ? this.props.navigation.state.params.personID : today.format('YYYY'),
             year: params ? params.year : today.format('YYYY'),
             week: params ? params.week : today.format('ww'),
-            reports: [],
+            attendances: [],
             loading: true,
         }
 
-        const startDate = params.startDate != undefined ? Moment(params.startDate) : today;
-        const endDate = params.endDate != undefined ? Moment(params.endDate) : today;
+        
 
         this.props.navigation.setParams({
           headerTitle: startOfWeek(startDate) +' -  ' + endOfWeek( endDate ) + ' ' +  endDate.format('YYYY'),
@@ -75,14 +70,14 @@ class SundayAttendanceForm extends Component {
 
     updateAttendance(data, index) {
       const { dispatch, user, saveAttendance } = this.props;
-      const { year, week } = this.state;
+      const { year, week, selectedDate } = this.state;
       // check if current user is the leader
       if ( user.member.id == data.leader_id ) {
         const attendance = {
             member_id: data['member_id'],
             attended: data['attended'],
             yearweek: data['yearweek'],
-            date_attended: data['date_attended']
+            date_attended: data['date_attended'] == null ? Moment(selectedDate).format('YYYY-MM-DD HH:mm:ss') : data['date_attended']
         }
         saveAttendance( user.member.id, year, week, attendance, index );
       }
@@ -107,9 +102,9 @@ class SundayAttendanceForm extends Component {
     }
     render() {
 
-        const { isOverlayVisible, selectedIndex, selectedItem, year, week } = this.state;
-        const { user, sundayReport } = this.props;
-        const { loading, items } = sundayReport;
+        const { isOverlayVisible, selectedIndex, selectedItem, year, week, selectedDate } = this.state;
+        const { user, cellReport } = this.props;
+        const { loading, items } = cellReport;
         
         const data = items !== undefined && items[year] !== undefined && items[year][week] !== undefined ? items[year][week] : null;
        
@@ -122,8 +117,8 @@ class SundayAttendanceForm extends Component {
                 (
                     <ScrollView style={{ width: '100%' }}>
                     {
-                        data && data !== undefined && data.reports ? (
-                            data.reports.map((item, i) => {
+                        data && data !== undefined && data.attendances ? (
+                            data.attendances.map((item, i) => {
                               const avatar = item.avatar ? JSON.parse(item.avatar) : null;
                               return (
                                 <ListItem 
@@ -191,15 +186,15 @@ class SundayAttendanceForm extends Component {
                   }}>{ selectedItem.full_name }</Text>
                   <DatePicker
                     style={{width: '100%', padding: 0,marginBottom: padding.md}}
-                    date={selectedItem.date_attended}
+                    date={Moment( selectedDate ).format('YYYY-MM-DD')}
                     mode="date"
                     placeholder="select date"
                     format="YYYY-MM-DD"
                     confirmBtnText="Confirm"
                     cancelBtnText="Cancel"
                     showIcon={false}
-                    minDate={ Moment( selectedItem.date_attended ).startOf('week').add(1, 'day').format('YYYY-MM-DD') }
-                    maxDate={ Moment( selectedItem.date_attended ).endOf('week').add(1, 'day').format('YYYY-MM-DD') }
+                    minDate={ Moment( selectedDate ).startOf('week').add(1, 'day').format('YYYY-MM-DD') }
+                    maxDate={ Moment( selectedDate ).endOf('week').add(1, 'day').format('YYYY-MM-DD') }
                     onDateChange={(date) => {
                       this.setState({ selectedItem: { ...selectedItem, date_attended: date  } })
                     }}

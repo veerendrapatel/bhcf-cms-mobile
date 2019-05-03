@@ -51,7 +51,7 @@ const sundayReducer = (state = initialState, action ) => {
                         ...state.items[action.meta.year],
                         [action.meta.week]: {
                             ...state.items[action.meta.year][action.meta.week],
-                           reports: payload.data 
+                           attendances: payload.data 
                         }
                     }
                 }
@@ -76,7 +76,7 @@ const sundayReducer = (state = initialState, action ) => {
                 //         ...state.items[payload.year],
                 //         [payload.week]: {
                 //             ...state.items[payload.year][payload.week],
-                //             reports: state.items[payload.year][payload.week].reports.map((item, i) => {
+                //             attendances: state.items[payload.year][payload.week].attendances.map((item, i) => {
                 //                 if (payload.index === i) {
                 //                     return {
                 //                         ...item,
@@ -101,7 +101,7 @@ const sundayReducer = (state = initialState, action ) => {
                         ...state.items[action.meta.year],
                         [action.meta.week]: {
                             ...state.items[action.meta.year][action.meta.week],
-                            reports: state.items[action.meta.year][action.meta.week].reports.map((item, i) => {
+                            attendances: state.items[action.meta.year][action.meta.week].attendances.map((item, i) => {
                                 if (action.meta.index === i) {
                                     return payload.data
                                 }

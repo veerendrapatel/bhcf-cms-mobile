@@ -40,7 +40,6 @@ class Reports extends Component {
         const buttons = ['CellGroup', 'Sunday Celebration'];
         const { selectedIndex, search } = this.state
         const { netInfo } = this.props;
-        console.log(selectedIndex);
         return (
             <View style={styles.container}>
                 {  
