@@ -233,6 +233,14 @@ class People extends Component {
                                                     }
                                                 >{ person.full_name }</Text>
                                             </View>
+                                            <View style={styles.row}>
+                                                <Text style={{
+                                                    color: colors.grey2,
+                                                    fontSize:12
+                                                }}>
+                                                    {person.count_cg >= 4 && person.count_sc >= 4 ? `Regular` :`VIP - (${ person.count_sc } SC/${ person.count_cg } CG)`}
+                                                </Text>
+                                            </View>
                                             <View style={ {...styles.row, marginTop: -5} }>
                                                 {
                                                     person.class_category &&

@@ -3,8 +3,6 @@ import { API_URL } from 'react-native-dotenv';
 
 export const signIn = (username, password) => {
     return (dispatch, getState) => {
-        console.log(`${API_URL}login`);
-        console.log(username, password);
         dispatch({
             type: authConstants.LOGIN_REQUEST, 
             payload: null,
@@ -30,7 +28,6 @@ export const signIn = (username, password) => {
 
 export const signOut = () => {
     return (dispatch, getState) => {
-        console.log(`${API_URL}logout`);
         dispatch({
             type: authConstants.LOGOUT_REQUEST, 
             payload: null,

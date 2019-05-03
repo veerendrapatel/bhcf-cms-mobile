@@ -3,10 +3,11 @@ import { StyleSheet, View, ScrollView, Text, Dimensions, Alert, TouchableOpacity
 import { ListItem, CheckBox, Icon, Overlay, Button } from 'react-native-elements';
 import Moment from 'moment';
 import { connect } from 'react-redux';
-import { cellGroupActions } from '../../store/actions';
+import { sundayCelebrationActions } from '../../store/actions';
 import { dimensions, colors, padding, fonts, container, row } from '../../styles/base';
 import DatePicker from 'react-native-datepicker';
 import { startOfWeek, endOfWeek } from '../../helpers/misc';
+
 
 
 
@@ -20,7 +21,7 @@ const today = Moment();
 //   return Moment(date).endOf('week').add(1, 'day').format('MMM D');
 // }
 
-class AttendanceForm extends Component {
+class SundayAttendanceForm extends Component {
     static navigationOptions = ({ navigation }) => {
 
       const {headerTitle} = navigation.state.params;
@@ -47,7 +48,7 @@ class AttendanceForm extends Component {
             // personID: this.props.navigation.state.params ? this.props.navigation.state.params.personID : today.format('YYYY'),
             year: params ? params.year : today.format('YYYY'),
             week: params ? params.week : today.format('ww'),
-            attendances: [],
+            reports: [],
             loading: true,
         }
 
@@ -107,8 +108,8 @@ class AttendanceForm extends Component {
     render() {
 
         const { isOverlayVisible, selectedIndex, selectedItem, year, week } = this.state;
-        const { user, cellReport } = this.props;
-        const { loading, items } = cellReport;
+        const { user, sundayReport } = this.props;
+        const { loading, items } = sundayReport;
         
         const data = items !== undefined && items[year] !== undefined && items[year][week] !== undefined ? items[year][week] : null;
        
@@ -121,8 +122,8 @@ class AttendanceForm extends Component {
                 (
                     <ScrollView style={{ width: '100%' }}>
                     {
-                        data && data !== undefined && data.attendances ? (
-                            data.attendances.map((item, i) => {
+                        data && data !== undefined && data.reports ? (
+                            data.reports.map((item, i) => {
                               const avatar = item.avatar ? JSON.parse(item.avatar) : null;
                               return (
                                 <ListItem 
@@ -252,19 +253,19 @@ const styles = StyleSheet.create({
 
 const mapStatetoProps = (state) => {
   
-  const { cellReport, auth } = state;
+  const { sundayReport, auth } = state;
 
   return {
-    cellReport,
+    sundayReport,
     user: auth.user
   }
 }
 
 const mapPropsToDispatch = (dispatch) => {
     return {
-        saveAttendance: ( memberID, year, week, attendance, index ) => dispatch( cellGroupActions.saveAttendance( memberID, year, week, attendance, index ) ),
-        initAttendanceForm: ( leaderID,  year, week ) => dispatch( cellGroupActions.AttendanceForm( leaderID,  year, week ) ),
+        saveAttendance: ( memberID, year, week, attendance, index ) => dispatch( sundayCelebrationActions.saveAttendance( memberID, year, week, attendance, index ) ),
+        initAttendanceForm: ( leaderID,  year, week ) => dispatch( sundayCelebrationActions.AttendanceForm( leaderID,  year, week ) ),
     }
 }
 
-export default connect(mapStatetoProps, mapPropsToDispatch)(AttendanceForm);
+export default connect(mapStatetoProps, mapPropsToDispatch)(SundayAttendanceForm);

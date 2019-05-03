@@ -36,3 +36,8 @@ export const container = {
   flex: 1,
   backgroundColor: colors.tertiary
 }
+
+export const row = {
+  flex: 1, 
+  flexDirection: 'row'
+}

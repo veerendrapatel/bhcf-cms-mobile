@@ -3,13 +3,17 @@ import { View, Text, StyleSheet, NetInfo } from 'react-native';
 import { connect } from 'react-redux';
 import { dimensions, colors, padding, fonts, container } from '../../../styles/base';
 import CellReports from '../../cellgroup/CellReports';
-import { ButtonGroup } from 'react-native-elements';
+import SundayReports from '../../sundayservice/SundayReports';
+import { ButtonGroup, Button, Input, SearchBar } from 'react-native-elements';
 import { peopleActions, alertActions, connectionState } from '../../../store/actions';
+import Moment from 'moment';
+const today = Moment();
 
 class Reports extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            search: today.format('YYYY'),
             person: this.props.navigation.state.params.person,
             selectedIndex: 0
         }
@@ -34,8 +38,9 @@ class Reports extends Component {
 
     render() {
         const buttons = ['CellGroup', 'Sunday Celebration'];
-        const { selectedIndex } = this.state
+        const { selectedIndex, search } = this.state
         const { netInfo } = this.props;
+        console.log(selectedIndex);
         return (
             <View style={styles.container}>
                 {  
@@ -51,6 +56,17 @@ class Reports extends Component {
 
                 }
                 <View>
+                    <SearchBar
+                        round={true}
+                        lightTheme
+                        platform="ios"
+                        autoCorrect={false} 
+                        placeholder="Type Year Here..."
+                        onChangeText={(year) => this.setState({ search: year })}
+                        value={search}
+                    />
+                </View>
+                <View>
                     <ButtonGroup
                         onPress={this.updateIndex}
                         selectedIndex={selectedIndex}
@@ -58,7 +74,15 @@ class Reports extends Component {
                         containerStyle={{height: 40}}
                     />
                 </View>
-                <CellReports personID={ this.state.person.id } {...this.props}/>
+                {
+                    selectedIndex == 0 ? 
+                    (
+                        <CellReports personID={ this.state.person.id } {...this.props}/>
+                    ) : 
+                    (
+                        <SundayReports personID={ this.state.person.id } {...this.props}/>
+                    )
+                }
             </View>
         )
     }

@@ -6,7 +6,8 @@ import People from '../screens/people/People';
 import Person from '../screens/people/Person';
 import PersonForm from '../screens/people/Form';
 import AttendanceForm from '../screens/cellgroup/AttendanceForm';
-import CellReports from '../screens/cellgroup/CellReports';
+import SundayAttendanceForm from '../screens/sundayservice/SundayAttendanceForm';
+// import CellReports from '../screens/cellgroup/CellReports';
 import SideMenu from '../components/SideMenu';
 import ClassForm from '../screens/reports/form/ClassForm';
 import EnrollmentForm from '../screens/reports/form/EnrollmentForm';
@@ -19,7 +20,8 @@ const DashboardStack = createStackNavigator({
         Person: Person,
         PersonForm: PersonForm,
         AttendanceForm: AttendanceForm,
-        CellReports: CellReports,
+        // CellReports: CellReports,
+        SundayAttendanceForm,
         ClassForm,
         EnrollmentForm,
         LifeClass

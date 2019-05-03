@@ -1,6 +1,4 @@
-import cellGroupService from '../../services/cellgroup.service';
-import { alertActions } from '../actions/alert.actions';
-import {cellGroupConstants} from '../constants/cellgroup.constants';
+import {sundayConstants} from '../constants/sunday.constants';
 import { API_URL } from 'react-native-dotenv';
 
 
@@ -9,19 +7,19 @@ const AttendanceForm = ( memberID, year, week ) => {
     return (dispatch, getState) => {
         const { auth } = getState();
         dispatch({
-            type: cellGroupConstants.CREATE_CELLREPORT_REQUEST, 
+            type: sundayConstants.CREATE_SUNDAYREPORT_REQUEST, 
             payload: null,
             meta: {
                 offline: {
                     effect: {
-                        url: `${API_URL}members/${memberID}/cellreport/${year}/${week}`,
+                        url: `${API_URL}members/${memberID}/sundayreport/${year}/${week}`,
                         method: 'GET',
                         headers: {
                             Authorization: `Bearer ${auth.user.api_token}`
                         }
                     },
-                    commit: { type: cellGroupConstants.CREATE_CELLREPORT_COMMIT, meta: { year, week }},
-                    rollback: { type: cellGroupConstants.CREATE_CELLREPORT_ROLLBACK, meta: { year, week } }
+                    commit: { type: sundayConstants.CREATE_SUNDAYREPORT_COMMIT, meta: { year, week }},
+                    rollback: { type: sundayConstants.CREATE_SUNDAYREPORT_ROLLBACK, meta: { year, week } }
                 }
             }
         });
@@ -33,8 +31,11 @@ const saveAttendance = ( memberID, year, week, attendance, index ) => {
     return (dispatch, getState) => {
         const { auth } = getState();
         const meta =  { year, week, index };
+        // console.log(`${API_URL}members/${memberID}/sundayreport/${year}/${week}`);
+        // console.log(`Bearer ${auth.user.api_token}`);
+        // console.log(attendance);
         dispatch({
-            type: cellGroupConstants.SAVE_CELLGROUP_ATTENDANCE_REQUEST, 
+            type: sundayConstants.SAVE_SUNDAY_ATTENDANCE_REQUEST, 
             payload: {
                 week, 
                 year,
@@ -44,15 +45,15 @@ const saveAttendance = ( memberID, year, week, attendance, index ) => {
             meta: {
                 offline: {
                     effect: {
-                        url: `${API_URL}members/${memberID}/cellreport/${year}/${week}`,
+                        url: `${API_URL}members/${memberID}/sundayreport/${year}/${week}`,
                         method: 'POST',
                         json: attendance,
                         headers: {
                             Authorization: `Bearer ${auth.user.api_token}`
                         }
                     },
-                    commit: { type: cellGroupConstants.SAVE_CELLGROUP_ATTENDANCE_COMMIT, meta: meta},
-                    rollback: { type: cellGroupConstants.SAVE_CELLGROUP_ATTENDANCE_ROLLBACK, meta: meta }
+                    commit: { type: sundayConstants.SAVE_SUNDAY_ATTENDANCE_COMMIT, meta: meta},
+                    rollback: { type: sundayConstants.SAVE_SUNDAY_ATTENDANCE_ROLLBACK, meta: meta }
                 }
             }
         });
@@ -63,29 +64,27 @@ const saveAttendance = ( memberID, year, week, attendance, index ) => {
 const getLeaderAttendancesByYear = ( memberID, year ) =>  {
     return (dispatch, getState) => {
         const { auth } = getState();
-        // console.log(`${API_URL}members/${memberID}/cellreport/${year}`);
-        // console.log(`Bearer ${auth.user.api_token}`);
         dispatch({
-            type: cellGroupConstants.GET_LEADER_ATTENDANCE_BY_YEAR_REQUEST, 
+            type: sundayConstants.GET_LEADER_ATTENDANCE_BY_YEAR_REQUEST, 
             payload: null,
             meta: {
                 offline: {
                     effect: {
-                        url: `${API_URL}members/${memberID}/cellreport/${year}`,
+                        url: `${API_URL}members/${memberID}/sundayreport/${year}`,
                         method: 'GET',
                         headers: {
                             Authorization: `Bearer ${auth.user.api_token}`
                         }
                     },
-                    commit: { type: cellGroupConstants.GET_LEADER_YEARLY_ATTENDANCES_COMMIT, meta: { year }},
-                    rollback: { type: cellGroupConstants.GET_LEADER_YEARLY_ATTENDANCES_ROLLBACK, meta: { year } }
+                    commit: { type: sundayConstants.GET_LEADER_YEARLY_ATTENDANCES_COMMIT, meta: { year }},
+                    rollback: { type: sundayConstants.GET_LEADER_YEARLY_ATTENDANCES_ROLLBACK, meta: { year } }
                 }
             }
         });
     }
 }
 
-export const cellGroupActions = {
+export const sundayCelebrationActions = {
     getLeaderAttendancesByYear,
     saveAttendance,
     AttendanceForm

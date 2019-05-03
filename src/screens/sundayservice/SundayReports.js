@@ -3,14 +3,14 @@ import { StyleSheet, View, ScrollView, Text, Dimensions, Alert, TouchableOpacity
 import { ListItem, CheckBox, Icon, Avatar, SearchBar } from 'react-native-elements';
 import Moment from 'moment';
 import { connect } from 'react-redux';
-import { cellGroupActions, connectionState } from '../../store/actions';
+import { sundayCelebrationActions, connectionState } from '../../store/actions';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { dimensions, colors, padding, fonts } from '../../styles/base';
 import { startOfWeek, endOfWeek } from '../../helpers/misc';
 
 const today = Moment();
 
-class CellReports extends Component {
+class SundayReports extends Component {
     static navigationOptions = ({ navigation }) => {
       return {
         headerTitle: navigation.state.params && navigation.state.params.headerTitle ? navigation.state.params.headerTitle : `${today.format('YYYY')}`,
@@ -58,7 +58,7 @@ class CellReports extends Component {
     }
 
     render() {
-        const { loading, items } = this.props.cellReport;
+        const { loading, items } = this.props.sundayReport;
         const {personID, selectedYear, selectedWeek} = this.state;
         if (items) {
             const data = items && typeof items[selectedYear] !== undefined ? items[selectedYear] : null;
@@ -82,7 +82,7 @@ class CellReports extends Component {
                                                 }
                                                 chevron
                                                 bottomDivider={true}
-                                                onPress={() => this.props.navigation.navigate('AttendanceForm', { 
+                                                onPress={() => this.props.navigation.navigate('SundayAttendanceForm', { 
                                                     personID: this.state.personID,
                                                     year: selectedYear, 
                                                     week: week,
@@ -109,7 +109,7 @@ class CellReports extends Component {
                             rounded 
                             icon={{ name: 'add', color: colors.tertiary }} 
                             overlayContainerStyle={{backgroundColor: colors.primary}}
-                            onPress={() => this.props.navigation.navigate('AttendanceForm', { 
+                            onPress={() => this.props.navigation.navigate('SundayAttendanceForm', { 
                                 personID: personID,
                                 year: selectedYear,
                                 week: selectedWeek,
@@ -144,19 +144,17 @@ const styles = StyleSheet.create({
 
 const mapStatetoProps = (state) => {
   
-  const { cellReport, auth } = state;
+  const { sundayReport, auth } = state;
   return {
-    cellReport,
+    sundayReport,
     user: auth.user
   }
 }
 
 const mapPropsToDispatch = (dispatch) => {
     return {
-        fetchYearlyAttendance: ( leaderID, selectedYear ) => dispatch( cellGroupActions.getLeaderAttendancesByYear( leaderID, selectedYear ) ),
-        deletePerson: ( id ) => dispatch(peopleActions.deletePerson( id )),
-        handleConnectivityChange: (isConnected) => dispatch(connectionState(isConnected))
+        fetchYearlyAttendance: ( leaderID, selectedYear ) => dispatch( sundayCelebrationActions.getLeaderAttendancesByYear( leaderID, selectedYear ) )
     }
 }
 
-export default connect(mapStatetoProps, mapPropsToDispatch)(CellReports);
+export default connect(mapStatetoProps, mapPropsToDispatch)(SundayReports);

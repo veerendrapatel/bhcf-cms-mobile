@@ -1,3 +1,14 @@
+import Moment from 'moment';
+
+export const startOfWeek = ( date ) => {
+  return Moment(date).startOf('week').add(1, 'day').format('MMM D');
+}
+
+export const endOfWeek = ( date ) => {
+  return Moment(date).endOf('week').add(1, 'day').format('MMM D');
+}
+
+
 export const paginate  = (data, page, per_page) => {
  
     var page = page || 1,

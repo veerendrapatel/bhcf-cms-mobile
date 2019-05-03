@@ -6,6 +6,7 @@ import cellGroupReducer from './cellgroup.reducer';
 import schoolClassReducer from './schoolClass.reducer';
 import classCategoryReducer from './classCategory.reducer';
 import netInfoReducer from './netinfo.reducer';
+import sundayReducer from './sunday.reducer';
 
 const appReducer = combineReducers({
     alert: alertReducer,
@@ -14,7 +15,8 @@ const appReducer = combineReducers({
     cellReport: cellGroupReducer,
     classCategory: classCategoryReducer,
     schoolClass: schoolClassReducer,
-    netInfo: netInfoReducer
+    netInfo: netInfoReducer,
+    sundayReport: sundayReducer
 });
 
 

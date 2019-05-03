@@ -4,17 +4,18 @@ import { connect } from 'react-redux';
 import { dimensions, colors, padding, fonts, container } from '../../../styles/base';
 import { Icon, Avatar, Divider, Badge, Button } from 'react-native-elements';
 import { peopleActions } from '../../../store/actions';
+import { authConstants } from '../../../store/constants';
 
 
 class PersonalInformation extends Component {
-    static navigationOptions = ({ navigation }) => {
-        const {headerTitle,  headerRight} = navigation.state.params;
+    // static navigationOptions = ({ navigation }) => {
+    //     const {headerTitle,  headerRight} = navigation.state.params;
 
-        return {
-            headerTitle: headerTitle,
-            headerRight: headerRight
-        };
-    };
+    //     return {
+    //         headerTitle: headerTitle,
+    //         headerRight: headerRight
+    //     };
+    // };
 
     constructor(props) {
         super(props);
@@ -38,32 +39,36 @@ class PersonalInformation extends Component {
             
             
             this.setState({ person: person });
-            this.props.navigation.setParams({
-                    headerTitle: person.full_name,
-                    headerRight: (
-                    <TouchableOpacity 
-                        style={{ padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center' }} 
-                        onPress={() => this.props.navigation.navigate('PersonForm', { person: person })}>
-                        <Text>Edit</Text>
-                    </TouchableOpacity>
-                    )
-            });
+            // this.props.navigation.setParams({
+            //         headerTitle: person.full_name,
+            //         headerRight: (
+            //         <TouchableOpacity 
+            //             style={{ padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center' }} 
+            //             onPress={() => this.props.navigation.navigate('PersonForm', { person: person })}>
+            //             <Text>Edit</Text>
+            //         </TouchableOpacity>
+            //         )
+            // });
         }
     }
 
     render() {
         const { person } = this.state;
+        const { user } = this.props;
         return (
             <View style={styles.container}>
                 {   person ? (
                         <ScrollView style={{ width: '100%' }}>
-                            <View>
-                                <Button
-                                    title="Edit"
-                                    type="clear" 
-                                    onPress={() => this.props.navigation.navigate('PersonForm', { person: person })}
-                                />
-                            </View>
+                            {
+                                (user.member.id == person.id || user.member.id == person.parent_id) &&
+                                <View>
+                                    <Button
+                                        title="Edit"
+                                        type="clear" 
+                                        onPress={() => this.props.navigation.navigate('PersonForm', { person: person })}
+                                    />
+                                </View>
+                            }
                             <View style={styles.avatarContainer}>
                             {
                                 person.avatar ?
@@ -265,6 +270,16 @@ class PersonalInformation extends Component {
                                         </View>
                                     </View>
                                 }
+
+                                {
+                                    person.status &&
+                                    <View style={styles.txtGroup}>
+                                        <View style={styles.txtWrapperFull}>
+                                            <Text style={styles.txtLabel}>Church Status</Text>
+                                            <Text style={styles.txtValue}>{person.count_sg >= 4 && person.count_sc >= 4 ? `Regular` :`VIP - (${ person.count_sc } SC/${ person.count_sg } SG)`}</Text>
+                                        </View>
+                                    </View>
+                                }
                                 
                             </View>
                             <View style={styles.viewContainer}>
@@ -413,9 +428,10 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = ( state ) => {
 
-    const {person} = state.people;
+    const {people, auth} = state;
     return {
-        person
+        user: auth.user,
+        person: people.person
     }
     
 }

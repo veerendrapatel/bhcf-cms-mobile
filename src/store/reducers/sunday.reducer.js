@@ -1,19 +1,19 @@
-import { cellGroupConstants } from '../constants/cellgroup.constants';
+import { sundayConstants } from '../constants/sunday.constants';
 
 const initialState = {
     loading: false,
     items: []
 }
 let payload = null;
-const cellGroupReducer = (state = initialState, action ) => {
+const sundayReducer = (state = initialState, action ) => {
     switch( action.type ) {
-        case cellGroupConstants.GET_LEADER_ATTENDANCE_BY_YEAR_REQUEST:
+        case sundayConstants.GET_LEADER_ATTENDANCE_BY_YEAR_REQUEST:
             // console.log('GET_LEADER_ATTENDANCE_BY_YEAR_REQUEST');
             return {
                 ...state,
                 loading: true,
             }
-        case cellGroupConstants.GET_LEADER_YEARLY_ATTENDANCES_COMMIT:
+        case sundayConstants.GET_LEADER_YEARLY_ATTENDANCES_COMMIT:
         // console.log('GET_LEADER_YEARLY_ATTENDANCES_COMMIT', action);
             payload = action.payload;
             // console.log(state.items);
@@ -25,23 +25,23 @@ const cellGroupReducer = (state = initialState, action ) => {
                     [action.meta.year]: payload.data 
                 }
             }
-        case cellGroupConstants.GET_LEADER_YEARLY_ATTENDANCES_ROLLBACK:
+        case sundayConstants.GET_LEADER_YEARLY_ATTENDANCES_ROLLBACK:
         // console.log('GET_LEADER_YEARLY_ATTENDANCES_ROLLBACK', action);
             return {
                 ...state,
                 loading: false
             }
-        case cellGroupConstants.CREATE_CELLREPORT_REQUEST:
-            // console.log('CREATE_CELLREPORT_REQUEST');
+        case sundayConstants.CREATE_SUNDAYREPORT_REQUEST:
+            // console.log('CREATE_SUNDAYREPORT_REQUEST');
             return {
                 ...state,
                 loading: true
             }
-        case cellGroupConstants.CREATE_CELLREPORT_COMMIT:
+        case sundayConstants.CREATE_SUNDAYREPORT_COMMIT:
             
             payload = action.payload;
-            // console.log('CREATE_CELLREPORT_COMMIT', payload.data);
-            // console.log(payload);
+            // console.log('CREATE_SUNDAYREPORT_COMMIT', action.meta.year);
+            // console.log('CREATE_SUNDAYREPORT_COMMIT', payload);
             return {
                 ...state,
                 loading: false,
@@ -51,23 +51,23 @@ const cellGroupReducer = (state = initialState, action ) => {
                         ...state.items[action.meta.year],
                         [action.meta.week]: {
                             ...state.items[action.meta.year][action.meta.week],
-                           attendances: payload.data 
+                           reports: payload.data 
                         }
                     }
                 }
             }
 
-        case cellGroupConstants.CREATE_CELLREPORT_ROLLBACK:
-            // console.log('CREATE_CELLREPORT_ROLLBACK', action);
+        case sundayConstants.CREATE_SUNDAYREPORT_ROLLBACK:
+            // console.log('CREATE_SUNDAYREPORT_ROLLBACK');
             return {
                 ...state,
                 loading: false,
                 error: action.error
             }
 
-        case cellGroupConstants.SAVE_CELLGROUP_ATTENDANCE_REQUEST:
+        case sundayConstants.SAVE_SUNDAY_ATTENDANCE_REQUEST:
             payload = action.payload;
-            // console.log('SAVE_CELLGROUP_ATTENDANCE_REQUEST', payload);
+            // console.log('SAVE_SUNDAY_ATTENDANCE_REQUEST', payload);
             return {
                 ...state,
                 // items: {
@@ -76,7 +76,7 @@ const cellGroupReducer = (state = initialState, action ) => {
                 //         ...state.items[payload.year],
                 //         [payload.week]: {
                 //             ...state.items[payload.year][payload.week],
-                //             attendances: state.items[payload.year][payload.week].attendances.map((item, i) => {
+                //             reports: state.items[payload.year][payload.week].reports.map((item, i) => {
                 //                 if (payload.index === i) {
                 //                     return {
                 //                         ...item,
@@ -89,9 +89,9 @@ const cellGroupReducer = (state = initialState, action ) => {
                 //     }
                 // }
             }
-        case cellGroupConstants.SAVE_CELLGROUP_ATTENDANCE_COMMIT:
+        case sundayConstants.SAVE_SUNDAY_ATTENDANCE_COMMIT:
             payload = action.payload;
-            // console.log('SAVE_CELLGROUP_ATTENDANCE_COMMIT', action);
+            // console.log('SAVE_SUNDAY_ATTENDANCE_COMMIT', action);
             const newState = {
                 ...state,
                 loading: false,
@@ -101,7 +101,7 @@ const cellGroupReducer = (state = initialState, action ) => {
                         ...state.items[action.meta.year],
                         [action.meta.week]: {
                             ...state.items[action.meta.year][action.meta.week],
-                            attendances: state.items[action.meta.year][action.meta.week].attendances.map((item, i) => {
+                            reports: state.items[action.meta.year][action.meta.week].reports.map((item, i) => {
                                 if (action.meta.index === i) {
                                     return payload.data
                                 }
@@ -112,8 +112,8 @@ const cellGroupReducer = (state = initialState, action ) => {
                 }
             };
             return newState;
-        case cellGroupConstants.SAVE_CELLGROUP_ATTENDANCE_ROLLBACK:
-            // console.log('SAVE_CELLGROUP_ATTENDANCE_ROLLBACK', action);
+        case sundayConstants.SAVE_SUNDAY_ATTENDANCE_ROLLBACK:
+            // console.log('SAVE_SUNDAY_ATTENDANCE_ROLLBACK', action);
             return {
                 ...state,
                 // loading: false,
@@ -123,4 +123,4 @@ const cellGroupReducer = (state = initialState, action ) => {
     }
 }
 
-export default cellGroupReducer;
+export default sundayReducer;
